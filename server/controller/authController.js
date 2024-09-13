@@ -226,7 +226,7 @@ exports.resetPassword = async (req, res, next) => {
     return res.status(400).json({ message: 'Passwords do not match' });
   }
 
-  user.password = await bcrypt.hash(password, 10); // Hash the new password
+  user.password = req.body.password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
