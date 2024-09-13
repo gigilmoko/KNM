@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import LandingIntro from './LandingIntro';
+import LandingIntro from './components/LandingIntro';
 import ErrorText from '../../components/Typography/ErrorText';
 import CheckCircleIcon from '@heroicons/react/24/solid/CheckCircleIcon';
 import axios from 'axios'; // Ensure axios is imported

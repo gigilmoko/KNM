@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from 'react-google-login';
-import LandingIntro from './LandingIntro';
+import LandingIntro from './components/LandingIntro';
 import ErrorText from '../../components/Typography/ErrorText';
 import googlelogo from '../../assets/img/googlelogo.png';
 import axios from 'axios';

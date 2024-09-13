@@ -2,13 +2,13 @@ import { configureStore } from '@reduxjs/toolkit'
 import headerSlice from '../features/common/headerSlice'
 import modalSlice from '../features/common/modalSlice'
 import rightDrawerSlice from '../features/common/rightDrawerSlice'
-import leadsSlice from '../features/users/leadSlice'
+import leadSlice from '../features/common/components/leadSlice'
 
 const combinedReducer = {
   header : headerSlice,
   rightDrawer : rightDrawerSlice,
   modal : modalSlice,
-  lead : leadsSlice
+  lead : leadSlice
 }
 
 export default configureStore({

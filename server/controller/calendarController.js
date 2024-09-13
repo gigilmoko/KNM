@@ -1,6 +1,5 @@
 const CalendarEvent = require('../models/calendar'); 
 
-// Create a new calendar event
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image } = req.body;
 
@@ -32,7 +31,6 @@ exports.createEvent = async (req, res) => {
     
 };
 
-// Update an existing calendar event
 exports.updateEvent = async (req, res) => {
     const eventId = req.params.id;
     const { date, title, description, startDate, endDate, image } = req.body;
@@ -65,8 +63,6 @@ exports.updateEvent = async (req, res) => {
     }
 };
 
-
-// Get a single event by ID
 exports.getEvent = async (req, res) => {
     const eventId = req.params.id;
 
@@ -93,8 +89,6 @@ exports.getEvent = async (req, res) => {
     }
 };
 
-
-// Delete an event by ID
 exports.deleteEvent = async (req, res) => {
     const eventId = req.params.id;
 

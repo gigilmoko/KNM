@@ -3,41 +3,8 @@ const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 const cloudinary = require("cloudinary");
-const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { OAuth2Client } = require('google-auth-library');
 const express = require('express');
-
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
-// exports.googleLogin = async (req, res, next) => {
-//   const { tokenId } = req.body;
-
-//   try {
-//       const ticket = await client.verifyIdToken({
-//           idToken: tokenId,
-//           audience: process.env.GOOGLE_CLIENT_ID,
-//       });
-
-//       const { email, name, picture } = ticket.getPayload();
-
-//       let user = await User.findOne({ email });
-
-//       if (!user) {
-//           user = new User({ email, name, avatar: picture });
-//           await user.save();
-//       }
-
-//       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-//           expiresIn: '1d',
-//       });
-
-//       res.json({ token, user });
-//   } catch (error) {
-//       console.error("Google Login Error:", error);
-//       res.status(500).json({ error: "Google login failed." });
-//   }
-// };
 
 exports.googleLogin = async (req, res, next) => {
   const { email } = req.body;
@@ -122,9 +89,6 @@ exports.registerUser = async (req, res, next) => {
   }
 };
 
-
-
-
 exports.loginUser = async (req, res, next) => {
   const { email, password } = req.body;
   console.log("Received email:", email);
@@ -158,8 +122,6 @@ exports.loginUser = async (req, res, next) => {
   }
 };
 
-
-
 exports.logout = async (req, res, next) => {
     res.cookie("token", null, {
         expires: new Date(Date.now()),
@@ -172,7 +134,6 @@ exports.logout = async (req, res, next) => {
     });
 };
 
-// //Working
 exports.forgotPassword = async (req, res, next) => {
     console.log('Forgot password route hit'); 
   const user = await User.findOne({ email: req.body.email });
@@ -207,7 +168,6 @@ exports.forgotPassword = async (req, res, next) => {
   }
 };
 
-// //Working
 exports.resetPassword = async (req, res, next) => {
   console.log('Reset password route hit');
   const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
@@ -233,8 +193,6 @@ exports.resetPassword = async (req, res, next) => {
   sendToken(user, 200, res);
 };
   
-  
-// //Working
 exports.allUsers = async (req, res, next) => {
     const users = await User.find();
     res.status(200).json({
@@ -242,64 +200,6 @@ exports.allUsers = async (req, res, next) => {
         users,
     });
 };
-
-// //Working
-// exports.getUserDetails = async (req, res, next) => {
-//   const user = await User.findById(req.params.id);
-
-//   if (!user) {
-//     return res
-//       .status(400)
-//       .json({ message: `User does not found with id: ${req.params.id}` });
-//     // return next(new ErrorHandler(`User does not found with id: ${req.params.id}`))
-//   }
-
-//     res.status(200).json({
-//         success: true,
-//         user
-//     })
-// };
-
-// //Working
-// exports.updateUser = async (req, res, next) => {
-//     const newUserData = {
-//         name: req.body.name,
-//         email: req.body.email,
-//         role: req.body.role
-//     }
-
-//     const user = await User.findByIdAndUpdate(req.params.id, newUserData, {
-//         new: true,
-//         runValidators: true,
-//         // useFindAndModify: false
-//     })
-
-
-//     return res.status(200).json({
-//         success: true
-//     })
-// };
-
-//Working; Doesn't delete user avatar in cloudinary
-// exports.deleteUser = async (req, res, next) => {
-//     const user = await User.findById(req.params.id);
-
-//     if (!user) {
-//         return res.status(401).json({ message: `User does not found with id: ${req.params.id}` })
-//         // return next(new ErrorHandler(`User does not found with id: ${req.params.id}`))
-//     }
-
-//     // Remove avatar from cloudinary
-//         // const image_id = user.avatar.public_id;
-//         // await cloudinary.v2.uploader.destroy(image_id);
-//     await User.findByIdAndRemove(req.params.id);
-//     return res.status(200).json({
-//         success: true,
-//     })
-// };
-
-//Needs Frontend
-// c
 
 exports.getUserProfile = async (req, res, next) => {
   try {
@@ -329,7 +229,6 @@ exports.getUserProfile = async (req, res, next) => {
   }
 };
 
-// //Needs Frontend
 exports.updatePassword = async (req, res, next) => {
     console.log('Update Password route hit')
     const user = await User.findById(req.user.id).select("password");
@@ -348,7 +247,7 @@ exports.updatePassword = async (req, res, next) => {
 
     sendToken(user, 200, res);
 };
-// //Needs Frontend
+
 exports.updateProfile = async (req, res, next) => {
   try {
     console.log('Update User route hit');
@@ -389,186 +288,6 @@ exports.updateProfile = async (req, res, next) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
-
-  
-
-// exports.updateProfile = async (req, res, next) => {
-//   try {
-//     const newUserData = {
-//       name: req.body.name,
-//       email: req.body.email
-//     };
-
-//     if (req.files && req.files.avatar) {
-//       const user = await User.findById(req.user.id);
-
-//       const uploadedAvatar = await cloudinary.v2.uploader.upload(req.files.avatar.path, {
-//         folder: 'avatars',
-//         width: 150,
-//         crop: 'scale'
-//       });
-
-//       newUserData.avatar = uploadedAvatar.secure_url;
-
-//       // Delete the previous avatar from Cloudinary (if exists)
-//       if (user.avatar) {
-//         await cloudinary.v2.uploader.destroy(user.avatar);
-//       }
-//     }
-
-//     const updatedUser = await User.findByIdAndUpdate(req.user.id, newUserData, {
-//       new: true,
-//       runValidators: true,
-//     });
-
-//     if (!updatedUser) {
-//       return res.status(401).json({ success: false, message: 'User Not Updated' });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       user: updatedUser
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false, message: 'Server Error' });
-//   }
-// };
-
-
-// exports.checkEmail = async (req, res, next) => {
-//     try {
-//       const { email } = req.query;
-//       const existingUser = await User.findOne({ email });
-  
-//       res.status(200).json({
-//         exists: !!existingUser,
-//       });
-//     } catch (error) {
-//       console.error("Error checking email:", error);
-//       res.status(500).json({
-//         error: "Internal Server Error",
-//       });
-//     }
-// };
-  
-// exports.google = async (req, res, next) => {
-//     try {
-//       const { email, name, avatar } = req.body;
-  
-//       // Check if the user already exists
-//       const existingUser = await User.findOne({ email });
-  
-//       let avatarData;
-  
-//       if (avatar) {
-//         // Upload avatar to Cloudinary
-//         await cloudinary.v2.uploader.upload(
-//           avatar,
-//           {
-//             folder: "avatars",
-//             width: 150,
-//             crop: "scale",
-//           },
-//           (err, result) => {
-//             if (err) {
-//               console.error("Error uploading avatar to Cloudinary:", err);
-//               throw err;
-//             }
-//             avatarData = {
-//               public_id: result.public_id,
-//               url: result.secure_url,
-//             };
-//           }
-//         );
-//       }
-  
-//       if (existingUser) {
-//         // User exists, log in the user
-//         // You may generate a token or create a session here
-//         sendToken(existingUser, 200, res);
-//       } else {
-//         // User doesn't exist, create a new user
-//         const randomPassword = Math.random().toString(36).slice(-8);
-//         const hashedPassword = await bcrypt.hash(randomPassword, 10);
-  
-//         const newUser = new User({
-//           name,
-//           email,
-//           password: hashedPassword,
-//           avatar: avatarData,
-//         });
-  
-//         await newUser.save();
-  
-//         // Log in the new user
-//         sendToken(newUser, 201, res);
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: "Internal Server Error" });
-//     }
-// };
-  
-// exports.facebook = async (req, res, next) => {
-//     try {
-//       const { email, name, avatar } = req.body;
-  
-//       // Check if the user already exists
-//       const existingUser = await User.findOne({ email });
-  
-//       let avatarData;
-  
-//       if (avatar) {
-//         // Upload avatar to Cloudinary
-//         await cloudinary.v2.uploader.upload(
-//           avatar,
-//           {
-//             folder: "profiles",
-//             width: 200,
-//             crop: "scale",
-//           },
-//           (err, result) => {
-//             if (err) {
-//               console.error("Error uploading avatar to Cloudinary:", err);
-//               throw err;
-//             }
-//             avatarData = {
-//               public_id: result.public_id,
-//               url: result.url,
-//             };
-//           }
-//         );
-//       }
-  
-//       if (existingUser) {
-//         // User exists, log in the user
-//         // You may generate a token or create a session here
-//         sendToken(existingUser, 200, res);
-//       } else {
-//         // User doesn't exist, create a new user
-//         const randomPassword = Math.random().toString(36).slice(-8);
-//         const hashedPassword = await bcrypt.hash(randomPassword, 10);
-  
-//         const newUser = new User({
-//           name,
-//           email,
-//           password: hashedPassword,
-//           avatar: avatarData,
-//         });
-  
-//         await newUser.save();
-  
-//         // Log in the new user
-//         sendToken(newUser, 201, res);
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ message: "Internal Server Error" });
-//     }
-
-    
-// };
 
 exports.updateUserRole = async (req, res, next) => {
   try {

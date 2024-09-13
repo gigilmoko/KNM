@@ -4,26 +4,6 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { themeChange } from 'theme-change'
 import checkAuth from './app/auth';
 import initializeApp from './app/init';
-// import Welcome from './pages/protected/Welcome'
-// import Login from './ComponentsOld/User/Login';
-// import Register from './ComponentsOld/User/Register';
-import RegisterTry from './ComponentsOld/User/RegisterTry';
-import Working from './ComponentsOld/User/Working';
-// import ForgotPassword from './ComponentsOld/User/ForgotPassword';
-import Profile from './ComponentsOld/User/Profile';
-// import NewPassword from "./ComponentsOld/User/NewPassword";
-import UpdatePassword from "./ComponentsOld/User/UpdatePassword";
-import UpdateProfile from "./ComponentsOld/User/UpdateProfile";
-import LogoutWithGoogle2 from './ComponentsOld/User/LogoutWithGoogle2';
-import RegisterWithGoogle from './ComponentsOld/User/GoogleRegister';
-import RegisterWithGoogleFill from './ComponentsOld/User/GoogleRegisterFill';
-import LoginWithGoogle from './ComponentsOld/User/LoginWithGoogle';
-// import Product from './pages/Product';
-import AllCalendar from './ComponentsOld/Calendar/AllCalendar';
-import Calendar from './ComponentsOld/Calendar/CalendarUi';
-import NewCalendarUi from './ComponentsOld/Calendar/NewCalendarUi';
-import NewCalendar from './ComponentsOld/Calendar/NewCalendar';
-import EditCalendar from './ComponentsOld/Calendar/UpdateCalendar';
 import { gapi } from 'gapi-script'
 import ProtectedRoute from './Route/ProtectedRoute'
 // Importing pages

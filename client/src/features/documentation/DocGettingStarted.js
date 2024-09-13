@@ -6,8 +6,6 @@ import GettingStartedNav from "./components/GettingStartedNav"
 import ReadMe from "./components/GettingStartedContent"
 import GettingStartedContent from "./components/GettingStartedContent"
 
-
-
 function GettingStarted(){
 
     const dispatch = useDispatch()
