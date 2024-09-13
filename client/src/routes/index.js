@@ -18,6 +18,8 @@ const GettingStarted = lazy(() => import('../pages/GettingStarted'))
 const DocFeatures = lazy(() => import('../pages/DocFeatures'))
 const DocComponents = lazy(() => import('../pages/DocComponents'))
 
+const NewCalendar = lazy(() => import('../pages/protected/NewCalendar'))
+const CalendarList = lazy(() => import('../pages/protected/CalendarList'))
 const Product = lazy(() => import('../pages/protected/Product'))
 const Category = lazy(() => import('../pages/protected/Category'))
 const Users = lazy(() => import('../pages/protected/Users'))
@@ -95,6 +97,14 @@ const routes = [
   {
     path: '/change-password',
     component: ChangePassword,
+  },
+  {
+    path: '/calendar-new',
+    component: NewCalendar,
+  },
+  {
+    path: '/calendar-list',
+    component: CalendarList,
   },
 ]
 

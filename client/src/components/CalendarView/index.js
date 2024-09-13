@@ -100,7 +100,7 @@ function CalendarView({ addNewEvent, openDayDetail }) {
       <div className="flex items-center justify-between">
         <div className="flex justify-normal gap-2 sm:gap-4">
           <p className="font-semibold text-xl w-48">
-            {moment(firstDayOfMonth).format("MMMM yyyy").toString()}<span className="text-xs ml-2">Beta</span>
+            {moment(firstDayOfMonth).format("MMMM yyyy").toString()}<span className="text-xs ml-2"></span>
           </p>
 
           <button className="btn btn-square btn-sm btn-ghost" onClick={getPrevMonth}>
