@@ -209,6 +209,7 @@ exports.forgotPassword = async (req, res, next) => {
 
 // //Working
 exports.resetPassword = async (req, res, next) => {
+<<<<<<< Updated upstream
     console.log('Reset password route hit');
     const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
     const user = await User.findOne({
@@ -230,6 +231,31 @@ exports.resetPassword = async (req, res, next) => {
     await user.save();
     sendToken(user, 200, res);
   };
+=======
+  console.log('Reset password route hit');
+  const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() }
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: 'Password reset token is invalid or has been expired' });
+  }
+
+  const { password, confirmPassword } = req.body;
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({ message: 'Passwords do not match' });
+  }
+
+  user.password = await bcrypt.hash(password, 10); // Hash the new password
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+  sendToken(user, 200, res);
+};
+>>>>>>> Stashed changes
   
   
 // //Working

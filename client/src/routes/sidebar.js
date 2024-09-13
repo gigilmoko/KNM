@@ -105,6 +105,14 @@ const routes = [
         name: 'Profile', // name that appear in Sidebar
       },
       {
+<<<<<<< Updated upstream
+=======
+        path: '/app/change-password', //url
+        icon: <UserIcon className={submenuIconClasses}/>, // icon component
+        name: 'Change Password', // name that appear in Sidebar
+      },
+      {
+>>>>>>> Stashed changes
         path: '/app/settings-billing',
         icon: <WalletIcon className={submenuIconClasses}/>,
         name: 'Billing',
