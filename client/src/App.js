@@ -11,11 +11,7 @@ import RegisterTry from './ComponentsOld/User/RegisterTry';
 import Working from './ComponentsOld/User/Working';
 // import ForgotPassword from './ComponentsOld/User/ForgotPassword';
 import Profile from './ComponentsOld/User/Profile';
-<<<<<<< Updated upstream
-import NewPassword from "./ComponentsOld/User/NewPassword";
-=======
 // import NewPassword from "./ComponentsOld/User/NewPassword";
->>>>>>> Stashed changes
 import UpdatePassword from "./ComponentsOld/User/UpdatePassword";
 import UpdateProfile from "./ComponentsOld/User/UpdateProfile";
 import LogoutWithGoogle2 from './ComponentsOld/User/LogoutWithGoogle2';
@@ -31,11 +27,7 @@ const Login = lazy(() => import('./pages/Login'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const Register = lazy(() => import('./pages/Register'))
 const Documentation = lazy(() => import('./pages/Documentation'))
-<<<<<<< Updated upstream
-
-=======
 const NewPassword = lazy(() => import('./pages/NewPassword'))
->>>>>>> Stashed changes
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com"
 
 // Initializing different libraries
@@ -68,11 +60,8 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/register" element={<Register />} />
           <Route path="/documentation" element={<Documentation />} />
-<<<<<<< Updated upstream
-=======
           <Route path="/password/reset/:token" element={<NewPassword />} />
           {/* <Route path="/forgotpassword" element={<ForgotPassword />} />  */}
->>>>>>> Stashed changes
           {/* <Route path = "/app/welcome" element = {<Welcome />}></Route> */}
           {/* Place new routes over this */}
           {/* <Route path="/app/*" element={<ProtectedRoute isAdmin={true}><Layout /></ProtectedRoute> }/> */}

@@ -21,10 +21,7 @@ const DocComponents = lazy(() => import('../pages/DocComponents'))
 const Product = lazy(() => import('../pages/protected/Product'))
 const Category = lazy(() => import('../pages/protected/Category'))
 const Users = lazy(() => import('../pages/protected/Users'))
-<<<<<<< Updated upstream
-=======
 const ChangePassword = lazy(() => import('../pages/protected/ChangePassword'))
->>>>>>> Stashed changes
 
 const routes = [
   {
@@ -95,13 +92,10 @@ const routes = [
     path: '/category',
     component: Category,
   },
-<<<<<<< Updated upstream
-=======
   {
     path: '/change-password',
     component: ChangePassword,
   },
->>>>>>> Stashed changes
 ]
 
 export default routes

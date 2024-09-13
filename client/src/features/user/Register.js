@@ -152,25 +152,6 @@ function Register() {
             <form onSubmit={submitForm}>
               <div className="mb-4">
                 {/* Avatar Upload and Preview */}
-<<<<<<< Updated upstream
-                <div className="flex justify-center items-center mb-4">
-  <label htmlFor="avatar-upload" className="cursor-pointer flex justify-center items-center">
-    <img
-      src={avatarImage || 'https://via.placeholder.com/150'} // Default placeholder image
-      alt="Avatar"
-      className="w-32 h-32 rounded-full object-cover"
-    />
-    <input
-      id="avatar-upload"
-      type="file"
-      accept="image/*"
-      onChange={handleAvatarChange}
-      className="hidden"
-    />
-  </label>
-</div>
-
-=======
                 <div className="flex items-center mb-4">
                   <label htmlFor="avatar-upload" className="cursor-pointer">
                     <img
@@ -187,7 +168,6 @@ function Register() {
                     />
                   </label>
                 </div>
->>>>>>> Stashed changes
 
                 {/* Name and Middle Initial */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
