@@ -19,6 +19,11 @@ import RegisterWithGoogle from './ComponentsOld/User/GoogleRegister';
 import RegisterWithGoogleFill from './ComponentsOld/User/GoogleRegisterFill';
 import LoginWithGoogle from './ComponentsOld/User/LoginWithGoogle';
 // import Product from './pages/Product';
+import AllCalendar from './ComponentsOld/Calendar/AllCalendar';
+import Calendar from './ComponentsOld/Calendar/CalendarUi';
+import NewCalendarUi from './ComponentsOld/Calendar/NewCalendarUi';
+import NewCalendar from './ComponentsOld/Calendar/NewCalendar';
+import EditCalendar from './ComponentsOld/Calendar/UpdateCalendar';
 import { gapi } from 'gapi-script'
 import ProtectedRoute from './Route/ProtectedRoute'
 // Importing pages
@@ -91,6 +96,12 @@ function App() {
             <Route path="/profile" element={<Profile />} /> 
             <Route path="/profile/update" element={<UpdateProfile />} /> 
             <Route path="/password/update" element={<UpdatePassword />} />  */}
+
+            <Route path="/calendar/events" element={<AllCalendar />} /> 
+            <Route path="/calendar/new-event" element={<NewCalendar />} /> 
+            <Route path="/calendar/update-event/:id" element={<EditCalendar />} /> 
+            <Route path="/calendar/" element={<Calendar />} /> 
+            <Route path="/calendar/new" element={<NewCalendarUi />} /> 
         </Routes>
       </Router>
     </>
