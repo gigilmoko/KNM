@@ -24,6 +24,7 @@ const Product = lazy(() => import('../pages/protected/Product'))
 const Category = lazy(() => import('../pages/protected/Category'))
 const Users = lazy(() => import('../pages/protected/Users'))
 const ChangePassword = lazy(() => import('../pages/protected/ChangePassword'))
+const UpdateCalendar = lazy(() => import('../../src/components/CalendarView/UpdateCalendar'))
 
 const routes = [
   {
@@ -106,6 +107,10 @@ const routes = [
     path: '/calendar-list',
     component: CalendarList,
   },
+  {
+    path: '/calendar/update-event/:id',
+    component: UpdateCalendar,
+  }
 ]
 
 export default routes

@@ -40,7 +40,7 @@ function CalendarList() {
     }, [searchText, events]);
 
     const handleEdit = (id) => {
-        navigate(`/calendar/update-event/${id}`);
+        navigate(`/app/calendar/update-event/${id}`);
     };
 
     const handleDelete = async (id) => {

@@ -27,6 +27,7 @@ import EditCalendar from './ComponentsOld/Calendar/UpdateCalendar';
 import { gapi } from 'gapi-script'
 import ProtectedRoute from './Route/ProtectedRoute'
 // Importing pages
+
 const Layout = lazy(() => import('./containers/Layout'))
 const Login = lazy(() => import('./pages/Login'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
@@ -66,6 +67,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/documentation" element={<Documentation />} />
           <Route path="/password/reset/:token" element={<NewPassword />} />
+          {/* <Route path="/app/calendar/update-event/:id" element={<EditCalendar />} />  */}
           {/* <Route path="/forgotpassword" element={<ForgotPassword />} />  */}
           {/* <Route path = "/app/welcome" element = {<Welcome />}></Route> */}
           {/* Place new routes over this */}
@@ -97,11 +99,11 @@ function App() {
             <Route path="/profile/update" element={<UpdateProfile />} /> 
             <Route path="/password/update" element={<UpdatePassword />} />  */}
 
-            <Route path="/calendar/events" element={<AllCalendar />} /> 
-            <Route path="/calendar/new-event" element={<NewCalendar />} /> 
-            <Route path="/calendar/update-event/:id" element={<EditCalendar />} /> 
-            <Route path="/calendar/" element={<Calendar />} /> 
-            <Route path="/calendar/new" element={<NewCalendarUi />} /> 
+            {/* <Route path="/calendar/events" element={<AllCalendar />} /> 
+            <Route path="/calendar/new-event" element={<NewCalendar />} />  */}
+    
+            {/* <Route path="/calendar/" element={<Calendar />} /> 
+            <Route path="/calendar/new" element={<NewCalendarUi />} />  */}
         </Routes>
       </Router>
     </>
