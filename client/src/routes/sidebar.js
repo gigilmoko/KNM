@@ -46,11 +46,11 @@ const routes = [
     icon: <TagIcon className={iconClasses}/>, // icon component
     name: 'Category', // name that appear in Sidebar
   },
-  {
-    path: '/app/charts', // url
-    icon: <ChartBarIcon className={iconClasses}/>, // icon component
-    name: 'Analytics', // name that appear in Sidebar
-  },
+  // {
+  //   path: '/app/charts', // url
+  //   icon: <ChartBarIcon className={iconClasses}/>, // icon component
+  //   name: 'Analytics', // name that appear in Sidebar
+  // },
   {
     path: '', // url
     icon: <CalendarDaysIcon className={`${iconClasses} inline`}/>, // icon component
@@ -67,6 +67,11 @@ const routes = [
         name: 'Calendar List', // name that appear in Sidebar
       },
     ]
+  },
+   {
+    path: '/app/charts', // url
+    icon: <ChartBarIcon className={iconClasses}/>, // icon component
+    name: 'Analytics', // name that appear in Sidebar
   },
 
   // {
