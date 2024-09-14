@@ -57,7 +57,7 @@ function Header() {
         try {
             await axios.get(`${process.env.REACT_APP_API}/api/logout`);
             // Optionally clear local storage and state
-            localStorage.clear();
+            // localStorage.clear();
             sessionStorage.clear();
             // Navigate to home page
             navigate('/login');
@@ -111,12 +111,12 @@ function Header() {
                     <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
                         
                         <li className="justify-between">
-                            <Link to={'/app/settings-profile'}>
-                                Profile Settings
-                                <span className="badge">New</span>
+                            <Link to={'/app/profile'}>
+                                Profile 
+                                {/* <span className="badge">New</span> */}
                             </Link>
                         </li>
-                        <li><Link to={'/app/settings-billing'}>Bill History</Link></li>
+                        {/* <li><Link to={'/app/settings-billing'}>Bill History</Link></li> */}
                         <div className="divider mt-0 mb-0"></div>
                         <li><a onClick={logoutHandler}>Logout</a></li>
                     </ul>

@@ -55,7 +55,7 @@ function Login() {
             if (response.data.user && response.data.user.role === 'admin') {
                 navigate("/app/welcome");
             } else {
-                navigate(redirect || "/");
+                navigate(redirect || "/app/welcome");
             }
         } catch (error) {
             setLoading(false);
@@ -96,7 +96,7 @@ function Login() {
     
             console.log('Stored user in sessionStorage:', sessionStorage.getItem('user'));
     
-            if (data.user && data.user.role === 'admin') {
+            if (data.user && data.user.role === 'admin' || data.user.role === 'member' ) {
                 console.log('Google login successful - Redirecting to admin dashboard');
                 navigate("/app/welcome");
             } else {

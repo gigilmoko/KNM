@@ -37,6 +37,23 @@ const routes = [
     name: 'Users', // name that appear in Sidebar
   },
   {
+    path: '', // url
+    icon: <CalendarDaysIcon className={`${iconClasses} inline`}/>, // icon component
+    name: 'Members', // name that appear in Sidebar
+    submenu : [
+      {
+        path: '',
+        icon: <CalendarDaysIcon className={iconClasses}/>, // icon component
+        name: 'Members List', // name that appear in Sidebar
+      },
+      {
+        path: '/app/applying-members',
+        icon: <CalendarDaysIcon className={iconClasses}/>, // icon component
+        name: 'Members Approval', // name that appear in Sidebar
+      },
+    ]
+  },
+  {
     path: '/app/product', // url
     icon: <ShoppingBagIcon className={iconClasses}/>, // icon component
     name: 'Product', // name that appear in Sidebar

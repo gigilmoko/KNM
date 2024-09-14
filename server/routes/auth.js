@@ -5,7 +5,8 @@ const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
 const { registerUser, loginUser, logout, forgotPassword,
       resetPassword, getUserProfile, updatePassword, updateProfile,
-      allUsers, getUserDetails, updateUser, updateUserRole, deleteUser, googleLogin } = require('../controller/authController');
+      allUsers, getUserDetails, updateUser, updateUserRole, deleteUser, 
+      googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, applyingForMember } = require('../controller/authController');
 
 router.post('/register', upload.single('avatar'), registerUser);
 router.post('/login', loginUser);
@@ -19,6 +20,10 @@ router.put('/password/update', isAuthenticatedUser, updatePassword);
 router.put('/me/update', isAuthenticatedUser, upload.single("avatar"), updateProfile);
 router.put('/users/:id', updateUserRole);
 router.delete('/user/:id', deleteUser);
+router.get('/users/apply', allUsersApply);
+router.put('/users/apply/:id', updateApplyMember);
+router.put('/users/deny-apply-member/:id', deniedApplyMember);
+router.put('/users/applying-for-member/:id', applyingForMember);
 
 // router.post('/register', upload.single('avatar'), registerUser);
 // router.put('/password/update', updatePassword);

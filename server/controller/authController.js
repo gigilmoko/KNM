@@ -213,6 +213,22 @@ exports.allUsers = async (req, res, next) => {
     });
 };
 
+exports.allUsersApply = async (req, res, next) => {
+  try {
+      const users = await User.find({ 'applyMember': true });
+      res.status(200).json({
+          success: true,
+          users,
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: "Failed to fetch users",
+          error: error.message,
+      });
+  }
+};
+
 exports.getUserProfile = async (req, res, next) => {
   try {
     
@@ -317,6 +333,78 @@ exports.updateUserRole = async (req, res, next) => {
       res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.updateApplyMember = async (req, res, next) => {
+  try {
+    const { id } = req.params; // Get user ID from route params
+
+    // Update the applyMember field to false and set the role to 'member'
+    const user = await User.findByIdAndUpdate(
+      id,
+      { applyMember: false, role: 'member' }, // Set applyMember to false and role to 'member'
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Respond with success and updated user data
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    // Handle potential errors
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deniedApplyMember = async (req, res, next) => {
+  try {
+    const { id } = req.params; // Get user ID from route params
+
+    // Update the applyMember field and set memberId to an empty string for the user
+    const user = await User.findByIdAndUpdate(
+      id,
+      { applyMember: false, memberId: "" }, // Set memberId to an empty string
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Respond with success and updated user data
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    // Handle potential errors
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.applyingForMember = async (req, res, next) => {
+  try {
+    const { id } = req.params; // Get user ID from route params
+    const { memberId } = req.body; // Get memberId from request body
+
+    // Find user by ID and update applyMember to true and set memberId
+    const user = await User.findByIdAndUpdate(
+      id,
+      { applyMember: true, memberId },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Respond with success and updated user data
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    // Handle potential errors
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 
 exports.deleteUser = async (req, res, next) => {
   try {

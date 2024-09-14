@@ -13,7 +13,6 @@ function ProfileSettings() {
         middlei: '',
         email: '',
         phone: '',
-        memberId: '',
         dateOfBirth: '',
         address: '',
         avatar: '',
@@ -30,7 +29,7 @@ function ProfileSettings() {
     const getProfile = async () => {
         const config = {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
             }
         };
         try {
@@ -64,7 +63,6 @@ function ProfileSettings() {
             email: user.email, 
             phone: user.phone, 
             address: user.address, 
-            memberId: user.memberId, 
             avatar: user.avatar // Include avatar if it's updated
         };
         
@@ -73,7 +71,7 @@ function ProfileSettings() {
         try {
             const response = await axios.put(`${process.env.REACT_APP_API}/api/me/update`, profileData, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                 }
             });
             console.log('Update response:', response.data); // Log the response
@@ -163,28 +161,8 @@ function ProfileSettings() {
                             />
                         </div>
 
-                        {/* Member ID */}
-                        <div>
-                            <label>Member ID</label>
-                            <input
-                                type="text"
-                                name="memberId"
-                                value={user.memberId}
-                                onChange={updateFormValue}
-                                className="input input-bordered w-full"
-                            />
-                        </div>
-
                         {/* Address and Date of Birth in the same row */}
-                        <div className="md:col-span-1">
-                            <label>Address</label>
-                            <textarea
-                                name="address"
-                                value={user.address}
-                                onChange={updateFormValue}
-                                className="textarea textarea-bordered w-full"
-                            ></textarea>
-                        </div>
+                        
 
                         <div className="md:col-span-1">
                             <label>Date of Birth</label>
@@ -196,6 +174,17 @@ function ProfileSettings() {
                                 className="input input-bordered w-full"
                             />
                         </div>
+
+                        <div className="w-full">
+    <label>Address</label>
+    <textarea
+        name="address"
+        value={user.address}
+        onChange={updateFormValue}
+        className="textarea textarea-bordered w-full"
+    ></textarea>
+</div>
+
                     </div>
 
                     <div className="divider"></div>

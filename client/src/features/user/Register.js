@@ -17,7 +17,6 @@ function Register() {
     password: '',
     dateOfBirth: '',
     phone: '',
-    memberId: '',
     address: '',
     googleLogin: false,
     avatar: '',
@@ -46,13 +45,10 @@ function Register() {
     setLoading(true);
   
     try {
-      // Determine user role based on memberId
-      const userRole = registerObj.memberId.trim() === '' ? 'user' : 'member';
-  
-      // Update the registerObj with the role
+      // Remove the role logic since memberId is no longer part of the form
       const updatedRegisterObj = {
         ...registerObj,
-        role: userRole,
+        role: 'user', // Default role is 'user' if no specific role logic is applied
       };
   
       console.log("Form values:", updatedRegisterObj);
@@ -153,21 +149,22 @@ function Register() {
               <div className="mb-4">
                 {/* Avatar Upload and Preview */}
                 <div className="flex justify-center items-center mb-4">
-    <label htmlFor="avatar-upload" className="cursor-pointer">
-      <img
-        src={avatarImage || 'https://via.placeholder.com/150'} // Default placeholder image
-        alt="Avatar"
-        className="w-32 h-32 rounded-full object-cover"
-      />
-      <input
-        id="avatar-upload"
-        type="file"
-        accept="image/*"
-        onChange={handleAvatarChange}
-        className="hidden"
-      />
-    </label>
-  </div>
+                  <label htmlFor="avatar-upload" className="cursor-pointer">
+                    <img
+                      src={avatarImage || 'https://via.placeholder.com/150'} // Default placeholder image
+                      alt="Avatar"
+                      className="w-32 h-32 rounded-full object-cover"
+                    />
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
                 {/* Name and Middle Initial */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <input
@@ -214,7 +211,6 @@ function Register() {
                     onChange={updateFormValue}
                     placeholder="Password"
                     className="input input-bordered w-full"
-                    // disabled={registerObj.googleLogin} // Disable password field if registered with Google
                   />
                 </div>
 
@@ -237,16 +233,8 @@ function Register() {
                   />
                 </div>
 
-                {/* Member ID and Address */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <input
-                    type="text"
-                    name="memberId"
-                    value={registerObj.memberId}
-                    onChange={updateFormValue}
-                    placeholder="Member ID"
-                    className="input input-bordered w-full"
-                  />
+                {/* Address */}
+                <div className="grid grid-cols-1 mt-4">
                   <input
                     type="text"
                     name="address"
@@ -268,30 +256,34 @@ function Register() {
                   <div className="wrap-login100-form-btn">
                     <div className="login100-form-bgbtn1" />
                     <GoogleLogin
-    clientId={clientId}
-    buttonText="Login with Google"
-    onSuccess={handleGoogleSuccess}
-    onFailure={handleGoogleFailure}
-    cookiePolicy={'single_host_origin'}
-    render={(renderProps) => (
-        <button
-            onClick={renderProps.onClick}
-            disabled={renderProps.disabled}
-            className="btn mt-4 w-full flex justify-center items-center border border-gray-300 rounded-md shadow-sm py-2 bg-white text-gray-700 hover:bg-gray-100 transition duration-200"
-        >
-            <img src={googlelogo} alt="Google Logo" className="w-5 h-5 mr-2" />
-            <span className="font-medium">Login with Google</span>
-        </button>
-    )}
-/>
-
+                      clientId={clientId}
+                      buttonText="Login with Google"
+                      onSuccess={handleGoogleSuccess}
+                      onFailure={handleGoogleFailure}
+                      cookiePolicy={'single_host_origin'}
+                      render={renderProps => (
+                        <button
+                          onClick={renderProps.onClick}
+                          disabled={renderProps.disabled}
+                          className="btn w-full flex items-center justify-center border mt-4"
+                        >
+                          <img src={googlelogo} alt="Google logo" className="w-5 h-5 mr-2" />
+                          Register with Google
+                        </button>
+                      )}
+                    />
                   </div>
-                </div>
-                <div className="mt-4">
-                  Already have an account? <Link to="/login" className="text-primary">Login</Link>
                 </div>
               </div>
             </form>
+            <div className="text-center mt-4">
+              <p>
+                Already have an account?{" "}
+                <Link to="/login" className="text-primary">
+                  Login Here
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       </div>
