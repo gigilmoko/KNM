@@ -94,7 +94,7 @@ function Login() {
                 navigate("/admin/dashboard");
             } else {
                 console.log('Google login successful - Redirecting to profile');
-                navigate("/profile");
+                navigate("/app/settings-profile");
             }
         } catch (error) {
             console.log("Google login error:", error);
@@ -158,22 +158,23 @@ function Login() {
                                 <div className="wrap-login100-form-btn">
                                     <div className="login100-form-bgbtn1" />
                                     <GoogleLogin
-                                        clientId={clientId}
-                                        buttonText="Login with Google"
-                                        onSuccess={handleGoogleSuccess}
-                                        onFailure={handleGoogleFailure}
-                                        cookiePolicy={'single_host_origin'}
-                                        render={(renderProps) => (
-                                            <button
-                                                className="login100-form-btn1"
-                                                onClick={renderProps.onClick}
-                                                disabled={renderProps.disabled}
-                                            >
-                                                <img src={googlelogo} alt="Google Logo" className="form-image1" />
-                                                <span className="social-text">Login with Google</span>
-                                            </button>
-                                        )}
-                                    />
+    clientId={clientId}
+    buttonText="Login with Google"
+    onSuccess={handleGoogleSuccess}
+    onFailure={handleGoogleFailure}
+    cookiePolicy={'single_host_origin'}
+    render={(renderProps) => (
+        <button
+            onClick={renderProps.onClick}
+            disabled={renderProps.disabled}
+            className="btn mt-4 w-full flex justify-center items-center border border-gray-300 rounded-md shadow-sm py-2 bg-white text-gray-700 hover:bg-gray-100 transition duration-200"
+        >
+            <img src={googlelogo} alt="Google Logo" className="w-5 h-5 mr-2" />
+            <span className="font-medium">Login with Google</span>
+        </button>
+    )}
+/>
+
                                 </div>
                             </div>
 

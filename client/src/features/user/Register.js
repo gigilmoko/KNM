@@ -152,23 +152,22 @@ function Register() {
             <form onSubmit={submitForm}>
               <div className="mb-4">
                 {/* Avatar Upload and Preview */}
-                <div className="flex items-center mb-4">
-                  <label htmlFor="avatar-upload" className="cursor-pointer">
-                    <img
-                      src={avatarImage || 'https://via.placeholder.com/150'} // Default placeholder image
-                      alt="Avatar"
-                      className="w-32 h-32 rounded-full object-cover"
-                    />
-                    <input
-                      id="avatar-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
+                <div className="flex justify-center items-center mb-4">
+    <label htmlFor="avatar-upload" className="cursor-pointer">
+      <img
+        src={avatarImage || 'https://via.placeholder.com/150'} // Default placeholder image
+        alt="Avatar"
+        className="w-32 h-32 rounded-full object-cover"
+      />
+      <input
+        id="avatar-upload"
+        type="file"
+        accept="image/*"
+        onChange={handleAvatarChange}
+        className="hidden"
+      />
+    </label>
+  </div>
                 {/* Name and Middle Initial */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <input
@@ -269,22 +268,23 @@ function Register() {
                   <div className="wrap-login100-form-btn">
                     <div className="login100-form-bgbtn1" />
                     <GoogleLogin
-                      clientId={clientId}
-                      buttonText="Register with Google"
-                      onSuccess={handleGoogleSuccess}
-                      onFailure={handleGoogleFailure}
-                      cookiePolicy={'single_host_origin'}
-                      render={(renderProps) => (
-                        <button
-                          className="login100-form-btn1"
-                          onClick={renderProps.onClick}
-                          disabled={renderProps.disabled}
-                        >
-                          <img src={googlelogo} alt="Google Logo" className="form-image1" />
-                          <span className="social-text">Register with Google</span>
-                        </button>
-                      )}
-                    />
+    clientId={clientId}
+    buttonText="Login with Google"
+    onSuccess={handleGoogleSuccess}
+    onFailure={handleGoogleFailure}
+    cookiePolicy={'single_host_origin'}
+    render={(renderProps) => (
+        <button
+            onClick={renderProps.onClick}
+            disabled={renderProps.disabled}
+            className="btn mt-4 w-full flex justify-center items-center border border-gray-300 rounded-md shadow-sm py-2 bg-white text-gray-700 hover:bg-gray-100 transition duration-200"
+        >
+            <img src={googlelogo} alt="Google Logo" className="w-5 h-5 mr-2" />
+            <span className="font-medium">Login with Google</span>
+        </button>
+    )}
+/>
+
                   </div>
                 </div>
                 <div className="mt-4">
