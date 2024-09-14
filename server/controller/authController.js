@@ -10,12 +10,15 @@ exports.googleLogin = async (req, res, next) => {
   const { email } = req.body;
 
   try {
+    // Find the user by email
     const user = await User.findOne({ email });
 
+    // Check if the user exists
     if (!user) {
       return res.status(400).json({ error: "Email not registered" });
     }
 
+    // Check if Google login is allowed for the user
     if (!user.googleLogin) {
       return res.status(400).json({ error: "Google login not allowed for this user" });
     }
@@ -25,15 +28,57 @@ exports.googleLogin = async (req, res, next) => {
       expiresIn: process.env.JWT_EXPIRES_TIME,
     });
 
-    // Respond with success
+    // Respond with success and user data
     res.status(200).json({
       success: true,
       token,
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,  // Assuming you have these fields
+        lastName: user.lastName,    // Assuming you have these fields
+        role: user.role,            // Assuming you have these fields
+        // Add any other user fields you want to include
+      },
       message: "User logged in successfully"
     });
   } catch (error) {
     // Handle errors
     next(error);
+  }
+};
+
+
+exports.loginUser = async (req, res, next) => {
+  const { email, password } = req.body;
+  console.log("Received email:", email);
+  console.log("Received password:", password);
+
+  if (!email || !password) {
+      return res.status(400).json({ error: 'Please enter email & password' });
+  }
+
+  try {
+      const user = await User.findOne({ email }).select('+password');
+      console.log("User found:", user);
+
+      if (!user) {
+          return res.status(401).json({ message: 'Invalid Email or Password' });
+      }
+
+      const isPasswordMatched = await user.comparePassword(password);
+      console.log("Password match result:", isPasswordMatched);
+
+      if (!isPasswordMatched) {
+          return res.status(401).json({ message: 'Invalid Email or Password' });
+      }
+
+      // Send the JWT token or any other response here
+      sendToken(user, 200, res);
+
+  } catch (error) {
+      console.error("Error during login:", error);
+      res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -86,39 +131,6 @@ exports.registerUser = async (req, res, next) => {
   } catch (error) {
     // Handle errors
     next(error);
-  }
-};
-
-exports.loginUser = async (req, res, next) => {
-  const { email, password } = req.body;
-  console.log("Received email:", email);
-  console.log("Received password:", password);
-
-  if (!email || !password) {
-      return res.status(400).json({ error: 'Please enter email & password' });
-  }
-
-  try {
-      const user = await User.findOne({ email }).select('+password');
-      console.log("User found:", user);
-
-      if (!user) {
-          return res.status(401).json({ message: 'Invalid Email or Password' });
-      }
-
-      const isPasswordMatched = await user.comparePassword(password);
-      console.log("Password match result:", isPasswordMatched);
-
-      if (!isPasswordMatched) {
-          return res.status(401).json({ message: 'Invalid Email or Password' });
-      }
-
-      // Send the JWT token or any other response here
-      sendToken(user, 200, res);
-
-  } catch (error) {
-      console.error("Error during login:", error);
-      res.status(500).json({ message: 'Server error' });
   }
 };
 

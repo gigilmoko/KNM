@@ -34,7 +34,7 @@ function Header() {
     const getProfile = async () => {
         const config = {
             headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
             }
         };
         try {
@@ -58,6 +58,7 @@ function Header() {
             await axios.get(`${process.env.REACT_APP_API}/api/logout`);
             // Optionally clear local storage and state
             localStorage.clear();
+            sessionStorage.clear();
             // Navigate to home page
             navigate('/login');
             // Reload the window

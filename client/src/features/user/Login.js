@@ -48,13 +48,14 @@ function Login() {
 
             console.log('Response data:', response.data);
 
-            localStorage.setItem("token", response.data.token);
+            sessionStorage.setItem("token", response.data.token);
+            sessionStorage.setItem("user", JSON.stringify(response.data.user));
             setLoading(false);
 
             if (response.data.user && response.data.user.role === 'admin') {
                 navigate("/app/welcome");
             } else {
-                navigate("/");
+                navigate(redirect || "/");
             }
         } catch (error) {
             setLoading(false);
@@ -76,22 +77,28 @@ function Login() {
     const handleGoogleSuccess = async (response) => {
         try {
             const { profileObj } = response;
+            if (!profileObj) {
+                throw new Error("Google profile object is null");
+            }
             const { email } = profileObj;
-
+    
             console.log('Google login data being sent:', { email });
-
+    
             const { data } = await axios.post(
                 `${process.env.REACT_APP_API}/api/google-login`,
                 { email }
             );
-
+    
             console.log('Google login response:', data);
-
-            localStorage.setItem("token", data.token);
-
-            if (data.user && data.user.memberId === '1') {
+    
+            sessionStorage.setItem("token", data.token);
+            sessionStorage.setItem("user", JSON.stringify(data.user));
+    
+            console.log('Stored user in sessionStorage:', sessionStorage.getItem('user'));
+    
+            if (data.user && data.user.role === 'admin') {
                 console.log('Google login successful - Redirecting to admin dashboard');
-                navigate("/admin/dashboard");
+                navigate("/app/welcome");
             } else {
                 console.log('Google login successful - Redirecting to profile');
                 navigate("/app/settings-profile");
@@ -101,7 +108,7 @@ function Login() {
             setErrorMessage("Google login failed");
         }
     };
-
+    
     // Google Login failure handler
     const handleGoogleFailure = (error) => {
         setErrorMessage("Google login failed");
@@ -158,23 +165,22 @@ function Login() {
                                 <div className="wrap-login100-form-btn">
                                     <div className="login100-form-bgbtn1" />
                                     <GoogleLogin
-    clientId={clientId}
-    buttonText="Login with Google"
-    onSuccess={handleGoogleSuccess}
-    onFailure={handleGoogleFailure}
-    cookiePolicy={'single_host_origin'}
-    render={(renderProps) => (
-        <button
-            onClick={renderProps.onClick}
-            disabled={renderProps.disabled}
-            className="btn mt-4 w-full flex justify-center items-center border border-gray-300 rounded-md shadow-sm py-2 bg-white text-gray-700 hover:bg-gray-100 transition duration-200"
-        >
-            <img src={googlelogo} alt="Google Logo" className="w-5 h-5 mr-2" />
-            <span className="font-medium">Login with Google</span>
-        </button>
-    )}
-/>
-
+                                        clientId={clientId}
+                                        buttonText="Login with Google"
+                                        onSuccess={handleGoogleSuccess}
+                                        onFailure={handleGoogleFailure}
+                                        cookiePolicy={'single_host_origin'}
+                                        render={(renderProps) => (
+                                            <button
+                                                onClick={renderProps.onClick}
+                                                disabled={renderProps.disabled}
+                                                className="btn mt-4 w-full flex justify-center items-center border border-gray-300 rounded-md shadow-sm py-2 bg-white text-gray-700 hover:bg-gray-100 transition duration-200"
+                                            >
+                                                <img src={googlelogo} alt="Google Logo" className="w-5 h-5 mr-2" />
+                                                <span className="font-medium">Login with Google</span>
+                                            </button>
+                                        )}
+                                    />
                                 </div>
                             </div>
 
