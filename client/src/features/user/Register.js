@@ -33,13 +33,18 @@ function Register() {
     setErrorMessage('');
   
     // Validation
-    if (registerObj.fname.trim() === '') return setErrorMessage('First Name is required!');
-    if (registerObj.lname.trim() === '') return setErrorMessage('Last Name is required!');
-    if (registerObj.middlei.trim() === '') return setErrorMessage('Middle Initial is required!');
-    if (registerObj.email.trim() === '') return setErrorMessage('Email Id is required!');
-    if (registerObj.password.trim() === '' && !registerObj.googleLogin) return setErrorMessage('Password is required!');
+    const nameRegex = /^[A-Za-z]+$/; // Only letters allowed
+    const middleInitialRegex = /^[A-Z]$/; // Only a single uppercase letter
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Email format
+    const phoneRegex = /^\d{11}$/; // 11-digit number
+  
+    if (!nameRegex.test(registerObj.fname.trim())) return setErrorMessage('First Name must only contain letters!');
+    if (!nameRegex.test(registerObj.lname.trim())) return setErrorMessage('Last Name must only contain letters!');
+    if (!middleInitialRegex.test(registerObj.middlei.trim())) return setErrorMessage('Middle Initial must be a single uppercase letter!');
+    if (!emailRegex.test(registerObj.email.trim())) return setErrorMessage('Email Id must be valid!');
+    if (registerObj.password.trim().length < 8 && !registerObj.googleLogin) return setErrorMessage('Password must be at least 8 characters long!');
     if (registerObj.dateOfBirth.trim() === '') return setErrorMessage('Date of Birth is required!');
-    if (registerObj.phone.trim() === '') return setErrorMessage('Phone number is required!');
+    if (!phoneRegex.test(registerObj.phone.trim())) return setErrorMessage('Phone number must be exactly 11 digits!');
     if (registerObj.address.trim() === '') return setErrorMessage('Address is required!');
   
     setLoading(true);
@@ -78,6 +83,7 @@ function Register() {
       setLoading(false);
     }
   };
+  
   
 
   const updateFormValue = (e) => {
