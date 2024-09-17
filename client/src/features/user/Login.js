@@ -26,12 +26,28 @@ function Login() {
     const submitForm = async (e) => {
         e.preventDefault();
         setErrorMessage("");
+    
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;  // Basic email format validation
+        const passwordRegex = /^.{8,}$/; // Minimum 8 characters (any type)
 
-        if (!loginObj.email || loginObj.email.trim() === "") return setErrorMessage("Email Id is required!");
-        if (!loginObj.password || loginObj.password.trim() === "") return setErrorMessage("Password is required!");
-
+        if (!loginObj.email || loginObj.email.trim() === "") {
+            return setErrorMessage("Email is required!");
+        }
+        
+        if (!emailRegex.test(loginObj.email)) {
+            return setErrorMessage("Please enter a valid email address!");
+        }
+    
+        if (!loginObj.password || loginObj.password.trim() === "") {
+            return setErrorMessage("Password is required!");
+        }
+    
+        if (!passwordRegex.test(loginObj.password)) {
+            return setErrorMessage("Password must be at least 8 characters long ");
+        }
+    
         console.log('Form data being sent:', { email: loginObj.email, password: loginObj.password });
-
+    
         try {
             setLoading(true);
             const config = {
@@ -39,19 +55,19 @@ function Login() {
                     'Content-Type': 'application/json',
                 },
             };
-
+    
             const response = await axios.post(
                 `${process.env.REACT_APP_API}/api/login`,
                 { email: loginObj.email, password: loginObj.password },
                 config
             );
-
+    
             console.log('Response data:', response.data);
-
+    
             sessionStorage.setItem("token", response.data.token);
             sessionStorage.setItem("user", JSON.stringify(response.data.user));
             setLoading(false);
-
+    
             if (response.data.user && response.data.user.role === 'admin') {
                 navigate("/app/welcome");
             } else {
@@ -72,6 +88,7 @@ function Login() {
             }
         }
     };
+    
 
     // Google Login success handler
     const handleGoogleSuccess = async (response) => {
