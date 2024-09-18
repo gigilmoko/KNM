@@ -3,9 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import store from './app/store';
+import store from './Layout/common/store';
 import { Provider } from 'react-redux';
-import SuspenseContent from './containers/SuspenseContent';
+import SuspenseContent from './Layout/SuspenseContent'
 
 ReactDOM.render(
   <Suspense fallback={<SuspenseContent />}>
