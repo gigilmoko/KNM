@@ -118,7 +118,7 @@ function Login() {
                 navigate("/admin/dashboard");
             } else {
                 console.log('Google login successful - Redirecting to profile');
-                navigate("/user/profile");
+                navigate("/profile");
             }
         } catch (error) {
             console.log("Google login error:", error);

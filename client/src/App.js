@@ -9,6 +9,7 @@ import Login from './Public/Login'
 import Register from './Public/Register'
 import ProtectedRoute from './Route/ProtectedRoute';
 import MembersList from './Admin/Member/MembersList';
+import MemberApply from './User/MemberApply';
 import MembersConfirmation from './Admin/Member/MembersConfirmation';
 import Calendar from './Admin/Calendar/index'
 import CalendarList from './Admin/Calendar/CalendarList'
@@ -40,7 +41,7 @@ function App() {
           {/* User */}
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/edit" element={<ProfileUpdate />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/apply" element={<MemberApply />} />
           {/* Fillup */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />

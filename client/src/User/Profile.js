@@ -60,7 +60,7 @@ function Profile() {
     };
 
     const handleApplyMemberClick = () => {
-        navigate('/profile/applymember'); // Redirect to apply member
+        navigate('/profile/apply'); // Redirect to apply member
     };
 
     return (

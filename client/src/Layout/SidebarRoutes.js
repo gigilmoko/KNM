@@ -42,7 +42,7 @@ const routes = [
     name: 'Members', // name that appear in Sidebar
     submenu : [
       {
-        path: 'admin/members/list',
+        path: '/admin/members/list',
         icon: <CalendarDaysIcon className={iconClasses}/>, // icon component
         name: 'Members List', // name that appear in Sidebar
       },
