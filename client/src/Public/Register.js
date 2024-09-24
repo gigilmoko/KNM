@@ -33,7 +33,7 @@ function Register() {
     setErrorMessage('');
   
     // Validation
-    const nameRegex = /^[A-Za-z]+$/; // Only letters allowed
+    const nameRegex = /^[A-Za-z\s]+$/; 
     const middleInitialRegex = /^[A-Z]$/; // Only a single uppercase letter
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Email format
     const phoneRegex = /^\d{11}$/; // 11-digit number
