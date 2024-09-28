@@ -21,6 +21,13 @@ import ProfileUpdate from './User/ProfileUpdate';
 import UsersList from './Admin/User/UsersList'
 import ForgotPassword from './Public/ForgotPassword';
 import NewPassword from './Public/NewPassword';
+import ProductsList from './Admin/Product/ProductList';
+import UpdateProduct from './Admin/Product/UpdateProduct';
+import NewProduct from './Admin/Product/NewProduct';
+import CategoryList from './Admin/Category/CategoryList';
+import UpdateCategory from './Admin/Category/UpdateCategory';
+import NewCategory from './Admin/Category/NewCategory';
+
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -57,7 +64,13 @@ function App() {
             <Route path="/admin/calendar/new" element={<NewCalendar />} />
             <Route path="/admin/calendar/update/:id" element={<UpdateCalendar />} />
           {/* Product */}
+            <Route path="/admin/products" element={<ProductsList />} />
+            <Route path="/admin/products/update/:id" element={<UpdateProduct />} />
+            <Route path="/admin/products/new" element={<NewProduct />} />
           {/* Category */}
+            <Route path="/admin/category" element={<CategoryList />} />
+            <Route path="/admin/category/update/:id" element={<UpdateCategory />} />
+            <Route path="/admin/category/new" element={<NewCategory />} />
           {/* User */}
             <Route path="/admin/users/list" element={<UsersList />} />
             <Route path="/admin/calendar" element={<Calendar />} />

@@ -58,6 +58,32 @@ function ProfileUpdate() {
         }));
     };
 
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
+
+            try {
+                const response = await axios.post(
+                    'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }
+                );
+                const imageUrl = response.data.secure_url;
+                setUser((prevUser) => ({ ...prevUser, avatar: imageUrl })); // Update avatar image preview
+            } catch (error) {
+                console.error('Failed to upload avatar', error);
+                setError('Failed to upload avatar. Please try again.');
+            }
+        }
+    };
+
     const validateForm = () => {
         const errors = {};
 
@@ -101,7 +127,7 @@ function ProfileUpdate() {
         };
 
         try {
-            const response = await axios.put(`${process.env.REACT_APP_API}/api/me/update`, profileData, {
+            await axios.put(`${process.env.REACT_APP_API}/api/me/update`, profileData, {
                 headers: {
                     'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                 }
@@ -127,13 +153,26 @@ function ProfileUpdate() {
 
                 <div className='h-full w-full pb-4 bg-base-100'>
                     <div className="flex items-center justify-center mb-4">
-                        {user.avatar && (
-                            <img
-                                src={user.avatar}
-                                alt="User Avatar"
-                                className="rounded-full h-24 w-24 object-cover"
-                            />
-                        )}
+                        <label htmlFor="avatar-upload" className="cursor-pointer">
+                            {user.avatar ? (
+                                <img
+                                    src={user.avatar}
+                                    alt="User Avatar"
+                                    className="rounded-full h-24 w-24 object-cover"
+                                />
+                            ) : (
+                                <div className="rounded-full h-24 w-24 bg-gray-200 flex items-center justify-center">
+                                    <span>No Image</span>
+                                </div>
+                            )}
+                        </label>
+                        <input
+                            id="avatar-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarChange}
+                            className="hidden"
+                        />
                     </div>
 
                     <form onSubmit={handleSubmit}>
@@ -222,6 +261,10 @@ function ProfileUpdate() {
                         </div>
 
                         <div className="divider mt-4"></div>
+
+                       
+                           
+
 
                         <div className="flex justify-end gap-4">
                             <button type="submit" className="btn btn-primary">

@@ -13,6 +13,7 @@
     "axios": "^1.7.7",
     "capitalize-the-first-letter": "^1.0.8",
     "chart.js": "^4.4.4",
+    "cloudinary": "^2.5.0",
     "formik": "^2.4.6",
     "gapi-script": "^1.2.0",
     "ldrs": "^1.0.2",

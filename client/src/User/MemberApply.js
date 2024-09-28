@@ -50,10 +50,10 @@ function ApplyMember() {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
+    
         // Construct the URL with the user ID
         const url = `${process.env.REACT_APP_API}/api/users/applying-for-member/${user.id}`;
-
+    
         try {
             const response = await axios.put(url, { memberId: user.memberId }, { 
                 headers: {
@@ -61,12 +61,15 @@ function ApplyMember() {
                 }
             });
             dispatch(showNotification({ message: "Applied", status: 1 }));
+            
+            // Navigate to the /profile page after successful submission
+            navigate('/profile');
         } catch (error) {
             console.error('Error applying for membership:', error);
             setError('Error applying for membership.');
         }
     };
-
+    
     if (loading) return (
         <div className="flex items-center justify-center h-screen">
             <l-quantum size="45" speed="1.75" color="black"></l-quantum> {/* Loading spinner */}

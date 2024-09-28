@@ -1,6 +1,25 @@
 const Product = require('../models/product')
 const cloudinary = require('cloudinary')
 
+cloudinary.config({
+    cloud_name: 'dglawxazg',
+    api_key: '655852923368639',
+    api_secret: '5hqre3DUxZG5YlOXD5HoSnj4HgQ'
+});
+
+exports.deleteImage = async (req, res) => {
+    const { public_id } = req.params;
+
+    try {
+        const result = await cloudinary.uploader.destroy(public_id);
+        console.log('Image deleted:', result); // Log deletion success
+        res.json({ success: true, result });
+    } catch (error) {
+        console.error('Error deleting image from Cloudinary:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete image' });
+    }
+};
+
 exports.getProduct = async (req, res, next) => {
 	try {
 		const products = await Product.find();
@@ -19,51 +38,121 @@ exports.getProduct = async (req, res, next) => {
 		next(error);
 	}
 };
+	
 
 exports.newProduct = async (req, res, next) => {
-    let images = [];
-    
-        if (typeof req.body.images === "string") {
-        images.push(req.body.images);
-        } else {
-        images = req.body.images;
-        }
-    
-        let imagesLinks = [];
+    const { name, description, price, category, stock, images } = req.body;
 
-	for (let i = 0; i < images.length; i++) {
-		let imageDataUri = images[i]
-		try {
-			const result = await cloudinary.v2.uploader.upload(`${imageDataUri}`, {
-				folder: 'KBituin',
-				width: 150,
-				crop: "scale",
-			});
+    const product = await Product.create({
+        name,
+        description,
+        price,
+        category,
+        stock,
+        images // Use the images array as it contains URLs and public_ids
+    });
 
-			imagesLinks.push({
-				public_id: result.public_id,
-				url: result.secure_url
-			})
+    if (!product) {
+        return res.status(400).json({
+            success: false,
+            message: 'Product not created'
+        });
+    }
 
-		} catch (error) {
-			console.log(error)
-		}
-	}
-    
-    req.body.images = imagesLinks
-	// req.body.user = req.user.id;
-
-	const product = await Product.create(req.body);
-	if (!product)
-		return res.status(400).json({
-			success: false,
-			message: 'Product not created'
-		})
-	res.status(201).json({
-		success: true,
-		product
-	})
+    res.status(201).json({
+        success: true,
+        product
+    });
 };
+
+// exports.newProduct = async (req, res, next) => {
+//     let images = req.body.images || []; // Use an empty array if images is undefined
+    
+//     if (typeof images === "string") {
+//         images = [images]; // Ensure images is an array
+//     }
+
+//     let imagesLinks = [];
+
+//     for (let i = 0; i < images.length; i++) {
+//         let imageDataUri = images[i];
+//         try {
+//             const result = await cloudinary.v2.uploader.upload(`${imageDataUri}`, {
+//                 folder: 'KBituin',
+//                 width: 150,
+//                 crop: "scale",
+//             });
+
+//             imagesLinks.push({
+//                 public_id: result.public_id,
+//                 url: result.secure_url
+//             });
+
+//         } catch (error) {
+//             console.log(error);
+//         }
+//     }
+
+//     req.body.images = imagesLinks;
+//     // req.body.user = req.user.id;
+
+//     const product = await Product.create(req.body);
+//     if (!product) {
+//         return res.status(400).json({
+//             success: false,
+//             message: 'Product not created'
+//         });
+//     }
+//     res.status(201).json({
+//         success: true,
+//         product
+//     });
+// };
+
+// exports.newProduct = async (req, res, next) => {
+//     let images = [];
+    
+//         if (typeof req.body.images === "string") {
+//         images.push(req.body.images);
+//         } else {
+//         images = req.body.images;
+//         }
+    
+//         let imagesLinks = [];
+
+// 	for (let i = 0; i < images.length; i++) {
+// 		let imageDataUri = images[i]
+// 		try {
+// 			const result = await cloudinary.v2.uploader.upload(`${imageDataUri}`, {
+// 				folder: 'KBituin',
+// 				width: 150,
+// 				crop: "scale",
+// 			});
+
+// 			imagesLinks.push({
+// 				public_id: result.public_id,
+// 				url: result.secure_url
+// 			})
+
+// 		} catch (error) {
+// 			console.log(error)
+// 		}
+// 	}
+    
+//     req.body.images = imagesLinks
+// 	// req.body.user = req.user.id;
+
+// 	const product = await Product.create(req.body);
+// 	if (!product)
+// 		return res.status(400).json({
+// 			success: false,
+// 			message: 'Product not created'
+// 		})
+// 	res.status(201).json({
+// 		success: true,
+// 		product
+// 	})
+// };
 
 exports.getSingleProduct = async (req, res, next) => {
 	const product = await Product.findById(req.params.id);
@@ -95,83 +184,41 @@ exports.deleteProduct = async (req, res, next) => {
 };
 
 exports.updateProduct = async (req, res, next) => {
-	try {
-		let product = await Product.findById(req.params.id);
+    try {
+        const { name, description, price, category, stock, images } = req.body;
 
-		if (!product) {
-			return res.status(404).json({
-				success: false,
-				message: 'Product not found'
-			});
-		}
+        let product = await Product.findById(req.params.id);
 
-		let cloudinaryImages = product.images || [];
-		let newImages = [];
+        if (!product) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+        }
 
-		if (req.body.images) {
-			if (typeof req.body.images === 'string') {
-				newImages.push(req.body.images);
-			} else if (Array.isArray(req.body.images)) {
-				newImages = req.body.images;
-			} else {
-				newImages.push(req.body.images);
-			}
+        // Update product fields
+        product.name = name || product.name;
+        product.description = description || product.description;
+        product.price = price || product.price;
+        product.category = category || product.category;
+        product.stock = stock || product.stock;
 
-			let isImageFromComputer = false;
-			for (let i = 0; i < newImages.length; i++) {
-				if (!newImages[i].includes('cloudinary')) {
-					isImageFromComputer = true;
-					break;
-				}
-			}
+        // Use the images array from the request body directly
+        if (images) {
+            product.images = images; // This should be the array of image URLs or public IDs
+        }
 
-			if (isImageFromComputer) {
-				cloudinaryImages = [];
-				for (let i = 0; i < newImages.length; i++) {
-					try {
-						const result = await cloudinary.v2.uploader.upload(newImages[i], {
-							folder: 'products',
-							width: 150,
-							crop: 'scale'
-						});
-						cloudinaryImages.push({
-							public_id: result.public_id,
-							url: result.secure_url
-						});
-					} catch (error) {
-						console.error('Error uploading image:', error);
-					}
-				}
-			} else {
-				cloudinaryImages = newImages;
-			}
-		}
+        await product.save();
 
-		const updatedFields = { ...req.body };
-		updatedFields.images = cloudinaryImages;
-
-		product = await Product.findByIdAndUpdate(req.params.id, updatedFields, {
-			new: true,
-			runValidators: true,
-			useFindAndModify: false
-		});
-
-		if (!product) {
-			return res.status(400).json({
-				success: false,
-				message: 'Product not updated'
-			});
-		}
-
-		return res.status(200).json({
-			success: true,
-			product
-		});
-	} catch (error) {
-		console.error('Error updating product:', error);
-		return res.status(500).json({
-			success: false,
-			message: 'Internal Server Error'
-		});
-	}
+        return res.status(200).json({
+            success: true,
+            product
+        });
+    } catch (error) {
+        console.error('Error updating product:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal Server Error'
+        });
+    }
 };

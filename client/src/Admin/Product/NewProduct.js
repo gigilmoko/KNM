@@ -1,0 +1,241 @@
+import { useEffect, useState } from "react";
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import LeftSidebar from "../../Layout/LeftSidebar";
+import RightSidebar from '../../Layout/RightSidebar';
+import ModalLayout from "../../Layout/ModalLayout";
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+import 'react-notifications/lib/notifications.css';
+import Header from "../../Layout/Header";
+
+// Your cloudinary config (replace with actual config)
+const cloudinaryUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'ml_default');
+    try {
+        const res = await axios.post('https://api.cloudinary.com/v1_1/dglawxazg/image/upload', formData);
+        return { public_id: res.data.public_id, url: res.data.secure_url };
+    } catch (error) {
+        console.error('Error uploading image', error);
+        return null;
+    }
+};
+
+function CreateProduct() {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const [productData, setProductData] = useState({
+        name: "",
+        description: "",
+        price: 0,
+        category: "",
+        stock: 0,
+        images: [] // Will hold URLs instead of files
+    });
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_API}/api/category`);
+            if (response.data && Array.isArray(response.data.categories)) {
+                setCategories(response.data.categories);
+            } else {
+                console.error('Data fetched is not an array:', response.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch categories', error);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setProductData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
+    };
+
+    const handleImageChange = async (e) => {
+        const files = Array.from(e.target.files);
+        console.log("Files selected:", files);
+
+        const uploadedImages = await Promise.all(
+            files.map(async (file) => {
+                const result = await cloudinaryUpload(file);
+                console.log("Uploaded image:", result);
+                return result;
+            })
+        );
+
+        const validImages = uploadedImages.filter(img => img !== null);
+        console.log("Valid images after filtering:", validImages);
+
+        // Update productData images correctly
+        setProductData((prevData) => {
+            const updatedImages = [...prevData.images, ...validImages];
+            console.log("Updated productData with images:", updatedImages); // This will show the correct updated array
+            return {
+                ...prevData,
+                images: updatedImages, // Append new images to existing ones
+            };
+        });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const jsonData = {
+            name: productData.name,
+            description: productData.description,
+            price: productData.price,
+            category: productData.category,
+            stock: productData.stock,
+            images: productData.images // Send only URLs and public IDs
+        };
+
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API}/api/product/new`, jsonData, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log("Response:", response.data);
+            NotificationManager.success('Product created successfully!', 'Success');
+            navigate('/admin/products');
+        } catch (error) {
+            console.error('Error creating product:', error);
+            NotificationManager.error('Failed to create product', 'Error');
+        }
+    };
+
+    return (
+        <>
+            <div className="drawer lg:drawer-open">
+                <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
+                <div className="drawer-content flex flex-col">
+                    <Header />
+                    <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200">
+                        <h2 className="text-2xl font-bold mb-4">Create New Product</h2>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            {/* Product Name */}
+                            <div>
+                                <label className="label">
+                                    <span className="label-text">Product Name</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    name="name" 
+                                    value={productData.name} 
+                                    onChange={handleChange} 
+                                    placeholder="Enter product name" 
+                                    required 
+                                    className="input input-bordered w-full" 
+                                />
+                            </div>
+                            
+                            {/* Description */}
+                            <div>
+                                <label className="label">
+                                    <span className="label-text">Description</span>
+                                </label>
+                                <textarea 
+                                    name="description" 
+                                    value={productData.description} 
+                                    onChange={handleChange} 
+                                    placeholder="Enter product description" 
+                                    required 
+                                    className="textarea textarea-bordered w-full" 
+                                />
+                            </div>
+
+                            {/* Price */}
+                            <div>
+                                <label className="label">
+                                    <span className="label-text">Price</span>
+                                </label>
+                                <input 
+                                    type="number" 
+                                    name="price" 
+                                    value={productData.price} 
+                                    onChange={handleChange} 
+                                    placeholder="Enter product price" 
+                                    min="0" 
+                                    step="0.01"
+                                    required 
+                                    className="input input-bordered w-full" 
+                                />
+                            </div>
+
+                            {/* Stock */}
+                            <div>
+                                <label className="label">
+                                    <span className="label-text">Stock</span>
+                                </label>
+                                <input 
+                                    type="number" 
+                                    name="stock" 
+                                    value={productData.stock} 
+                                    onChange={handleChange} 
+                                    placeholder="Enter stock quantity" 
+                                    min="0"
+                                    required 
+                                    className="input input-bordered w-full" 
+                                />
+                            </div>
+
+                            {/* Category */}
+                            <div>
+                                <label className="label">
+                                    <span className="label-text">Category</span>
+                                </label>
+                                <select 
+                                    name="category" 
+                                    value={productData.category} 
+                                    onChange={handleChange} 
+                                    required 
+                                    className="select select-bordered w-full">
+                                    <option value="">Select a category</option>
+                                    {categories.map(category => (
+                                        <option key={category._id} value={category._id}>{category.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Images */}
+                            <div>
+                                <label className="label">
+                                    <span className="label-text">Images</span>
+                                </label>
+                                <input 
+                                    type="file" 
+                                    multiple 
+                                    onChange={handleImageChange} 
+                                    className="file-input file-input-bordered w-full" 
+                                />
+                                {productData.images.map((image, index) => (
+                                    <img key={index} src={image.url} alt="Preview" className="w-20 h-20 object-cover mt-2" />
+                                ))}
+                            </div>
+
+                            {/* Submit Button */}
+                            <button type="submit" className="btn btn-primary">Create Product</button>
+                        </form>
+                        <div className="h-16"></div>
+                    </main>
+                </div>
+                <LeftSidebar />
+            </div>
+            <RightSidebar />
+            <NotificationContainer />
+            <ModalLayout />
+        </>
+    );
+}
+
+export default CreateProduct;
