@@ -29,7 +29,7 @@ function ProductsList() {
             top: 0,
             behavior: "smooth"
         });
-        fetchCategories();  // Fetch categories when the component mounts
+        fetchCategories();
         fetchProducts();
     }, []);
 
@@ -50,7 +50,7 @@ function ProductsList() {
             const response = await axios.get(`${process.env.REACT_APP_API}/api/category`);
             if (response.data && Array.isArray(response.data.categories)) {
                 const categoryMap = response.data.categories.reduce((acc, category) => {
-                    acc[category._id] = category.name; // Create a mapping of category ID to name
+                    acc[category._id] = category.name;
                     return acc;
                 }, {});
                 setCategories(categoryMap);
@@ -83,12 +83,25 @@ function ProductsList() {
     };
 
     const deleteCurrentProduct = async (id, index) => {
+        const productToDelete = products[index]; // Get the product to delete
+        const imageDeletePromises = productToDelete.images.map(image => 
+            axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${image.public_id}`)
+        );
+
         try {
+            // Delete all images from Cloudinary
+            await Promise.all(imageDeletePromises);
+            
+            // Now delete the product
             await axios.delete(`${process.env.REACT_APP_API}/api/product/delete/${id}`);
+            
+            // Update the state to remove the deleted product
             setProducts(products.filter((_, i) => i !== index));
             setFilteredProducts(filteredProducts.filter((_, i) => i !== index));
+
+            console.log('Product and images deleted successfully');
         } catch (error) {
-            console.error('Failed to delete product', error);
+            console.error('Failed to delete product or images', error);
         }
     };
 
@@ -97,7 +110,7 @@ function ProductsList() {
         const filtered = products.filter(product =>
             product.name.toLowerCase().includes(lowercasedValue) ||
             product.description.toLowerCase().includes(lowercasedValue) ||
-            categories[product.category]?.toLowerCase().includes(lowercasedValue) // Use category name
+            categories[product.category]?.toLowerCase().includes(lowercasedValue)
         );
         setFilteredProducts(filtered);
     };
@@ -116,7 +129,7 @@ function ProductsList() {
                         <TitleCard
                             title="All Products"
                             topMargin="mt-2"
-                            TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} /> }
+                            TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
                         >
                             <div className="overflow-x-auto w-full">
                                 <table className="table w-full">
@@ -147,7 +160,7 @@ function ProductsList() {
                                                     <td>{product.description}</td>
                                                     <td>${product.price.toFixed(2)}</td>
                                                     <td>{product.stock}</td>
-                                                    <td>{categories[product.category] || 'Unknown'}</td> {/* Display category name */}
+                                                    <td>{categories[product.category] || 'Unknown'}</td>
                                                     <td>
                                                         <button className="btn btn-square btn-ghost" onClick={() => handleEdit(product._id)}>
                                                             <PencilIcon className="w-5" />
