@@ -87,9 +87,32 @@ function CreateProduct() {
         });
     };
 
+    const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 1-5 characters
+    const priceRegex = /^\d+(\.\d{1,2})?$/;    // Numbers with up to 2 decimal places
+    const stockRegex = /^\d{1,5}$/;            // Integer value with up to 5 digits
+    
+
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validations
+        if (!nameRegex.test(productData.name.trim())) {
+            return NotificationManager.error('Product name must only contain letters, numbers, and spaces, and be up to 100 characters!', 'Error');
+        }
+        if (!priceRegex.test(productData.price.toString().trim())) {
+            return NotificationManager.error('Price must be a valid number with up to 2 decimal places!', 'Error');
+        }
+        if (!stockRegex.test(productData.stock.toString().trim())) {
+            return NotificationManager.error('Stock must be a valid integer value (up to 5 digits)!', 'Error');
+        }
+        if (productData.category === "") {
+            return NotificationManager.error('Category is required!', 'Error');
+        }
+        if (productData.images.length === 0) {
+            return NotificationManager.error('At least one product image is required!', 'Error');
+        }
+    
         const jsonData = {
             name: productData.name,
             description: productData.description,
@@ -98,7 +121,7 @@ function CreateProduct() {
             stock: productData.stock,
             images: productData.images // Send only URLs and public IDs
         };
-
+    
         try {
             const response = await axios.post(`${process.env.REACT_APP_API}/api/product/new`, jsonData, {
                 headers: {

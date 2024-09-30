@@ -6,6 +6,26 @@ const cloudinary = require("cloudinary");
 const jwt = require('jsonwebtoken');
 const express = require('express');
 
+cloudinary.config({
+  cloud_name: 'dglawxazg',
+  api_key: '655852923368639',
+  api_secret: '5hqre3DUxZG5YlOXD5HoSnj4HgQ'
+});
+
+exports.deleteImage = async (req, res) => {
+  const { public_id } = req.params;
+
+  try {
+      const result = await cloudinary.uploader.destroy(public_id);
+      console.log('Image deleted:', result); // Log deletion success
+      res.json({ success: true, result });
+  } catch (error) {
+      console.error('Error deleting image from Cloudinary:', error);
+      res.status(500).json({ success: false, message: 'Failed to delete image' });
+  }
+};
+
+
 exports.googleLogin = async (req, res, next) => {
   const { email } = req.body;
 

@@ -47,6 +47,7 @@ function UsersList() {
             if (response.data && Array.isArray(response.data.users)) {
                 setUsers(response.data.users);
                 setFilteredUsers(response.data.users);
+                console.log('Fetched users:', response.data.users); // Log the fetched users
             } else {
                 console.error('Data fetched is not an array:', response.data);
                 setUsers([]);
@@ -58,16 +59,26 @@ function UsersList() {
             setFilteredUsers([]);
         }
     };
+    
 
     const deleteCurrentUser = async (id, index) => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API}/api/user/${id}`);
+            // First, delete the user's associated images (if applicable)
+            const deleteImagesResponse = await axios.delete(`${process.env.REACT_APP_API}/api/users/delete-images/${id}`);
+            console.log('Images deletion response:', deleteImagesResponse.data);
+    
+            // Now delete the user
+            const deleteUserResponse = await axios.delete(`${process.env.REACT_APP_API}/api/user/${id}`);
+            console.log('User deletion response:', deleteUserResponse.data);
+    
+            // Update state to remove the deleted user
             setUsers(users.filter((_, i) => i !== index));
             setFilteredUsers(filteredUsers.filter((_, i) => i !== index));
         } catch (error) {
-            console.error('Failed to delete user', error);
+            console.error('Failed to delete user or user images', error);
         }
     };
+    
 
     const handleRoleChange = async (id, index, newRole) => {
         try {

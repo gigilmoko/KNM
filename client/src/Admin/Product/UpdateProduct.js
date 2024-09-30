@@ -35,7 +35,10 @@ const cloudinaryDelete = async (public_id) => {
   }
 };
 
-
+// Regular expressions for validation
+const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
+const priceRegex = /^\d+(\.\d{1,2})?$/;      // Numbers with up to 2 decimal places
+const stockRegex = /^\d{1,5}$/;              // Integer value with up to 5 digits
 
 function UpdateProduct() {
     const dispatch = useDispatch();
@@ -148,6 +151,17 @@ function UpdateProduct() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validations
+        if (!nameRegex.test(productData.name.trim())) {
+            return NotificationManager.error('Product name must be between 5 and 100 characters, and only contain letters, numbers, and spaces!', 'Error');
+        }
+        if (!priceRegex.test(productData.price.toString().trim())) {
+            return NotificationManager.error('Price must be a valid number with up to 2 decimal places!', 'Error');
+        }
+        if (!stockRegex.test(productData.stock.toString().trim())) {
+            return NotificationManager.error('Stock must be a valid integer value (up to 5 digits)!', 'Error');
+        }
 
         const jsonData = {
             name: productData.name,
