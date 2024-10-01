@@ -11,6 +11,10 @@ import 'react-notifications/lib/notifications.css';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
 
+// Regular expressions for validation
+const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
+const descriptionRegex = /^.{5,500}$/;       // Description must be between 5 and 500 characters
+
 function UpdateCategory() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -53,7 +57,28 @@ function UpdateCategory() {
         setCategoryData({ ...categoryData, [name]: value });
     };
 
+    const validateForm = () => {
+        // Validate category name
+        if (!nameRegex.test(categoryData.name.trim())) {
+            NotificationManager.error('Category name must be between 5 and 100 characters and can only contain letters, numbers, and spaces!', 'Error');
+            return false;
+        }
+
+        // Validate description (must be between 5 and 500 characters)
+        if (!descriptionRegex.test(categoryData.description.trim())) {
+            NotificationManager.error('Description must be between 5 and 500 characters!', 'Error');
+            return false;
+        }
+
+        return true;
+    };
+
     const updateCategory = async () => {
+        // Perform validation before submitting
+        if (!validateForm()) {
+            return; // Stop the function if validation fails
+        }
+
         try {
             await axios.put(`${process.env.REACT_APP_API}/api/category/update/${id}`, categoryData);
             NotificationManager.success('Category updated successfully', 'Success');
