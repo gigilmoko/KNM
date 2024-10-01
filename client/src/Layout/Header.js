@@ -56,12 +56,8 @@ function Header() {
     const logoutHandler = async () => {
         try {
             await axios.get(`${process.env.REACT_APP_API}/api/logout`);
-            // Optionally clear local storage and state
-            // localStorage.clear();
             sessionStorage.clear();
-            // Navigate to home page
             navigate('/login');
-            // Reload the window
             window.location.reload();
         } catch (error) {
             if (error.response && error.response.data && error.response.data.message) {
@@ -70,6 +66,13 @@ function Header() {
                 console.error('An error occurred while logging out');
             }
         }
+    };
+
+    const handleThemeToggle = () => {
+        const newTheme = currentTheme === "dark" ? "light" : "dark";
+        setCurrentTheme(newTheme);
+        localStorage.setItem("theme", newTheme);
+        window.location.reload(); // Reload the page to apply the new theme
     };
 
     return (
@@ -83,7 +86,7 @@ function Header() {
 
             <div className="flex-none flex items-center space-x-4 ml-auto">
                 <label className="swap">
-                    <input type="checkbox" />
+                    <input type="checkbox" onClick={handleThemeToggle} />
                     <SunIcon data-set-theme="light" data-act-class="ACTIVECLASS" className={"fill-current w-6 h-6 " + (currentTheme === "dark" ? "swap-on" : "swap-off")} />
                     <MoonIcon data-set-theme="dark" data-act-class="ACTIVECLASS" className={"fill-current w-6 h-6 " + (currentTheme === "light" ? "swap-on" : "swap-off")} />
                 </label>
@@ -94,37 +97,25 @@ function Header() {
                         {noOfNotifications > 0 ? <span className="indicator-item badge badge-secondary badge-sm">{noOfNotifications}</span> : null}
                     </div>
                 </button>
-            <div>
-            {/* <span className="text-center">{user ? `${user.fname}` : 'Loading...'}</span> */}
-                <div className="dropdown dropdown-end">
-                   
-                    <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
-                        <div className="w-10 rounded-full mr-2">
-                            <img src={user ? user.avatar : "https://placeimg.com/80/80/people"} alt="profile" />
-                            
-                        </div>
-                        <div>
-                        {/* <span>{user ? `${user.fname} ` : 'Loading...'}</span> */}
-                        </div>
-                    </label>
-                    
-                    <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+
+                <div>
+                    <div className="dropdown dropdown-end">
+                        <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
+                            <div className="w-10 rounded-full mr-2">
+                                <img src={user ? user.avatar : "https://placeimg.com/80/80/people"} alt="profile" />
+                            </div>
+                        </label>
                         
-                        <li className="justify-between">
-                            <Link to={'/profile'}>
-                                Profile 
-                                {/* <span className="badge">New</span> */}
-                            </Link>
-                        </li>
-                        {/* <li><Link to={'/app/settings-billing'}>Bill History</Link></li> */}
-                        <div className="divider mt-0 mb-0"></div>
-                        <li><a onClick={logoutHandler}>Logout</a></li>
-                    </ul>
-                    
-                    {/* <span>{user ? `${user.fname} ` : 'Loading...'}</span> */}
-                </div>
-                {/* <span>{user ? `${user.fname} ` : 'Loading...'}</span> */}
-               
+                        <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
+                            <li className="justify-between">
+                                <Link to={'/profile'}>
+                                    Profile 
+                                </Link>
+                            </li>
+                            <div className="divider mt-0 mb-0"></div>
+                            <li><a onClick={logoutHandler}>Logout</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <span>{user ? `${user.fname} ` : 'Loading...'}</span>

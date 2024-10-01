@@ -11,6 +11,10 @@ import 'react-notifications/lib/notifications.css';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
 
+// Regular expressions for validation
+const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
+const descriptionRegex = /^.{5,500}$/;       // Description up to 500 characters (optional)
+
 function CreateCategory() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -27,7 +31,28 @@ function CreateCategory() {
         setCategoryData({ ...categoryData, [name]: value });
     };
 
+    const validateForm = () => {
+        // Validate category name
+        if (!nameRegex.test(categoryData.name.trim())) {
+            NotificationManager.error('Category name must be between 5 and 100 characters and can only contain letters, numbers, and spaces!', 'Error');
+            return false;
+        }
+
+        // Validate description (optional, max 500 characters)
+        if (!descriptionRegex.test(categoryData.description.trim())) {
+            NotificationManager.error('Description can be up to 500 characters!', 'Error');
+            return false;
+        }
+
+        return true;
+    };
+
     const createCategory = async () => {
+        // Perform validation before submitting
+        if (!validateForm()) {
+            return; // Stop the function if validation fails
+        }
+
         try {
             const response = await axios.post(`${process.env.REACT_APP_API}/api/category/new`, categoryData);
             NotificationManager.success('Category created successfully', 'Success');
@@ -64,7 +89,7 @@ function CreateCategory() {
                                         value={categoryData.description}
                                         onChange={handleInputChange}
                                         className="textarea textarea-bordered w-full"
-                                        placeholder="Enter category description"
+                                        placeholder="Enter category description "
                                     />
                                 </div>
                                 <div className="mt-4">
