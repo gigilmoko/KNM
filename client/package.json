@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@heroicons/react": "^2.1.5",
+    "@photo-sphere-viewer/core": "^5.10.1",
     "@reduxjs/toolkit": "^2.2.7",
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/jest-dom": "^5.17.0",
@@ -17,6 +18,7 @@
     "formik": "^2.4.6",
     "gapi-script": "^1.2.0",
     "ldrs": "^1.0.2",
+    "photo-sphere-viewer": "^4.8.1",
     "react": "^17.0.2",
     "react-big-calendar": "^1.13.4",
     "react-calendar": "^5.0.0",
@@ -31,6 +33,7 @@
     "react-scripts": "5.0.1",
     "react-tailwindcss-datepicker": "^1.7.2",
     "theme-change": "^2.5.0",
+    "three": "^0.126.1",
     "web-vitals": "^2.1.4",
     "yup": "^1.4.0"
   },

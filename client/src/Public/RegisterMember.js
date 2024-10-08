@@ -8,7 +8,7 @@ import axios from 'axios';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
-function Register() {
+function RegisterMember() {
   const INITIAL_REGISTER_OBJ = {
     fname: '',
     lname: '',
@@ -20,12 +20,15 @@ function Register() {
     address: '',
     googleLogin: false,
     avatar: '',
+    memberId: '',
+    imageMember: '', // Additional image field
   };
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [registerObj, setRegisterObj] = useState(INITIAL_REGISTER_OBJ);
   const [avatarImage, setAvatarImage] = useState('');
+  const [imageMember, setImageMember] = useState('');
   const navigate = useNavigate(); // useNavigate hook for navigation
 
   const submitForm = async (e) => {
@@ -60,7 +63,7 @@ function Register() {
   
       // Send form data to server
       const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/register`,
+        `${process.env.REACT_APP_API}/api/register-member`,
         updatedRegisterObj,
         {
           headers: {
@@ -68,7 +71,6 @@ function Register() {
           },
         }
       );
-      
   
       console.log("User registered successfully", response.data);
       navigate("/login");
@@ -88,7 +90,6 @@ function Register() {
       setLoading(false);
     }
   };
-  
   
 
   const updateFormValue = (e) => {
@@ -147,6 +148,33 @@ function Register() {
     }
   };
 
+  const handleImageMemberChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
+
+      try {
+        const response = await axios.post(
+          'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        const imageUrl = response.data.secure_url;
+        setImageMember(imageUrl); // Update member image preview
+        setRegisterObj(prev => ({ ...prev, imageMember: imageUrl }));
+      } catch (error) {
+        console.error('Failed to upload member image', error);
+        setErrorMessage('Failed to upload member image. Please try again.');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-base-200 flex items-center">
       <div className="card mx-auto w-full max-w-5xl shadow-xl">
@@ -155,7 +183,7 @@ function Register() {
             <LandingIntro />
           </div>
           <div className="py-10 px-10">
-            <h2 className="text-2xl font-semibold mb-2 text-center">Register as User</h2>
+            <h2 className="text-2xl font-semibold mb-2 text-center">Register as Member</h2>
             <form onSubmit={submitForm}>
               <div className="mb-4">
                 {/* Avatar Upload and Preview */}
@@ -171,6 +199,24 @@ function Register() {
                       type="file"
                       accept="image/*"
                       onChange={handleAvatarChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Member Image Upload and Preview */}
+                <div className="flex justify-center items-center mb-4">
+                  <label htmlFor="image-member-upload" className="cursor-pointer">
+                    <img
+                      src={imageMember || 'https://via.placeholder.com/150'} // Default placeholder image
+                      alt="Member Image"
+                      className="w-32 h-32 rounded-full object-cover"
+                    />
+                    <input
+                      id="image-member-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageMemberChange}
                       className="hidden"
                     />
                   </label>
@@ -204,17 +250,42 @@ function Register() {
                   />
                 </div>
 
-                {/* Email and Password */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Member ID */}
+                <div className="grid grid-cols-1 mt-4">
+                  <input
+                    type="text"
+                    name="memberId"
+                    value={registerObj.memberId}
+                    onChange={updateFormValue}
+                    placeholder="Member ID"
+                    className="input input-bordered w-full"
+                  />
+                </div>
+
+                {/* Date of Birth */}
+                <div className="grid grid-cols-1 mt-4">
+                  <input
+                    type="date"
+                    name="dateOfBirth"
+                    value={registerObj.dateOfBirth}
+                    onChange={updateFormValue}
+                    placeholder="Date of Birth"
+                    className="input input-bordered w-full"
+                  />
+                </div>
+
+                {/* Email */}
+                <div className="grid grid-cols-1 mt-4">
                   <input
                     type="email"
                     name="email"
                     value={registerObj.email}
                     onChange={updateFormValue}
-                    placeholder="Email Id"
+                    placeholder="Email"
                     className="input input-bordered w-full"
-                    readOnly={registerObj.googleLogin} // Make email readonly if registered with Google
                   />
+                </div>
+                <div className="grid grid-cols-1 mt-4">
                   <input
                     type="password"
                     name="password"
@@ -224,18 +295,10 @@ function Register() {
                     className="input input-bordered w-full"
                   />
                 </div>
-
-                {/* Date of Birth and Phone Number */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {/* Phone */}
+                <div className="grid grid-cols-1 mt-4">
                   <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={registerObj.dateOfBirth}
-                    onChange={updateFormValue}
-                    className="input input-bordered w-full"
-                  />
-                  <input
-                    type="text"
+                    type="tel"
                     name="phone"
                     value={registerObj.phone}
                     onChange={updateFormValue}
@@ -247,12 +310,11 @@ function Register() {
                 {/* Address */}
                 <div className="grid grid-cols-1 mt-4">
                   <input
-                    type="text"
                     name="address"
                     value={registerObj.address}
                     onChange={updateFormValue}
                     placeholder="Address"
-                    className="input input-bordered w-full"
+                    className="textarea textarea-bordered w-full"
                   />
                 </div>
 
@@ -262,17 +324,17 @@ function Register() {
                   Register
                 </button>
 
-                {/* Google Registration Button - styled like the one in the login form */}
+                {/* Google Login Button */}
                 <div className="container-login100-form-btn p-t-13">
                   <div className="wrap-login100-form-btn">
                     <div className="login100-form-bgbtn1" />
-                    <GoogleLogin
-                      clientId={clientId}
-                      buttonText="Login with Google"
-                      onSuccess={handleGoogleSuccess}
-                      onFailure={handleGoogleFailure}
-                      cookiePolicy={'single_host_origin'}
-                      render={renderProps => (
+                  <GoogleLogin
+                    clientId={clientId}
+                    buttonText="Sign in with Google"
+                    onSuccess={handleGoogleSuccess}
+                    onFailure={handleGoogleFailure}
+                    cookiePolicy="single_host_origin"
+                    render={renderProps => (
                         <button
                           onClick={renderProps.onClick}
                           disabled={renderProps.disabled}
@@ -282,24 +344,26 @@ function Register() {
                           Register with Google
                         </button>
                       )}
-                    />
-                  </div>
+                  />
+                 </div>
                 </div>
               </div>
-            </form>
-            <div className="text-center mt-4">
-              <p>
+              </form>
+                <div className="text-center mt-4">
+                <p>
                 Already have an account?{" "}
                 <Link to="/login" className="text-primary">
                   Login Here
                 </Link>
               </p>
-            </div>
+                </div>
+              </div>
+           
           </div>
         </div>
       </div>
-    </div>
+   
   );
 }
 
-export default Register;
+export default RegisterMember;

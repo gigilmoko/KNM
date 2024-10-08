@@ -71,7 +71,7 @@ function Login() {
             if (response.data.user && response.data.user.role === 'admin') {
                 navigate("/admin/dashboard");
             } else {
-                navigate(redirect || "/user/profile");
+                navigate(redirect || "/profile");
             }
         } catch (error) {
             setLoading(false);

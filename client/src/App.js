@@ -27,6 +27,10 @@ import NewProduct from './Admin/Product/NewProduct';
 import CategoryList from './Admin/Category/CategoryList';
 import UpdateCategory from './Admin/Category/UpdateCategory';
 import NewCategory from './Admin/Category/NewCategory';
+import RegisterMember from './Public/RegisterMember';
+import NewMember from './Admin/Member/NewMember';
+import UpdateMember from './Admin/Member/UpdateMember';
+
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -45,6 +49,7 @@ function App() {
     <Router>
       <Routes>
         {/* Public */}
+   
           {/* User */}
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/edit" element={<ProfileUpdate />} />
@@ -52,11 +57,15 @@ function App() {
           {/* Fillup */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/register-member" element={<RegisterMember />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/password/reset/:token" element={<NewPassword />} />
         {/* Admin */}
           <Route path="/admin/dashboard" element={<Dashboard />} />
           {/* Members */}
+            <Route path="/admin/members/new" element={<NewMember />} />
+            <Route path="/admin/members/edit/:id" element={<UpdateMember />} />
+            <Route path="/admin/members/list" element={<MembersList />} />
             <Route path="/admin/members/confirmation" element={<MembersConfirmation />} />
           {/* Calendar */}
             <Route path="/admin/calendar" element={<Calendar />} />

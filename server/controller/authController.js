@@ -102,8 +102,9 @@ exports.loginUser = async (req, res, next) => {
   }
 };
 
-exports.registerUser = async (req, res, next) => {
-  const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, address, memberId, googleLogin } = req.body;
+//old
+exports.registerUserMember = async (req, res, next) => {
+  const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, address, memberId, googleLogin, imageMember } = req.body;
 
   try {
     // Check if the user already exists
@@ -112,11 +113,13 @@ exports.registerUser = async (req, res, next) => {
       return res.status(400).json({ error: "Email is already taken" });
     }
 
-    // Use avatar from JSON if provided, or set to empty string
+    // Use avatar and imageMember from JSON if provided, or set them to empty strings
     let avatarUrl = avatar || '';
+    let imageMemberUrl = imageMember || '';
 
-    // Determine the role based on whether memberId is provided (non-empty, non-null, non-undefined)
-    const role = memberId ? 'member' : 'user';
+    // Set the role and applyMember to default values
+    const role = 'user'; // role is 'user' by default
+    const applyMember = true; // applyMember defaults to true
 
     // Create a new user instance
     const newUser = new User({
@@ -131,7 +134,65 @@ exports.registerUser = async (req, res, next) => {
       address,
       memberId: memberId || null, // If memberId is not provided, set it to null
       googleLogin: googleLogin || false, // Default to false if not provided
-      role // Assign the role based on memberId
+      role, // Assign the role as 'user'
+      imageMember: imageMemberUrl,
+      applyMember // Set applyMember to true
+    });
+
+    // Save the new user to the database
+    await newUser.save();
+
+    // Generate a JWT token for the user
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_TIME,
+    });
+
+    // Respond with success
+    res.status(201).json({
+      success: true,
+      token,
+      message: "User registered successfully"
+    });
+  } catch (error) {
+    // Handle errors
+    next(error);
+  }
+};
+
+
+exports.registerUser = async (req, res, next) => {
+  const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, address, googleLogin } = req.body;
+
+  try {
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email is already taken" });
+    }
+
+    // Use avatar from JSON if provided, or set to empty string
+    let avatarUrl = avatar || '';
+
+    // Set memberId to null and role to 'user' by default
+    const memberId = null;
+    const imageMember = null;
+    const role = 'user';
+
+    // Create a new user instance
+    const newUser = new User({
+      fname,
+      lname,
+      middlei,
+      email,
+      password,
+      avatar: avatarUrl,
+      dateOfBirth,
+      phone,
+      address,
+      memberId, // memberId is explicitly null
+      googleLogin: googleLogin || false, // Default to false if not provided
+      role, // Default role is 'user'
+      imageMember
     });
 
     // Save the new user to the database
@@ -423,8 +484,6 @@ exports.applyingForMember = async (req, res, next) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-
 
 exports.deleteUser = async (req, res, next) => {
   try {

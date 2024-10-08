@@ -61,6 +61,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false, // Default to false if not set
   },
+  imageMember: {
+    type: String,
+    required: false,  // Set to false since it's optional
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date
 }, { timestamps: true });

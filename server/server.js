@@ -9,6 +9,7 @@ const auth = require('./routes/auth');
 const category = require('./routes/category');
 const product = require('./routes/product');
 const calendar = require('./routes/calendar');
+const member = require('./routes/member');
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -37,6 +38,7 @@ app.use('/api', auth);
 app.use('/api', calendar);
 app.use('/api', category);
 app.use('/api', product);
+app.use('/api', member);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));

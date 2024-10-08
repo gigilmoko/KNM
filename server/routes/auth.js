@@ -7,9 +7,10 @@ const { registerUser, loginUser, logout, forgotPassword,
       resetPassword, getUserProfile, updatePassword, updateProfile,
       allUsers, getUserDetails, updateUser, updateUserRole, deleteUser, 
       googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
-      applyingForMember, deleteImage } = require('../controller/authController');
+      applyingForMember, deleteImage, registerUserMember } = require('../controller/authController');
 
-router.post('/register', upload.single('avatar'), registerUser);
+router.post('/register', registerUser);
+router.post('/register-member', registerUserMember);
 router.post('/login', loginUser);
 router.post('/google-login', googleLogin);
 router.get('/logout', logout);
