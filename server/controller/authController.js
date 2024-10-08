@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Member = require("../models/member");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
@@ -24,6 +25,52 @@ exports.deleteImage = async (req, res) => {
       res.status(500).json({ success: false, message: 'Failed to delete image' });
   }
 };
+
+// Exported function to fetch user and member data where conditions match
+exports.fetchUserMemberMatch = async (req, res) => {
+  try {
+      const { fname, lname, memberId } = req.query; // Get parameters from request
+
+      // Fetch all user and member data (without any filters)
+      const users = await User.find(); // Fetch all users
+      const members = await Member.find(); // Fetch all members
+
+      // Log the fetched users and members
+      console.log("Fetched users:", users);
+      console.log("Fetched members:", members);
+
+      // Compare the data
+      const matchingUsers = users.filter(user => 
+          members.some(member => 
+              member.fname === user.fname && 
+              member.lname === user.lname && 
+              member.memberId === user.memberId
+          )
+      );
+
+      if (matchingUsers.length === 0) {
+          return res.status(404).json({
+              success: false,
+              message: 'No matching user-member found'
+          });
+      }
+
+      // If found, return the user and member data
+      return res.json({
+          success: true,
+          data: matchingUsers
+      });
+
+  } catch (error) {
+      console.error('Error fetching user-member match:', error);
+      return res.status(500).json({
+          success: false,
+          message: 'Server error while fetching user-member match'
+      });
+  }
+};
+
+
 
 
 exports.googleLogin = async (req, res, next) => {
