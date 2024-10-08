@@ -64,7 +64,7 @@ function App() {
           <Route path="/admin/dashboard" element={<Dashboard />} />
           {/* Members */}
             <Route path="/admin/members/new" element={<NewMember />} />
-            <Route path="/admin/members/edit/:id" element={<UpdateMember />} />
+            <Route path="/admin/members/edit/:memberId" element={<UpdateMember />} />
             <Route path="/admin/members/list" element={<MembersList />} />
             <Route path="/admin/members/confirmation" element={<MembersConfirmation />} />
           {/* Calendar */}

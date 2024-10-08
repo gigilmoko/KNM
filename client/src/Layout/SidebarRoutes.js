@@ -46,6 +46,11 @@ const routes = [
         name: 'Members List',
       },
       {
+        path: '/admin/members/new',
+        icon: <UserIcon className={submenuIconClasses}/>, // User icon for 'Members List'
+        name: 'New Member',
+      },
+      {
         path: '/admin/members/confirmation',
         icon: <CalendarDaysIcon className={submenuIconClasses}/>, // Calendar icon for 'Members Approval'
         name: 'Members Approval',

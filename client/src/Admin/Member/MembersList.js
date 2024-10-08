@@ -12,8 +12,11 @@ import Header from "../../Layout/Header";
 import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
+import PencilIcon from '@heroicons/react/24/outline/PencilIcon';  // Add Pencil Icon for Edit
+import { useNavigate } from 'react-router-dom'; // Import the hook
 
 function MembersList() {
+  const navigate = useNavigate(); // Hook to access navigation
     const dispatch = useDispatch();
     const { newNotificationMessage, newNotificationStatus } = useSelector(state => state.header);
     const [members, setMembers] = useState([]);
@@ -47,7 +50,7 @@ function MembersList() {
             if (response.data && Array.isArray(response.data.data)) {
                 setMembers(response.data.data);
                 setFilteredMembers(response.data.data);
-                console.log('Fetched members:', response.data.data); // Log the fetched members
+                console.log('Fetched members:', response.data.data);
             } else {
                 console.error('Data fetched is not an array:', response.data);
                 setMembers([]);
@@ -75,13 +78,17 @@ function MembersList() {
             const response = await axios.delete(`${process.env.REACT_APP_API}/api/members/${id}`);
             console.log('Member deletion response:', response.data);
     
-            // Update state to remove the deleted member
             setMembers(members.filter((_, i) => i !== index));
             setFilteredMembers(filteredMembers.filter((_, i) => i !== index));
         } catch (error) {
             console.error('Failed to delete member', error);
         }
     };
+
+    const handleEdit = (id) => {
+      // Redirect to the edit page for the member using the ID
+      navigate(`/admin/members/edit/${id}`); // Navigate to edit page with member ID in the URL
+  };
 
     return (
         <>
@@ -101,6 +108,7 @@ function MembersList() {
                                         <tr>
                                             <th>Name</th>
                                             <th>Member ID</th>
+                                            <th>Edit</th>
                                             <th>Delete</th>
                                         </tr>
                                     </thead>
@@ -117,15 +125,24 @@ function MembersList() {
                                                     </td>
                                                     <td>{member.memberId}</td>
                                                     <td>
-                                                        <button className="btn btn-square btn-ghost" onClick={() => deleteCurrentMember(member._id, index)} >
-                                                            <TrashIcon className="w-5" />
+                                                        <button 
+                                                            className="btn btn-square btn-ghost" 
+                                                            onClick={() => handleEdit(member._id)} 
+                                                            title="Edit"
+                                                        >
+                                                            <PencilIcon className="w-5 text-yellow-500" />
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button className="btn btn-square btn-ghost" onClick={() => deleteCurrentMember(member._id, index)}>
+                                                            <TrashIcon className="w-5 text-red-500" />
                                                         </button>
                                                     </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="3" className="text-center">No members found</td>
+                                                <td colSpan="4" className="text-center">No members found</td>
                                             </tr>
                                         )}
                                     </tbody>
