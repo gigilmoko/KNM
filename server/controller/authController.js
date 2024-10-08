@@ -31,17 +31,15 @@ exports.fetchUserMemberMatch = async (req, res) => {
   try {
       const { fname, lname, memberId, role } = req.query; // Get parameters from request
 
-      // If the role is not 'user', skip fetching from the User model
-      let users = [];
-      if (role === 'user') {
-          // Fetch all users only if the role is 'user'
-          users = await User.find(); // Fetch all users
-      }
+      // Fetch all users and members first
+      let users = await User.find(); // Fetch all users
+      let members = await Member.find(); // Fetch all members
 
-      const members = await Member.find(); // Fetch all members  
+      // Filter users where role is 'user'
+      const filteredUsers = users.filter(user => user.role === 'user');
 
-      // Compare the data
-      const matchingUsers = users.filter(user => 
+      // Compare filtered users to members based on matching fname, lname, and memberId
+      const matchingUsers = filteredUsers.filter(user => 
           members.some(member => 
               member.fname === user.fname && 
               member.lname === user.lname && 
@@ -70,6 +68,8 @@ exports.fetchUserMemberMatch = async (req, res) => {
       });
   }
 };
+
+
 
 exports.googleLogin = async (req, res, next) => {
   const { email } = req.body;

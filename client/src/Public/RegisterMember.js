@@ -205,22 +205,8 @@ function RegisterMember() {
                 </div>
 
                 {/* Member Image Upload and Preview */}
-                <div className="flex justify-center items-center mb-4">
-                  <label htmlFor="image-member-upload" className="cursor-pointer">
-                    <img
-                      src={imageMember || 'https://via.placeholder.com/150'} // Default placeholder image
-                      alt="Member Image"
-                      className="w-32 h-32 rounded-full object-cover"
-                    />
-                    <input
-                      id="image-member-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageMemberChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+                
+
 
                 {/* Name and Middle Initial */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -251,73 +237,84 @@ function RegisterMember() {
                 </div>
 
                 {/* Member ID */}
-                <div className="grid grid-cols-1 mt-4">
-                  <input
-                    type="text"
-                    name="memberId"
-                    value={registerObj.memberId}
-                    onChange={updateFormValue}
-                    placeholder="Member ID"
-                    className="input input-bordered w-full"
-                  />
-                </div>
-
-                {/* Date of Birth */}
-                <div className="grid grid-cols-1 mt-4">
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={registerObj.dateOfBirth}
-                    onChange={updateFormValue}
-                    placeholder="Date of Birth"
-                    className="input input-bordered w-full"
-                  />
-                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+  <input
+    type="text"
+    name="memberId"
+    value={registerObj.memberId}
+    onChange={updateFormValue}
+    placeholder="Member ID"
+    className="input input-bordered w-full"
+  />
+  
+  <input
+    type="date"
+    name="dateOfBirth"
+    value={registerObj.dateOfBirth}
+    onChange={updateFormValue}
+    placeholder="Date of Birth"
+    className="input input-bordered w-full"
+  />
+</div>
 
                 {/* Email */}
-                <div className="grid grid-cols-1 mt-4">
-                  <input
-                    type="email"
-                    name="email"
-                    value={registerObj.email}
-                    onChange={updateFormValue}
-                    placeholder="Email"
-                    className="input input-bordered w-full"
-                  />
-                </div>
-                <div className="grid grid-cols-1 mt-4">
-                  <input
-                    type="password"
-                    name="password"
-                    value={registerObj.password}
-                    onChange={updateFormValue}
-                    placeholder="Password"
-                    className="input input-bordered w-full"
-                  />
-                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+  <input
+    type="email"
+    name="email"
+    value={registerObj.email}
+    onChange={updateFormValue}
+    placeholder="Email"
+    className="input input-bordered w-full"
+  />
+  
+  <input
+    type="password"
+    name="password"
+    value={registerObj.password}
+    onChange={updateFormValue}
+    placeholder="Password"
+    className="input input-bordered w-full"
+  />
+</div>
+
                 {/* Phone */}
-                <div className="grid grid-cols-1 mt-4">
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={registerObj.phone}
-                    onChange={updateFormValue}
-                    placeholder="Phone Number"
-                    className="input input-bordered w-full"
-                  />
-                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4 mb-4">
+  <input
+    type="tel"
+    name="phone"
+    value={registerObj.phone}
+    onChange={updateFormValue}
+    placeholder="Phone Number"
+    className="input input-bordered w-full"
+  />
+  
+  <input
+    name="address"
+    value={registerObj.address}
+    onChange={updateFormValue}
+    placeholder="Address"
+    className="textarea textarea-bordered w-full"
+  />
+</div>
 
-                {/* Address */}
-                <div className="grid grid-cols-1 mt-4">
-                  <input
-                    name="address"
-                    value={registerObj.address}
-                    onChange={updateFormValue}
-                    placeholder="Address"
-                    className="textarea textarea-bordered w-full"
-                  />
-                </div>
-
+<h2 className="text-xl font-semibold  text-center">Input here your ID</h2>
+<div className="flex justify-center items-center mt-4">
+  <label htmlFor="image-member-upload" className="cursor-pointer">
+    <img
+      src={imageMember || 'https://via.placeholder.com/150'} // Default placeholder image
+      alt="Member Image"
+      className="w-48 h-32 object-cover" // Rectangle shape
+    />
+    <input
+      id="image-member-upload"
+      type="file"
+      accept="image/*"
+      onChange={handleImageMemberChange}
+      className="hidden"
+    />
+  </label>
+</div>
                 <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
 
                 <button type="submit" className={"btn mt-2 w-full btn-primary" + (loading ? " loading" : "")}>
