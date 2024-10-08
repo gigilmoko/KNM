@@ -43,10 +43,10 @@ function MembersConfirmation() {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API}/api/users/apply`);
-            if (response.data && Array.isArray(response.data.users)) {
-                setUsers(response.data.users);
-                setFilteredUsers(response.data.users);
+            const response = await axios.get(`${process.env.REACT_APP_API}/api/fetchusermember`);
+            if (response.data && Array.isArray(response.data.data)) {
+                setUsers(response.data.data); // Access 'data' field from the response
+                setFilteredUsers(response.data.data);
             } else {
                 console.error('Data fetched is not an array:', response.data);
                 setUsers([]);
@@ -58,7 +58,7 @@ function MembersConfirmation() {
             setFilteredUsers([]);
         }
     };
-
+    
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
         const filtered = users.filter(user =>
@@ -69,22 +69,34 @@ function MembersConfirmation() {
     };
 
     const handleApplyMember = async (id, index) => {
+        console.log('Approve button clicked for user:', id);  // Debug log
         try {
-            await axios.put(`${process.env.REACT_APP_API}/api/users/apply/${id}`, { memberId: 'newMemberId' });
-            fetchUsers(); // Refresh the user list after applying
+            // Call the backend to approve the application and change role to 'member'
+            await axios.put(`${process.env.REACT_APP_API}/api/users/approve-apply-member/${id}`);
+            fetchUsers(); // Refresh the user list after approving
         } catch (error) {
-            console.error('Failed to apply member status', error);
+            console.error('Failed to approve apply member status:', error);
+            if (error.response) {
+                console.error('Backend response error:', error.response.data);
+            }
         }
     };
-
+    
     const handleDenyApplyMember = async (id, index) => {
+        console.log('Deny button clicked for user:', id);  // Debug log
         try {
+            // Call the backend to deny the application (only update applyMember to false)
             await axios.put(`${process.env.REACT_APP_API}/api/users/deny-apply-member/${id}`);
             fetchUsers(); // Refresh the user list after denying
         } catch (error) {
-            console.error('Failed to deny apply member status', error);
+            console.error('Failed to deny apply member status:', error);
+            if (error.response) {
+                console.error('Backend response error:', error.response.data);
+            }
         }
     };
+    
+    
 
     return (
         <>

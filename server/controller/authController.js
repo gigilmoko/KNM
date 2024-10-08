@@ -29,15 +29,16 @@ exports.deleteImage = async (req, res) => {
 // Exported function to fetch user and member data where conditions match
 exports.fetchUserMemberMatch = async (req, res) => {
   try {
-      const { fname, lname, memberId } = req.query; // Get parameters from request
+      const { fname, lname, memberId, role } = req.query; // Get parameters from request
 
-      // Fetch all user and member data (without any filters)
-      const users = await User.find(); // Fetch all users
-      const members = await Member.find(); // Fetch all members
+      // If the role is not 'user', skip fetching from the User model
+      let users = [];
+      if (role === 'user') {
+          // Fetch all users only if the role is 'user'
+          users = await User.find(); // Fetch all users
+      }
 
-      // Log the fetched users and members
-      console.log("Fetched users:", users);
-      console.log("Fetched members:", members);
+      const members = await Member.find(); // Fetch all members  
 
       // Compare the data
       const matchingUsers = users.filter(user => 
@@ -69,9 +70,6 @@ exports.fetchUserMemberMatch = async (req, res) => {
       });
   }
 };
-
-
-
 
 exports.googleLogin = async (req, res, next) => {
   const { email } = req.body;
@@ -462,49 +460,113 @@ exports.updateUserRole = async (req, res, next) => {
   }
 };
 
-exports.updateApplyMember = async (req, res, next) => {
-  try {
-    const { id } = req.params; // Get user ID from route params
+// exports.updateApplyMember = async (req, res, next) => {
+//   try {
+//     const { id } = req.params; // Get user ID from route params
 
-    // Update the applyMember field to false and set the role to 'member'
-    const user = await User.findByIdAndUpdate(
+//     // Update the applyMember field to false and set the role to 'member'
+//     const user = await User.findByIdAndUpdate(
+//       id,
+//       { applyMember: false, role: 'member' }, // Set applyMember to false and role to 'member'
+//       { new: true }
+//     );
+
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: 'User not found' });
+//     }
+
+//     // Respond with success and updated user data
+//     res.status(200).json({ success: true, user });
+//   } catch (error) {
+//     // Handle potential errors
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+// exports.deniedApplyMember = async (req, res, next) => {
+//   try {
+//     const { id } = req.params; // Get user ID from route params
+
+//     // Update the applyMember field and set memberId to an empty string for the user
+//     const user = await User.findByIdAndUpdate(
+//       id,
+//       { applyMember: false, memberId: "" }, // Set memberId to an empty string
+//       { new: true }
+//     );
+
+//     if (!user) {
+//       return res.status(404).json({ success: false, message: 'User not found' });
+//     }
+
+//     // Respond with success and updated user data
+//     res.status(200).json({ success: true, user });
+//   } catch (error) {
+//     // Handle potential errors
+//     res.status(500).json({ success: false, message: error.message });
+//   }
+// };
+
+exports.approveApplyMember = async (req, res) => {
+  try {
+    const { id } = req.params; // Get the user ID from params
+
+    // Find the user and update the role to 'member' and applyMember to false
+    const updatedUser = await User.findByIdAndUpdate(
       id,
-      { applyMember: false, role: 'member' }, // Set applyMember to false and role to 'member'
-      { new: true }
+      { $set: { role: 'member', applyMember: false } },
+      { new: true } // Return the updated user document
     );
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    // Respond with success and updated user data
-    res.status(200).json({ success: true, user });
+    return res.json({
+      success: true,
+      message: 'User approved and role updated to member',
+      data: updatedUser
+    });
   } catch (error) {
-    // Handle potential errors
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Error approving apply member:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while approving member'
+    });
   }
 };
 
-exports.deniedApplyMember = async (req, res, next) => {
+exports.denyApplyMember = async (req, res) => {
   try {
-    const { id } = req.params; // Get user ID from route params
+    const { id } = req.params; // Get the user ID from params
 
-    // Update the applyMember field and set memberId to an empty string for the user
-    const user = await User.findByIdAndUpdate(
+    // Find the user and update applyMember to false
+    const updatedUser = await User.findByIdAndUpdate(
       id,
-      { applyMember: false, memberId: "" }, // Set memberId to an empty string
-      { new: true }
+      { $set: { applyMember: false } },
+      { new: true } // Return the updated user document
     );
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
     }
 
-    // Respond with success and updated user data
-    res.status(200).json({ success: true, user });
+    return res.json({
+      success: true,
+      message: 'User application denied',
+      data: updatedUser
+    });
   } catch (error) {
-    // Handle potential errors
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Error denying apply member:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while denying member'
+    });
   }
 };
 
