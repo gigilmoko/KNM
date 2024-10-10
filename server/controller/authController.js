@@ -69,8 +69,6 @@ exports.fetchUserMemberMatch = async (req, res) => {
   }
 };
 
-
-
 exports.googleLogin = async (req, res, next) => {
   const { email } = req.body;
 
@@ -112,7 +110,6 @@ exports.googleLogin = async (req, res, next) => {
     next(error);
   }
 };
-
 
 exports.loginUser = async (req, res, next) => {
   const { email, password } = req.body;

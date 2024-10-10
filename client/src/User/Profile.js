@@ -128,7 +128,7 @@ function Profile() {
 
                     <div className="divider mt-4"></div>
                     <div className="flex justify-end gap-4">
-                        {user.role === 'user' && (
+                        {/* {user.role === 'user' && (
                             <button
                                 type="button"
                                 className="btn btn-secondary"
@@ -136,7 +136,7 @@ function Profile() {
                             >
                                 Apply as Member
                             </button>
-                        )}
+                        )} */}
 
                         <button
                             type="button"
