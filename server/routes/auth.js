@@ -8,7 +8,7 @@ const { registerUser, loginUser, logout, forgotPassword,
       allUsers, getUserDetails, updateUser, updateUserRole, deleteUser, 
       googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
       applyingForMember, deleteImage, registerUserMember, fetchUserMemberMatch,
-      approveApplyMember, denyApplyMember} = require('../controller/authController');
+      approveApplyMember, denyApplyMember, avatarUpdate} = require('../controller/authController');
 
 router.post('/register', registerUser);
 router.post('/register-member', registerUserMember);
@@ -31,6 +31,7 @@ router.delete('/users/delete-images/:public_id', deleteImage);
 router.get('/fetchusermember', fetchUserMemberMatch);
 router.put('/users/approve-apply-member/:id', approveApplyMember);
 router.put('/users/deny-apply-member/:id', denyApplyMember);
+router.put('/avatar-update/:id', avatarUpdate);
 
 // router.post('/register', upload.single('avatar'), registerUser);
 // router.put('/password/update', updatePassword);
