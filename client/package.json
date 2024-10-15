@@ -32,6 +32,7 @@
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
     "react-tailwindcss-datepicker": "^1.7.2",
+    "react-toastify": "^8.0.3",
     "theme-change": "^2.5.0",
     "three": "^0.126.1",
     "web-vitals": "^2.1.4",

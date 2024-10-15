@@ -67,9 +67,6 @@ exports.avatarUpdate = async (req, res) => {
   }
 };
 
-
-
-
 // Exported function to fetch user and member data where conditions match
 exports.fetchUserMemberMatch = async (req, res) => {
   try {
@@ -442,6 +439,29 @@ exports.updatePassword = async (req, res, next) => {
     sendToken(user, 200, res);
 };
 
+exports.updatePasswordMobile = async (req, res, next) => {
+  console.log('Update Password route hit');
+
+  // Assuming you pass the user ID in the request body
+  const { userId, oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(userId).select("password");
+  if (!user) {
+      return res.status(404).json({ message: "User not found" });
+  }
+
+  // Check previous user password
+  const isMatched = await user.comparePassword(oldPassword);
+  if (!isMatched) {
+      return res.status(400).json({ message: "Old password is incorrect" });
+  }
+
+  user.password = newPassword; // Set new password
+  await user.save();
+
+  sendToken(user, 200, res); // Send token after updating password
+};
+
 exports.updateProfile = async (req, res, next) => {
   try {
     console.log('Update User route hit');
@@ -482,6 +502,54 @@ exports.updateProfile = async (req, res, next) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+exports.updateProfileMobile = async (req, res) => {
+  try {
+      console.log('Update User Mobile route hit');
+      console.log('Request Body:', req.body);
+
+      // Extract data from request body
+      const { userId, fname, lname, middlei, email, dateOfBirth, phone, address } = req.body;
+
+      // Check if userId is provided
+      if (!userId) {
+          return res.status(400).json({ success: false, message: 'User ID is required' });
+      }
+
+      // Prepare new user data
+      const newUserData = {
+          fname,
+          lname,
+          middlei,
+          email,
+          dateOfBirth,
+          phone,
+          address,
+      };
+
+      // Update user profile
+      const updatedUser = await User.findByIdAndUpdate(userId, newUserData, {
+          new: true,
+          runValidators: true,
+      });
+
+      // Check if user was found and updated
+      if (!updatedUser) {
+          console.error('User Not Found or Not Updated');
+          return res.status(404).json({ success: false, message: 'User Not Found or Not Updated' });
+      }
+
+      res.status(200).json({
+          success: true,
+          user: updatedUser,
+      });
+  } catch (error) {
+      console.error('Error:', error);
+      res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+
 
 exports.updateUserRole = async (req, res, next) => {
   try {

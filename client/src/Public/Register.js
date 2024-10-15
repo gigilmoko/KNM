@@ -5,6 +5,8 @@ import LandingIntro from './LandingIntro';
 import ErrorText from '../Layout/components/Typography/ErrorText';
 import googlelogo from '../assets/img/googlelogo.png';
 import axios from 'axios';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -55,9 +57,9 @@ function Register() {
         ...registerObj,
         role: 'user', // Default role is 'user' if no specific role logic is applied
       };
-  
+    
       console.log("Form values:", updatedRegisterObj);
-  
+    
       // Send form data to server
       const response = await axios.post(
         `${process.env.REACT_APP_API}/api/register`,
@@ -68,25 +70,45 @@ function Register() {
           },
         }
       );
-      
-  
+    
       console.log("User registered successfully", response.data);
-      navigate("/login");
+      
+      // Display success toast notification
+      toast.success("User registered successfully!");
+
+// Add a delay before navigating to the login page
+setTimeout(() => {
+  navigate("/login");
+}, 3000); // 3 seconds delay
     } catch (error) {
       console.error("Registration failed", error);
-  
+    
       // Handle different error types
       if (error.response) {
         const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
         setErrorMessage(errorMsg);
+    
+        // Display error toast notification
+        toast.error(errorMsg);
       } else if (error.request) {
         setErrorMessage('Network error. Please try again later.');
+        toast.error('Network error. Please try again later.');
       } else {
         setErrorMessage('An unexpected error occurred. Please try again.');
+        toast.error('An unexpected error occurred. Please try again.');
       }
     } finally {
       setLoading(false);
     }
+    
+    // Add ToastContainer in your component JSX
+    return (
+      <>
+        {/* Other component code */}
+        <ToastContainer />
+      </>
+    );
+    
   };
   
   
@@ -149,6 +171,7 @@ function Register() {
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center">
+     <ToastContainer/>
       <div className="card mx-auto w-full max-w-5xl shadow-xl">
         <div className="grid md:grid-cols-2 grid-cols-1 bg-base-100 rounded-xl">
           <div>
@@ -258,9 +281,10 @@ function Register() {
 
                 <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
 
-                <button type="submit" className={"btn mt-2 w-full btn-primary" + (loading ? " loading" : "")}>
+                <button type="submit" className="btn mt-2 w-full btn-primary">
                   Register
                 </button>
+
 
                 {/* Google Registration Button - styled like the one in the login form */}
                 <div className="container-login100-form-btn p-t-13">

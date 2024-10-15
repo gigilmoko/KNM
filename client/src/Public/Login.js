@@ -6,6 +6,7 @@ import ErrorText from '../Layout/components/Typography/ErrorText';
 import InputText from '../Layout/components/Input/InputText';
 import { GoogleLogin } from 'react-google-login';
 import googlelogo from '../assets/img/googlelogo.png';
+import { toast, ToastContainer } from "react-toastify"; // Import toast from react-toastify
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com"; // Replace with your actual client ID
 
@@ -25,25 +26,26 @@ function Login() {
     // Handle form submission
     const submitForm = async (e) => {
         e.preventDefault();
-        setErrorMessage("");
     
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;  // Basic email format validation
         const passwordRegex = /^.{8,}$/; // Minimum 8 characters (any type)
-
+    
+        // Email validation
         if (!loginObj.email || loginObj.email.trim() === "") {
-            return setErrorMessage("Email is required!");
-        }
-        
-        if (!emailRegex.test(loginObj.email)) {
-            return setErrorMessage("Please enter a valid email address!");
+            return toast.error("Email is required!");
         }
     
+        if (!emailRegex.test(loginObj.email)) {
+            return toast.error("Please enter a valid email address!");
+        }
+    
+        // Password validation
         if (!loginObj.password || loginObj.password.trim() === "") {
-            return setErrorMessage("Password is required!");
+            return toast.error("Password is required!");
         }
     
         if (!passwordRegex.test(loginObj.password)) {
-            return setErrorMessage("Password must be at least 8 characters long ");
+            return toast.error("Password must be at least 8 characters long");
         }
     
         console.log('Form data being sent:', { email: loginObj.email, password: loginObj.password });
@@ -64,30 +66,50 @@ function Login() {
     
             console.log('Response data:', response.data);
     
+            // Set token and user info in sessionStorage
             sessionStorage.setItem("token", response.data.token);
             sessionStorage.setItem("user", JSON.stringify(response.data.user));
             setLoading(false);
     
-            if (response.data.user && response.data.user.role === 'admin') {
-                navigate("/admin/dashboard");
-            } else {
-                navigate(redirect || "/profile");
-            }
+            // Show success toast
+            toast.success("Login successful!");
+    
+            // Delay navigation to allow time for the toast to show
+            setTimeout(() => {
+                if (response.data.user && response.data.user.role === 'admin') {
+                    navigate("/admin/dashboard");
+                } else {
+                    navigate(redirect || "/profile");
+                }
+            }, 3000); // 3-second delay before navigating
+    
         } catch (error) {
             setLoading(false);
+    
             if (error.response) {
                 console.log("Error response status:", error.response.status);
                 console.log("Error response data:", error.response.data);
-                setErrorMessage(error.response.data.message || "An error occurred");
+                const errorMsg = error.response.data.message || "An error occurred";
+    
+                // Show error toast
+                toast.error(errorMsg);
+    
             } else if (error.request) {
                 console.log("No response received:", error.request);
-                setErrorMessage("No response received");
+    
+                // Show error toast
+                toast.error("No response received");
+    
             } else {
                 console.log("Error message:", error.message);
-                setErrorMessage(error.message);
+    
+                // Show error toast
+                toast.error(error.message);
             }
         }
     };
+    
+
     
 
     // Google Login success handler
@@ -108,28 +130,42 @@ function Login() {
     
             console.log('Google login response:', data);
     
+            // Set token and user info in sessionStorage
             sessionStorage.setItem("token", data.token);
             sessionStorage.setItem("user", JSON.stringify(data.user));
     
             console.log('Stored user in sessionStorage:', sessionStorage.getItem('user'));
     
-            if (data.user && data.user.role === 'admin' || data.user.role === 'member' ) {
-                console.log('Google login successful - Redirecting to admin dashboard');
-                navigate("/admin/dashboard");
-            } else {
-                console.log('Google login successful - Redirecting to profile');
-                navigate("/profile");
-            }
+            // Show success toast
+            toast.success("Google login successful!");
+    
+            // Delay navigation to allow time for the toast to show
+            setTimeout(() => {
+                if (data.user && (data.user.role === 'admin' || data.user.role === 'member')) {
+                    console.log('Google login successful - Redirecting to admin dashboard');
+                    navigate("/admin/dashboard");
+                } else {
+                    console.log('Google login successful - Redirecting to profile');
+                    navigate("/profile");
+                }
+            }, 3000); // 3-second delay before navigating
+    
         } catch (error) {
             console.log("Google login error:", error);
+    
+            // Show error toast
+            toast.error("Google login failed");
             setErrorMessage("Google login failed");
         }
     };
     
     // Google Login failure handler
     const handleGoogleFailure = (error) => {
-        setErrorMessage("Google login failed");
         console.error("Google login failed:", error);
+    
+        // Show error toast
+        toast.error("Google login failed");
+        setErrorMessage("Google login failed");
     };
 
     // Update form values
@@ -140,6 +176,7 @@ function Login() {
 
     return (
         <div className="min-h-screen bg-base-200 flex items-center">
+            <ToastContainer/>
             <div className="card mx-auto w-full max-w-5xl shadow-xl">
                 <div className="grid md:grid-cols-2 grid-cols-1 bg-base-100 rounded-xl">
                     <div>
@@ -174,9 +211,9 @@ function Login() {
                             </div>
 
                             <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
-                            <button type="submit" className={"btn mt-2 w-full btn-primary" + (loading ? " loading" : "")}>
-                                {loading ? "Loading..." : "Login"}
-                            </button>
+                            <button type="submit" className="btn mt-2 w-full btn-primary">
+    Login
+</button>
 
                             <div className="container-login100-form-btn p-t-13">
                                 <div className="wrap-login100-form-btn">
