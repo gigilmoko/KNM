@@ -323,24 +323,24 @@ exports.forgotPassword = async (req, res, next) => {
   const resetUrl = `${req.protocol}://localhost:3000/password/reset/${resetToken}`;
   const message = `Your password reset token is as follow:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`
   try {
-      await sendEmail({
-          email: user.email,
-          subject: 'Reset Password',
-          message
-      })
-
-      res.status(200).json({
-          success: true,
-          message: `Email sent to: ${user.email}`
-      })
-
+    await sendEmail({
+      email: user.email,
+      subject: 'Reset Password',
+      message,
+    });
+  
+    res.status(200).json({
+      success: true,
+      message: `Email sent to: ${user.email}`,
+    });
   } catch (error) {
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpire = undefined;
-      await user.save({ validateBeforeSave: false });
-      return res.status(500).json({ error: error.message })
-      // return next(new ErrorHandler(error.message, 500))
+    console.error('Email sending failed:', error); // Log the error for debugging
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+    return res.status(500).json({ error: 'Failed to send email. Please try again later.' });
   }
+  
 };
 
 exports.resetPassword = async (req, res, next) => {

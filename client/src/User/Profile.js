@@ -47,12 +47,7 @@ function Profile() {
         }
     };
 
-    if (loading) return (
-        <div className="flex items-center justify-center h-screen">
-            <l-quantum size="45" speed="1.75" color="black"></l-quantum>
-        </div>
-    ); // Show loading spinner
-
+    
     if (error) return <p>{error}</p>;
 
     const handleEditClick = () => {
@@ -108,10 +103,7 @@ function Profile() {
                         </div>
 
                         {/* Member ID */}
-                        <div>
-                            <label className="font-semibold">Member ID:</label>
-                            <p>{user.memberId ? user.memberId : 'Not a member'}</p>
-                        </div>
+                        
 
                         {/* Address */}
                         <div className="md:col-span-1">
@@ -124,6 +116,11 @@ function Profile() {
                             <label className="font-semibold">Date of Birth:</label>
                             <p>{user.dateOfBirth ? moment(user.dateOfBirth).format('YYYY-MM-DD') : 'N/A'}</p>
                         </div>
+
+                        <div className="md:col-span-1">
+    <label className="font-semibold">User Since:</label>
+    <p>{user.createdAt ? moment(user.createdAt).format('YYYY-MM-DD') : 'N/A'}</p>
+</div>
                     </div>
 
                     <div className="divider mt-4"></div>

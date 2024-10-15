@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import ErrorText from '../Layout/components/Typography/ErrorText';
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 import CheckCircleIcon from '@heroicons/react/24/solid/CheckCircleIcon';
-import axios from 'axios'; // Ensure axios is imported
+import axios from 'axios';
 
 function SetNewPassword() {
   const { token } = useParams(); // Assuming token is passed as a URL parameter
@@ -12,8 +12,6 @@ function SetNewPassword() {
   };
 
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [userObj, setUserObj] = useState(INITIAL_USER_OBJ);
 
   const resetPassword = async (token, passwords) => {
@@ -23,68 +21,75 @@ function SetNewPassword() {
           'Content-Type': 'application/json'
         }
       };
-  
+
       // Log the data sent and the endpoint
       console.log('Reset Password Endpoint:', `${process.env.REACT_APP_API}/api/password/reset/${token}`);
       console.log('Data Sent:', passwords);
-  
+
       const { data } = await axios.put(
         `${process.env.REACT_APP_API}/api/password/reset/${token}`,
         passwords,
         config
       );
-  
-      setSuccessMessage(data.success);
+
+      toast.success(data.success); // Use toast for success message
     } catch (error) {
       console.error('Error resetting password:', error);
-      setErrorMessage(error.response?.data?.message || 'An error occurred while resetting password.');
+      toast.error(error.response?.data?.message || 'An error occurred while resetting password.');
     }
   };
-  
+
   const submitForm = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
-    setSuccessMessage("");
   
     console.log('Submitted Passwords:', userObj.newPassword, userObj.confirmPassword);
   
+    // Check if either password field is empty
     if (userObj.newPassword.trim() === "" || userObj.confirmPassword.trim() === "") {
-      return setErrorMessage("Both password fields are required!");
+      return toast.error("Both password fields are required!"); // Use toast for empty fields
     }
   
+    // Check if passwords match
     if (userObj.newPassword !== userObj.confirmPassword) {
-      return setErrorMessage("Passwords do not match!");
+      return toast.error("Passwords do not match!"); // Use toast for mismatch
+    }
+  
+    // Check if the password is at least 8 characters long
+    if (userObj.newPassword.length < 8) {
+      return toast.error("Password must be at least 8 characters long!");
     }
   
     setLoading(true);
+    
+    // Proceed with password reset if all validations pass
     await resetPassword(token, {
       password: userObj.newPassword,
       confirmPassword: userObj.confirmPassword // Ensure confirmPassword is sent
     });
+    
     setLoading(false);
   };
   
-  
-  
 
   const updateFormValue = (e) => {
-    setErrorMessage("");
     setUserObj({ ...userObj, [e.target.name]: e.target.value });
   };
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center">
+      <ToastContainer/>
       <div className="card mx-auto w-full max-w-xl shadow-xl">
         <div className="bg-base-100 rounded-xl">
           <div className="py-24 px-10">
             <h2 className="text-2xl font-semibold mb-2 text-center">Set New Password</h2>
 
-            {successMessage && (
+            {/* Success Message Handling */}
+            {userObj.success && (
               <>
                 <div className="text-center mt-8">
                   <CheckCircleIcon className="inline-block w-32 text-success" />
                 </div>
-                <p className="my-4 text-xl font-bold text-center">{successMessage}</p>
+                <p className="my-4 text-xl font-bold text-center">{userObj.success}</p>
                 <div className="text-center mt-4">
                   <Link to="/login">
                     <button className="btn btn-block btn-primary">Login</button>
@@ -93,7 +98,8 @@ function SetNewPassword() {
               </>
             )}
 
-            {!successMessage && (
+            {/* Form for New Password */}
+            {!userObj.success && (
               <>
                 <form onSubmit={submitForm}>
                   <div className="mb-4">
@@ -125,7 +131,6 @@ function SetNewPassword() {
                     />
                   </div>
 
-                  <ErrorText styleClass="mt-12">{errorMessage}</ErrorText>
                   <button
                     type="submit"
                     className={"btn mt-2 w-full btn-primary" + (loading ? " loading" : "")}
@@ -151,3 +156,4 @@ function SetNewPassword() {
 }
 
 export default SetNewPassword;
+

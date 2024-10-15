@@ -5,6 +5,7 @@ import LandingIntro from './LandingIntro';
 import ErrorText from '../Layout/components/Typography/ErrorText';
 import googlelogo from '../assets/img/googlelogo.png';
 import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -34,63 +35,170 @@ function RegisterMember() {
   const submitForm = async (e) => {
     e.preventDefault();
     setErrorMessage('');
-  
+
     // Validation
+    const capitalizeFirstLetter = (text) => {
+      return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    };
+    
     const nameRegex = /^[A-Za-z\s]+$/; 
     const middleInitialRegex = /^[A-Z]$/; // Only a single uppercase letter
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Email format
     const phoneRegex = /^\d{11}$/; // 11-digit number
-  
-    if (!nameRegex.test(registerObj.fname.trim())) return setErrorMessage('First Name must only contain letters!');
-    if (!nameRegex.test(registerObj.lname.trim())) return setErrorMessage('Last Name must only contain letters!');
-    if (!middleInitialRegex.test(registerObj.middlei.trim())) return setErrorMessage('Middle Initial must be a single uppercase letter!');
-    if (!emailRegex.test(registerObj.email.trim())) return setErrorMessage('Email Id must be valid!');
-    if (registerObj.password.trim().length < 8 && !registerObj.googleLogin) return setErrorMessage('Password must be at least 8 characters long!');
-    if (registerObj.dateOfBirth.trim() === '') return setErrorMessage('Date of Birth is required!');
-    if (!phoneRegex.test(registerObj.phone.trim())) return setErrorMessage('Phone number must be exactly 11 digits!');
-    if (registerObj.address.trim() === '') return setErrorMessage('Address is required!');
-  
+    
+    // Apply capitalization before validation and submission
+    if (registerObj.fname.trim() === '') return toast.error('First Name is required!');
+    registerObj.fname = capitalizeFirstLetter(registerObj.fname.trim());
+    if (!nameRegex.test(registerObj.fname)) return toast.error('First Name must only contain letters!');
+    
+    if (registerObj.lname.trim() === '') return toast.error('Last Name is required!');
+    registerObj.lname = capitalizeFirstLetter(registerObj.lname.trim());
+    if (!nameRegex.test(registerObj.lname)) return toast.error('Last Name must only contain letters!');
+    
+    if (registerObj.middlei.trim() === '') return toast.error('Middle Initial is required!');
+    registerObj.middlei = capitalizeFirstLetter(registerObj.middlei.trim()); // For middle initial
+    if (!middleInitialRegex.test(registerObj.middlei)) return toast.error('Middle Initial must be a single letter!');
+    
+    if (registerObj.email.trim() === '') return toast.error('Email is required!');
+    if (!emailRegex.test(registerObj.email.trim())) return toast.error('Email Id must be valid!');
+    
+    if (registerObj.password.trim() === '' && !registerObj.googleLogin) return toast.error('Password is required!');
+    if (registerObj.password.trim().length < 8 && !registerObj.googleLogin) return toast.error('Password must be at least 8 characters long!');
+    
+    if (registerObj.dateOfBirth.trim() === '') return toast.error('Date of Birth is required!');
+    
+    if (registerObj.phone.trim() === '') return toast.error('Phone number is required!');
+    if (!phoneRegex.test(registerObj.phone.trim())) return toast.error('Phone number must be exactly 11 digits!');
+    
+    if (registerObj.address.trim() === '') return toast.error('Address is required!');
+    registerObj.address = capitalizeFirstLetter(registerObj.address.trim());
+
     setLoading(true);
-  
+
     try {
-      // Remove the role logic since memberId is no longer part of the form
-      const updatedRegisterObj = {
-        ...registerObj,
-        role: 'user', // Default role is 'user' if no specific role logic is applied
-      };
-  
-      console.log("Form values:", updatedRegisterObj);
-  
-      // Send form data to server
-      const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/register-member`,
-        updatedRegisterObj,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-  
-      console.log("User registered successfully", response.data);
-      navigate("/login");
+        const updatedRegisterObj = {
+            ...registerObj,
+            role: 'user', // Default role is 'user'
+        };
+
+        console.log("Form values:", updatedRegisterObj);
+
+        // Send form data to server
+        const response = await axios.post(
+            `${process.env.REACT_APP_API}/api/register-member`,
+            updatedRegisterObj,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        console.log("User registered successfully", response.data);
+        toast.success("Registration successful!"); // Success notification
+        navigate("/login");
     } catch (error) {
-      console.error("Registration failed", error);
-  
-      // Handle different error types
-      if (error.response) {
-        const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
-        setErrorMessage(errorMsg);
-      } else if (error.request) {
-        setErrorMessage('Network error. Please try again later.');
-      } else {
-        setErrorMessage('An unexpected error occurred. Please try again.');
-      }
+        console.error("Registration failed", error);
+
+        // Handle different error types
+        if (error.response) {
+            const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
+            setErrorMessage(errorMsg);
+            toast.error(errorMsg); // Error notification
+        } else if (error.request) {
+            setErrorMessage('Network error. Please try again later.');
+            toast.error('Network error. Please try again later.'); // Error notification
+        } else {
+            setErrorMessage('An unexpected error occurred. Please try again.');
+            toast.error('An unexpected error occurred. Please try again.'); // Error notification
+        }
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
-  
+};
+
+const handleGoogleSuccess = (res) => {
+    const { profileObj } = res;
+
+    console.log("Google Login Success! User: ", profileObj);
+
+    // Update form values with Google login data
+    setRegisterObj(prev => ({
+        ...prev,
+        fname: profileObj.givenName,
+        lname: profileObj.familyName,
+        email: profileObj.email,
+        googleLogin: true,
+        avatar: profileObj.imageUrl
+    }));
+
+    // Update avatar preview
+    setAvatarImage(profileObj.imageUrl);
+    toast.success("Google login successful!"); // Success notification
+};
+
+const handleGoogleFailure = (res) => {
+    console.log("Google Login Failed! ", res);
+    toast.error("Google login failed. Please try again."); // Error notification
+};
+
+const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
+
+        try {
+            const response = await axios.post(
+                'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+            const imageUrl = response.data.secure_url;
+            setAvatarImage(imageUrl); // Update avatar image preview
+            setRegisterObj(prev => ({ ...prev, avatar: imageUrl }));
+            toast.success("Avatar uploaded successfully!"); // Success notification
+        } catch (error) {
+            console.error('Failed to upload avatar', error);
+            setErrorMessage('Failed to upload avatar. Please try again.');
+            toast.error('Failed to upload avatar. Please try again.'); // Error notification
+        }
+    }
+};
+
+const handleImageMemberChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
+
+        try {
+            const response = await axios.post(
+                'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+            const imageUrl = response.data.secure_url;
+            setImageMember(imageUrl); // Update member image preview
+            setRegisterObj(prev => ({ ...prev, imageMember: imageUrl }));
+            toast.success("Member image uploaded successfully!"); // Success notification
+        } catch (error) {
+            console.error('Failed to upload member image', error);
+            setErrorMessage('Failed to upload member image. Please try again.');
+            toast.error('Failed to upload member image. Please try again.'); // Error notification
+        }
+    }
+};
 
   const updateFormValue = (e) => {
     const { name, value } = e.target;
@@ -98,85 +206,9 @@ function RegisterMember() {
     setRegisterObj({ ...registerObj, [name]: value });
   };
 
-  const handleGoogleSuccess = (res) => {
-    const { profileObj } = res;
-
-    console.log("Google Login Success! User: ", profileObj);
-
-    // Update form values with Google login data
-    setRegisterObj(prev => ({
-      ...prev,
-      fname: profileObj.givenName,
-      lname: profileObj.familyName,
-      email: profileObj.email,
-      googleLogin: true,
-      avatar: profileObj.imageUrl
-    }));
-
-    // Update avatar preview
-    setAvatarImage(profileObj.imageUrl);
-  };
-
-  const handleGoogleFailure = (res) => {
-    console.log("Google Login Failed! ", res);
-  };
-
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
-
-      try {
-        const response = await axios.post(
-          'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
-        const imageUrl = response.data.secure_url;
-        setAvatarImage(imageUrl); // Update avatar image preview
-        setRegisterObj(prev => ({ ...prev, avatar: imageUrl }));
-      } catch (error) {
-        console.error('Failed to upload avatar', error);
-        setErrorMessage('Failed to upload avatar. Please try again.');
-      }
-    }
-  };
-
-  const handleImageMemberChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
-
-      try {
-        const response = await axios.post(
-          'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
-        const imageUrl = response.data.secure_url;
-        setImageMember(imageUrl); // Update member image preview
-        setRegisterObj(prev => ({ ...prev, imageMember: imageUrl }));
-      } catch (error) {
-        console.error('Failed to upload member image', error);
-        setErrorMessage('Failed to upload member image. Please try again.');
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-base-200 flex items-center">
+      <ToastContainer/>
       <div className="card mx-auto w-full max-w-5xl shadow-xl">
         <div className="grid md:grid-cols-2 grid-cols-1 bg-base-100 rounded-xl">
           <div>
