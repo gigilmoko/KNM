@@ -10,6 +10,7 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import 'react-notifications/lib/notifications.css';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
+import { toast, ToastContainer } from 'react-toastify'
 
 // Regular expressions for validation
 const nameRegex = /^[A-Za-z\s]{2,50}$/;  // Letters and spaces, 2-50 characters
@@ -35,43 +36,47 @@ function NewMember() {
     const validateForm = () => {
         // Validate first name
         if (!nameRegex.test(memberData.fname.trim())) {
-            NotificationManager.error('First name must be between 2 and 50 characters and can only contain letters and spaces!', 'Error');
+            toast.error('First name must be between 2 and 50 characters and can only contain letters and spaces!');
             return false;
         }
-
+    
         // Validate last name
         if (!nameRegex.test(memberData.lname.trim())) {
-            NotificationManager.error('Last name must be between 2 and 50 characters and can only contain letters and spaces!', 'Error');
+            toast.error('Last name must be between 2 and 50 characters and can only contain letters and spaces!');
             return false;
         }
-
+    
         // Validate member ID
         if (!memberIdRegex.test(memberData.memberId.trim())) {
-            NotificationManager.error('Member ID must be between 5 and 20 characters and can only contain letters and numbers!', 'Error');
+            toast.error('Member ID must be between 5 and 20 characters and can only contain letters and numbers!');
             return false;
         }
-
+    
         return true;
     };
-
+    
     const createMember = async () => {
         // Perform validation before submitting
         if (!validateForm()) {
             return; // Stop the function if validation fails
         }
-
+    
         try {
             const response = await axios.post(`${process.env.REACT_APP_API}/api/members/new`, memberData);
-            NotificationManager.success('Member created successfully', 'Success');
-            navigate('/admin/members/list');
+            toast.success('Member created successfully');     
+            setTimeout(() => {
+                navigate('/admin/members/list');
+              }, 3000); 
         } catch (error) {
-            NotificationManager.error('Failed to create member', 'Error');
+            toast.error('Failed to create member');
         }
     };
+    
 
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>   
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />

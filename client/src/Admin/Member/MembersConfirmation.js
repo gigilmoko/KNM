@@ -10,6 +10,7 @@ import 'react-notifications/lib/notifications.css';
 import Header from "../../Layout/Header";
 import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 
 function MembersConfirmation() {
@@ -73,12 +74,18 @@ function MembersConfirmation() {
         try {
             // Call the backend to approve the application and change role to 'member'
             await axios.put(`${process.env.REACT_APP_API}/api/users/approve-apply-member/${id}`);
+            
+            // Show success toast
+            toast.success('User approved as a member successfully!');
+            
             fetchUsers(); // Refresh the user list after approving
         } catch (error) {
             console.error('Failed to approve apply member status:', error);
             if (error.response) {
                 console.error('Backend response error:', error.response.data);
             }
+            // Show error toast
+            toast.error('Failed to approve member status');
         }
     };
     
@@ -87,20 +94,28 @@ function MembersConfirmation() {
         try {
             // Call the backend to deny the application (only update applyMember to false)
             await axios.put(`${process.env.REACT_APP_API}/api/users/deny-apply-member/${id}`);
+            
+            // Show success toast
+            toast.success('User application denied successfully!');
+            
             fetchUsers(); // Refresh the user list after denying
         } catch (error) {
             console.error('Failed to deny apply member status:', error);
             if (error.response) {
                 console.error('Backend response error:', error.response.data);
             }
+            // Show error toast
+            toast.error('Failed to deny member status');
         }
     };
+    
     
     
 
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />

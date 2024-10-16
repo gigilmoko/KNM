@@ -14,6 +14,7 @@ import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';  // Add Pencil Icon for Edit
 import { useNavigate } from 'react-router-dom'; // Import the hook
+import { toast, ToastContainer } from 'react-toastify'
 
 function MembersList() {
   const navigate = useNavigate(); // Hook to access navigation
@@ -78,12 +79,19 @@ function MembersList() {
             const response = await axios.delete(`${process.env.REACT_APP_API}/api/members/${id}`);
             console.log('Member deletion response:', response.data);
     
+            // Show success toast
+            toast.success('Member deleted successfully!');
+    
             setMembers(members.filter((_, i) => i !== index));
             setFilteredMembers(filteredMembers.filter((_, i) => i !== index));
         } catch (error) {
             console.error('Failed to delete member', error);
+    
+            // Show error toast
+            toast.error('Failed to delete member');
         }
     };
+    
 
     const handleEdit = (id) => {
       // Redirect to the edit page for the member using the ID
@@ -93,6 +101,7 @@ function MembersList() {
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />
