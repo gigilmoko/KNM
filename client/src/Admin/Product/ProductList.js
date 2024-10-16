@@ -13,6 +13,7 @@ import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon'; 
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 function ProductsList() {
     const dispatch = useDispatch();
@@ -87,7 +88,7 @@ function ProductsList() {
         const imageDeletePromises = productToDelete.images.map(image => 
             axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${image.public_id}`)
         );
-
+    
         try {
             // Delete all images from Cloudinary
             await Promise.all(imageDeletePromises);
@@ -98,12 +99,15 @@ function ProductsList() {
             // Update the state to remove the deleted product
             setProducts(products.filter((_, i) => i !== index));
             setFilteredProducts(filteredProducts.filter((_, i) => i !== index));
-
-            console.log('Product and images deleted successfully');
+    
+            // Show success toast
+            toast.success('Product deleted successfully!');
         } catch (error) {
             console.error('Failed to delete product or images', error);
+            // Show error toast
+            toast.error('Failed to delete product');
         }
-    };
+    }
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
@@ -122,6 +126,7 @@ function ProductsList() {
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />
@@ -158,7 +163,7 @@ function ProductsList() {
                                                     </td>
                                                     <td>{product.name}</td>
                                                     <td>{product.description}</td>
-                                                    <td>${product.price.toFixed(2)}</td>
+                                                    <td>₱{product.price.toFixed(2)}</td>
                                                     <td>{product.stock}</td>
                                                     <td>{categories[product.category] || 'Unknown'}</td>
                                                     <td>

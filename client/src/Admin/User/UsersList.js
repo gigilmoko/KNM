@@ -12,6 +12,7 @@ import Header from "../../Layout/Header";
 import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 function UsersList() {
     const dispatch = useDispatch();
@@ -66,31 +67,45 @@ function UsersList() {
             // First, delete the user's associated images (if applicable)
             const deleteImagesResponse = await axios.delete(`${process.env.REACT_APP_API}/api/users/delete-images/${id}`);
             console.log('Images deletion response:', deleteImagesResponse.data);
-    
+            
             // Now delete the user
             const deleteUserResponse = await axios.delete(`${process.env.REACT_APP_API}/api/user/${id}`);
             console.log('User deletion response:', deleteUserResponse.data);
-    
+            
             // Update state to remove the deleted user
             setUsers(users.filter((_, i) => i !== index));
             setFilteredUsers(filteredUsers.filter((_, i) => i !== index));
+            
+            // Show success toast
+            toast.success('User and associated images deleted successfully!');
         } catch (error) {
             console.error('Failed to delete user or user images', error);
+            // Show error toast
+            toast.error('Failed to delete user or user images');
         }
     };
+    
     
 
     const handleRoleChange = async (id, index, newRole) => {
         try {
             await axios.put(`${process.env.REACT_APP_API}/api/users/${id}`, { role: newRole });
+            
+            // Update users in the state
             const updatedUsers = [...users];
             updatedUsers[index].role = newRole;
             setUsers(updatedUsers);
             setFilteredUsers(updatedUsers);
+            
+            // Show success toast
+            toast.success('User role updated successfully!');
         } catch (error) {
             console.error('Failed to update user role', error);
+            // Show error toast
+            toast.error('Failed to update user role');
         }
     };
+    
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
@@ -105,6 +120,7 @@ function UsersList() {
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />

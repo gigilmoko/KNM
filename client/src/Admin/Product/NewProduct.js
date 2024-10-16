@@ -8,6 +8,7 @@ import ModalLayout from "../../Layout/ModalLayout";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Header from "../../Layout/Header";
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 // Your cloudinary config (replace with actual config)
 const cloudinaryUpload = async (file) => {
@@ -61,85 +62,89 @@ function CreateProduct() {
         }));
     };
 
-    const handleImageChange = async (e) => {
-        const files = Array.from(e.target.files);
-        console.log("Files selected:", files);
+        const handleImageChange = async (e) => {
+            const files = Array.from(e.target.files);
+            console.log("Files selected:", files);
 
-        const uploadedImages = await Promise.all(
-            files.map(async (file) => {
-                const result = await cloudinaryUpload(file);
-                console.log("Uploaded image:", result);
-                return result;
-            })
-        );
+            const uploadedImages = await Promise.all(
+                files.map(async (file) => {
+                    const result = await cloudinaryUpload(file);
+                    console.log("Uploaded image:", result);
+                    return result;
+                })
+            );
 
-        const validImages = uploadedImages.filter(img => img !== null);
-        console.log("Valid images after filtering:", validImages);
+            const validImages = uploadedImages.filter(img => img !== null);
+            console.log("Valid images after filtering:", validImages);
 
-        // Update productData images correctly
-        setProductData((prevData) => {
-            const updatedImages = [...prevData.images, ...validImages];
-            console.log("Updated productData with images:", updatedImages); // This will show the correct updated array
-            return {
-                ...prevData,
-                images: updatedImages, // Append new images to existing ones
-            };
-        });
-    };
-
-    const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 1-5 characters
-    const priceRegex = /^\d+(\.\d{1,2})?$/;    // Numbers with up to 2 decimal places
-    const stockRegex = /^\d{1,5}$/;            // Integer value with up to 5 digits
-    
-
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // Validations
-        if (!nameRegex.test(productData.name.trim())) {
-            return NotificationManager.error('Product name must only contain letters, numbers, and spaces, and be up to 100 characters!', 'Error');
-        }
-        if (!priceRegex.test(productData.price.toString().trim())) {
-            return NotificationManager.error('Price must be a valid number with up to 2 decimal places!', 'Error');
-        }
-        if (!stockRegex.test(productData.stock.toString().trim())) {
-            return NotificationManager.error('Stock must be a valid integer value (up to 5 digits)!', 'Error');
-        }
-        if (productData.category === "") {
-            return NotificationManager.error('Category is required!', 'Error');
-        }
-        if (productData.images.length === 0) {
-            return NotificationManager.error('At least one product image is required!', 'Error');
-        }
-    
-        const jsonData = {
-            name: productData.name,
-            description: productData.description,
-            price: productData.price,
-            category: productData.category,
-            stock: productData.stock,
-            images: productData.images // Send only URLs and public IDs
-        };
-    
-        try {
-            const response = await axios.post(`${process.env.REACT_APP_API}/api/product/new`, jsonData, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+            // Update productData images correctly
+            setProductData((prevData) => {
+                const updatedImages = [...prevData.images, ...validImages];
+                console.log("Updated productData with images:", updatedImages); // This will show the correct updated array
+                return {
+                    ...prevData,
+                    images: updatedImages, // Append new images to existing ones
+                };
             });
-            console.log("Response:", response.data);
-            NotificationManager.success('Product created successfully!', 'Success');
-            navigate('/admin/products');
-        } catch (error) {
-            console.error('Error creating product:', error);
-            NotificationManager.error('Failed to create product', 'Error');
-        }
-    };
+        };
+
+        const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
+        const priceRegex = /^\d+(\.\d{1,2})?$/;    // Numbers with up to 2 decimal places
+        const stockRegex = /^\d{1,5}$/;            // Integer value with up to 5 digits
+        
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+        
+            // Validations
+            if (!nameRegex.test(productData.name.trim())) {
+                return toast.error('Product name must only contain letters, numbers, and spaces, and be between 5 to 100 characters!');
+            }
+            if (!priceRegex.test(productData.price.toString().trim())) {
+                return toast.error('Price must be a valid number with up to 2 decimal places!');
+            }
+            if (!stockRegex.test(productData.stock.toString().trim())) {
+                return toast.error('Stock must be a valid integer value (up to 5 digits)!');
+            }
+            if (productData.category === "") {
+                return toast.error('Category is required!');
+            }
+            if (productData.images.length === 0) {
+                return toast.error('At least one product image is required!');
+            }
+        
+            const jsonData = {
+                name: productData.name,
+                description: productData.description,
+                price: productData.price,
+                category: productData.category,
+                stock: productData.stock,
+                images: productData.images // Send only URLs and public IDs
+            };
+        
+            try {
+                const response = await axios.post(`${process.env.REACT_APP_API}/api/product/new`, jsonData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log("Response:", response.data);
+                toast.success('Product created successfully!');
+                setTimeout(() => {
+                    navigate('/admin/products');
+                  }, 3000); 
+                
+            } catch (error) {
+                console.error('Error creating product:', error);
+                toast.error(error.response?.data?.message || 'An error occurred while creating product.');
+            }
+        };
+        
+    
 
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />

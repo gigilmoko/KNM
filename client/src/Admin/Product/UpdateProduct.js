@@ -8,6 +8,7 @@ import ModalLayout from "../../Layout/ModalLayout";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Header from "../../Layout/Header";
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 const CLOUDINARY_API_KEY = '655852923368639';
 
@@ -151,18 +152,18 @@ function UpdateProduct() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         // Validations
         if (!nameRegex.test(productData.name.trim())) {
-            return NotificationManager.error('Product name must be between 5 and 100 characters, and only contain letters, numbers, and spaces!', 'Error');
+            return toast.error('Product name must be between 5 and 100 characters, and only contain letters, numbers, and spaces!');
         }
         if (!priceRegex.test(productData.price.toString().trim())) {
-            return NotificationManager.error('Price must be a valid number with up to 2 decimal places!', 'Error');
+            return toast.error('Price must be a valid number with up to 2 decimal places!');
         }
         if (!stockRegex.test(productData.stock.toString().trim())) {
-            return NotificationManager.error('Stock must be a valid integer value (up to 5 digits)!', 'Error');
+            return toast.error('Stock must be a valid integer value (up to 5 digits)!');
         }
-
+    
         const jsonData = {
             name: productData.name,
             description: productData.description,
@@ -171,7 +172,7 @@ function UpdateProduct() {
             stock: productData.stock,
             images: productData.images // Send only URLs and public IDs
         };
-
+    
         try {
             const response = await axios.put(`${process.env.REACT_APP_API}/api/product/update/${id}`, jsonData, {
                 headers: {
@@ -179,17 +180,21 @@ function UpdateProduct() {
                 }
             });
             console.log("Response:", response.data);
-            NotificationManager.success('Product updated successfully!', 'Success');
-            navigate('/admin/products');
+            toast.success('Product updated successfully!');
+            setTimeout(() => {
+                navigate('/admin/products');
+              }, 3000); 
         } catch (error) {
             console.error('Error updating product:', error);
-            NotificationManager.error('Failed to update product', 'Error');
+            toast.error(error.response?.data?.message || 'Failed to update product');
         }
     };
+    
 
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />
