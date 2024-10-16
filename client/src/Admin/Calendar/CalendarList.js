@@ -10,6 +10,7 @@ import Header from "../../Layout/Header";
 import LeftSidebar from "../../Layout/LeftSidebar";
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from "../../Layout/ModalLayout";
+import { toast, ToastContainer } from 'react-toastify'
 
 function CalendarList() {
     const [events, setEvents] = useState([]);
@@ -52,11 +53,14 @@ function CalendarList() {
             await axios.delete(`${process.env.REACT_APP_API}/api/calendar/event/${id}`);
             setEvents(events.filter(event => event._id !== id));
             setFilteredEvents(filteredEvents.filter(event => event._id !== id)); // Ensure filteredEvents is also updated
+            toast.success('Event deleted successfully!');
             console.log('Deleted event with ID:', id);
         } catch (error) {
+            toast.error('Failed to delete event');
             console.error('Error deleting event:', error);
         }
     };
+    
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
@@ -73,6 +77,7 @@ function CalendarList() {
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />

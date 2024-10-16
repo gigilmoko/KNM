@@ -6,6 +6,7 @@ import RightSidebar from "../../Layout/RightSidebar";
 import ModalLayout from "../../Layout/ModalLayout";
 import TitleCard from "../../Layout/components/Cards/TitleCard"; // Assuming TitleCard is used for form titles
 import { useNavigate } from "react-router-dom"
+import { toast, ToastContainer } from 'react-toastify'
 
 function EventCreateForm() {
   const navigate = useNavigate();
@@ -56,39 +57,43 @@ function EventCreateForm() {
 
     // Prepare event data
     const eventData = {
-      title,
-      description,
-      startDate,
-      endDate,
-      date,
-      image // Use the image URL
+        title,
+        description,
+        startDate,
+        endDate,
+        date,
+        image // Use the image URL
     };
 
     // Log the form data for debugging
-    console.log("Submitted Data:");
-    console.log(eventData);
+    console.log("Submitted Data:", eventData);
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API}/api/calendar/event`, eventData);
+        const response = await axios.post(`${process.env.REACT_APP_API}/api/calendar/event`, eventData);
 
-      if (response.data) {
-        setSuccess("Event created successfully!");
-        // Clear form after submission
-        setTitle("");
-        setDescription("");
-        setStartDate("");
-        setEndDate("");
-        // setImage(null);
-        navigate('/admin/calendar/'); 
-      }
+        if (response.data) {
+            toast.success("Event created successfully!");
+            // Clear form after submission
+            setTitle("");
+            setDescription("");
+            setStartDate("");
+            setEndDate("");
+            // setImage(null);
+            setTimeout(() => {
+              navigate('/admin/calendar/');
+            }, 3000); 
+            
+        }
     } catch (err) {
-      console.error("Error creating event:", err);
-      setError("Failed to create event. Please try again.");
+        toast.error("Failed to create event. Please try again.");
+        console.error("Error creating event:", err);
     }
-  };
+};
+;
 
   return (
     <div className="drawer lg:drawer-open">
+      <ToastContainer/>
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
         <Header />

@@ -6,6 +6,7 @@ import LeftSidebar from "../../Layout/LeftSidebar";
 import RightSidebar from "../../Layout/RightSidebar";
 import ModalLayout from "../../Layout/ModalLayout";
 import TitleCard from "../../Layout/components/Cards/TitleCard"; // Assuming you use this for form titles
+import { toast, ToastContainer } from 'react-toastify'
 
 function UpdateCalendar() {
   const [title, setTitle] = useState("");
@@ -66,26 +67,31 @@ function UpdateCalendar() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.put(`${process.env.REACT_APP_API}/api/calendar/event/${id}`, {
-        date,
-        title,
-        description,
-        startDate,
-        endDate,
-        image,
-      });
+        await axios.put(`${process.env.REACT_APP_API}/api/calendar/event/${id}`, {
+            date,
+            title,
+            description,
+            startDate,
+            endDate,
+            image,
+        });
 
-      setSuccess("Event updated successfully.");
-      setError("");
-      navigate("/app/calendar-list");
+        toast.success("Event updated successfully.");
+        setError("");
+        setTimeout(() => {
+          navigate('/admin/calendar/');
+        }, 3000); 
     } catch (error) {
-      console.error("Error updating event:", error);
-      setError("Failed to update event.");
+        toast.error("Failed to update event.");
+        console.error("Error updating event:", error);
     }
-  };
+};
+
+
 
   return (
     <div className="drawer lg:drawer-open">
+      <ToastContainer/>
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
         <Header />
