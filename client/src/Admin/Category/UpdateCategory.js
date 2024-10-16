@@ -10,6 +10,7 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import 'react-notifications/lib/notifications.css';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 // Regular expressions for validation
 const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
@@ -60,37 +61,46 @@ function UpdateCategory() {
     const validateForm = () => {
         // Validate category name
         if (!nameRegex.test(categoryData.name.trim())) {
-            NotificationManager.error('Category name must be between 5 and 100 characters and can only contain letters, numbers, and spaces!', 'Error');
+            toast.error('Category name must be between 5 and 100 characters and can only contain letters, numbers, and spaces!');
             return false;
         }
-
+    
         // Validate description (must be between 5 and 500 characters)
         if (!descriptionRegex.test(categoryData.description.trim())) {
-            NotificationManager.error('Description must be between 5 and 500 characters!', 'Error');
+            toast.error('Description must be between 5 and 500 characters!');
             return false;
         }
-
+    
         return true;
     };
-
+    
     const updateCategory = async () => {
         // Perform validation before submitting
         if (!validateForm()) {
             return; // Stop the function if validation fails
         }
-
+    
         try {
             await axios.put(`${process.env.REACT_APP_API}/api/category/update/${id}`, categoryData);
-            NotificationManager.success('Category updated successfully', 'Success');
-            navigate('/admin/category');
+    
+            // Show success toast
+            toast.success('Category updated successfully!');
+            setTimeout(() => {
+                navigate('/admin/category');
+              }, 3000); 
         } catch (error) {
-            NotificationManager.error('Failed to update category', 'Error');
+            console.error('Failed to update category', error);
+    
+            // Show error toast
+            toast.error('Failed to update category');
         }
     };
+    
 
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />

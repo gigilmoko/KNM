@@ -13,6 +13,7 @@ import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon'; // Import the edit icon
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 function CategoryList() {
     const dispatch = useDispatch();
@@ -64,12 +65,20 @@ function CategoryList() {
     const deleteCurrentCategory = async (id, index) => {
         try {
             await axios.delete(`${process.env.REACT_APP_API}/api/category/delete/${id}`);
+            
+            // Update state to remove the deleted category
             setCategories(categories.filter((_, i) => i !== index));
             setFilteredCategories(filteredCategories.filter((_, i) => i !== index));
+            
+            // Show success toast
+            toast.success('Category deleted successfully!');
         } catch (error) {
             console.error('Failed to delete category', error);
+            // Show error toast
+            toast.error('Failed to delete category');
         }
     };
+    
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
@@ -88,6 +97,7 @@ function CategoryList() {
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />

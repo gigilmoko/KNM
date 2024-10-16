@@ -10,6 +10,7 @@ import { NotificationContainer, NotificationManager } from 'react-notifications'
 import 'react-notifications/lib/notifications.css';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
+import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 // Regular expressions for validation
 const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
@@ -34,37 +35,46 @@ function CreateCategory() {
     const validateForm = () => {
         // Validate category name
         if (!nameRegex.test(categoryData.name.trim())) {
-            NotificationManager.error('Category name must be between 5 and 100 characters and can only contain letters, numbers, and spaces!', 'Error');
+            toast.error('Category name must be between 5 and 100 characters and can only contain letters, numbers, and spaces!');
             return false;
         }
-
+    
         // Validate description (optional, max 500 characters)
         if (!descriptionRegex.test(categoryData.description.trim())) {
-            NotificationManager.error('Description can be up to 500 characters!', 'Error');
+            toast.error('Description can be up to 500 characters!');
             return false;
         }
-
+    
         return true;
     };
-
+    
     const createCategory = async () => {
         // Perform validation before submitting
         if (!validateForm()) {
             return; // Stop the function if validation fails
         }
-
+    
         try {
             const response = await axios.post(`${process.env.REACT_APP_API}/api/category/new`, categoryData);
-            NotificationManager.success('Category created successfully', 'Success');
-            navigate('/admin/category');
+            
+            // Show success toast
+            toast.success('Category created successfully!');
+            setTimeout(() => {
+                navigate('/admin/category');
+              }, 3000); 
+          
         } catch (error) {
-            NotificationManager.error('Failed to create category', 'Error');
+            console.error('Failed to create category', error);
+            // Show error toast
+            toast.error('Failed to create category');
         }
     };
+    
 
     return (
         <>
             <div className="drawer lg:drawer-open">
+                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />
