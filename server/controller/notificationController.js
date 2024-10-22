@@ -46,5 +46,22 @@ exports.getNotifications = async (req, res) => {
     }
 };
 
+exports.deleteNotification = async (req, res) => {
+  const notifId = req.params.id;
+
+  try {
+    const notification = await Notification.findByIdAndDelete(notifId);
+    if (!notification) {
+      return res.status(404).json({ success: false, message: 'Notification not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Notification deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+};
+
+// Get unread notifications count
+
 
   
