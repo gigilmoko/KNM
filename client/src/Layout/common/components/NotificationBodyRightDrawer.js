@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { EyeIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
 
 const NotificationBodyRightDrawer = () => {
   const [notifications, setNotifications] = useState([]);
@@ -8,6 +9,8 @@ const NotificationBodyRightDrawer = () => {
   const [error, setError] = useState('');
   const [menuOpen, setMenuOpen] = useState(null);
   const currentTheme = localStorage.getItem("theme") || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
+
+  const navigate = useNavigate(); // Initialize the navigate hook
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -17,9 +20,10 @@ const NotificationBodyRightDrawer = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-
+  
       try {
         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications`, config);
+        console.log('Fetched notifications:', data); // Log the fetched notifications
         setNotifications(data);
         setLoading(false);
       } catch (error) {
@@ -28,9 +32,10 @@ const NotificationBodyRightDrawer = () => {
         setLoading(false);
       }
     };
-
+  
     fetchNotifications();
   }, []);
+  
 
   const markAsRead = async (notifId) => {
     const token = sessionStorage.getItem('token');
@@ -39,9 +44,9 @@ const NotificationBodyRightDrawer = () => {
         Authorization: `Bearer ${token}`,
       },
     };
-
+  
     try {
-      await axios.put(`${process.env.REACT_APP_API}/api/notifications/${notifId}/markAsRead`, {}, config);
+      await axios.put(`${process.env.REACT_APP_API}/api/notifications/${notifId}/toggleReadStatus`, {}, config);
       setNotifications((prev) =>
         prev.map((notif) =>
           notif._id === notifId ? { ...notif, read: !notif.read } : notif
@@ -49,7 +54,7 @@ const NotificationBodyRightDrawer = () => {
       );
       setMenuOpen(null);
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error('Error toggling notification read status:', error);
     }
   };
 
@@ -70,6 +75,16 @@ const NotificationBodyRightDrawer = () => {
     }
   };
 
+  const handleNotificationClick = (notif) => {
+    if (notif.read) {
+      // Redirect to the /admin/calendar/info/:id route if the notification is read
+      navigate(`/admin/calendar/info/${notif.event?._id || notif._id}`);
+    } else {
+      markAsRead(notif._id);
+    }
+  };
+  
+
   if (loading) {
     return <div>Loading notifications...</div>;
   }
@@ -87,46 +102,46 @@ const NotificationBodyRightDrawer = () => {
                 ? currentTheme === "light" ? '#8ecae6' : '#ffb703'
                 : currentTheme === "light" ? '#219ebc' : '#fb8500'
             }}
-            onClick={() => markAsRead(notif._id)}
+            onClick={() => handleNotificationClick(notif)} // Call the handleNotificationClick function
           >
             <p className="font-bold" style={{ color: 'black' }}>{notif.title}</p>
             <p style={{ color: 'black' }}>{notif.description}</p>
 
             <div className="absolute right-2 top-2">
-  <button onClick={(e) => {
-    e.stopPropagation();
-    setMenuOpen(menuOpen === notif._id ? null : notif._id);
-  }} style={{ color: 'black' }}>
-    ⋮
-  </button>
-  {menuOpen === notif._id && (
-    <div className="absolute right-0 top-8 bg-white shadow-lg p-2 rounded flex space-x-2">
-      <button onClick={(e) => {
-          e.stopPropagation();
-          setMenuOpen(null);
-        }} 
-        className="flex items-center p-2 hover:bg-gray-200">
-        <XMarkIcon className="h-5 w-5 mr-2" style={{ color: 'black' }} /> {/* XMarkIcon in black */}
-      </button>
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          markAsRead(notif._id);
-        }} 
-        className="flex items-center p-2 hover:bg-gray-200">
-        <EyeIcon className="h-5 w-5 mr-2" style={{ color: 'black' }} /> {/* EyeIcon in black */}
-      </button>
-      <button 
-        onClick={(e) => {
-          e.stopPropagation();
-          deleteNotification(notif._id);
-        }} 
-        className="flex items-center p-2 hover:bg-gray-200 text-red-500">
-        <TrashIcon className="h-5 w-5 mr-2" style={{ color: 'black' }} /> {/* TrashIcon in black */}
-      </button>
-    </div>
-  )}
-</div>
+            <button onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen(menuOpen === notif._id ? null : notif._id);
+            }} style={{ color: 'black' }}>
+              ⋮
+            </button>
+            {menuOpen === notif._id && (
+              <div className="absolute right-0 top-8 bg-white shadow-lg p-2 rounded flex space-x-2">
+                <button onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(null);
+                  }} 
+                  className="flex items-center p-2 hover:bg-gray-200">
+                  <XMarkIcon className="h-5 w-5 mr-2" style={{ color: 'black' }} /> {/* XMarkIcon in black */}
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    markAsRead(notif._id);
+                  }} 
+                  className="flex items-center p-2 hover:bg-gray-200">
+                  <EyeIcon className="h-5 w-5 mr-2" style={{ color: 'black' }} /> {/* EyeIcon in black */}
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteNotification(notif._id);
+                  }} 
+                  className="flex items-center p-2 hover:bg-gray-200 text-red-500">
+                  <TrashIcon className="h-5 w-5 mr-2" style={{ color: 'black' }} /> {/* TrashIcon in black */}
+                </button>
+              </div>
+            )}
+          </div>
 
           </div>
         ))}

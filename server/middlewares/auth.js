@@ -41,15 +41,22 @@ exports.isAuthenticatedUser = async (req, res, next) => {
     }
 
     try {
-        const token = authorizationHeader.split(' ')[1];
+        const token = authorizationHeader.split(' ')[1]; // Assuming the format is "Bearer token"
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('Decoded Token:', decoded);
         req.user = await User.findById(decoded.id);
+
+        if (!req.user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
         next();
     } catch (error) {
+        console.error('Authentication error:', error); // Log the error for debugging
         return res.status(401).json({ message: 'Invalid token' });
     }
 };
+
 
 exports.authorizeRoles = (...roles) => {
     return (req, res, next) => {

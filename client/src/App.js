@@ -31,6 +31,7 @@ import RegisterMember from './Public/RegisterMember';
 import NewMember from './Admin/Member/NewMember';
 import UpdateMember from './Admin/Member/UpdateMember';
 import Notifications from './Admin/Notification/Notification';
+import CalendarInfo from './Admin/Calendar/CalendarInfo';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -62,6 +63,7 @@ function App() {
             <Route path="/password/reset/:token" element={<NewPassword />} />
         {/* Admin */}
           <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/notifications" element={<Notifications />} />
           {/* Members */}
             <Route path="/admin/members/new" element={<NewMember />} />
             <Route path="/admin/members/edit/:memberId" element={<UpdateMember />} />
@@ -72,6 +74,7 @@ function App() {
             <Route path="/admin/calendar/list" element={<CalendarList />} />
             <Route path="/admin/calendar/new" element={<NewCalendar />} />
             <Route path="/admin/calendar/update/:id" element={<UpdateCalendar />} />
+            <Route path="/admin/calendar/info/:id" element={<CalendarInfo />} />
           {/* Product */}
             <Route path="/admin/products" element={<ProductsList />} />
             <Route path="/admin/products/update/:id" element={<UpdateProduct />} />
@@ -85,7 +88,7 @@ function App() {
             <Route path="/admin/calendar" element={<Calendar />} />
 
 
-            <Route path="/admin/notifications" element={<Notifications />} />
+        
       </Routes>
     </Router>
   );

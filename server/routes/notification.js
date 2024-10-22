@@ -1,7 +1,7 @@
 const express = require('express');
 const {
   getNotifications,
-  markNotificationAsRead,
+  toggleNotificationReadStatus,
   deleteNotification,// Import the new delete function
   getUnreadNotificationsCount,
 } = require('../controller/notificationController');
@@ -11,7 +11,7 @@ const router = express.Router();
 
 
 router.get('/notifications', isAuthenticatedUser, getNotifications);
-router.put('/notifications/:id/markAsRead', isAuthenticatedUser, markNotificationAsRead);
+router.put('/notifications/:id/toggleReadStatus', isAuthenticatedUser, toggleNotificationReadStatus);
 router.delete('/notifications/:id', isAuthenticatedUser, deleteNotification); 
 router.get('/notifications/unread-count', isAuthenticatedUser, getUnreadNotificationsCount);
 
