@@ -30,7 +30,7 @@ import NewCategory from './Admin/Category/NewCategory';
 import RegisterMember from './Public/RegisterMember';
 import NewMember from './Admin/Member/NewMember';
 import UpdateMember from './Admin/Member/UpdateMember';
-
+import Notifications from './Admin/Notification/Notification';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -83,6 +83,9 @@ function App() {
           {/* User */}
             <Route path="/admin/users/list" element={<UsersList />} />
             <Route path="/admin/calendar" element={<Calendar />} />
+
+
+            <Route path="/admin/notifications" element={<Notifications />} />
       </Routes>
     </Router>
   );

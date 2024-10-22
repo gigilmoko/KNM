@@ -1,34 +1,56 @@
 const CalendarEvent = require('../models/calendar'); 
+const Notification = require('../models/notification');
+const User = require('../models/user');
 
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image } = req.body;
 
     try {
+        // Step 1: Create the calendar event
         const newEvent = new CalendarEvent({
             date,
             title,
             description,
             startDate,
             endDate,
-           
             image
         });
 
         await newEvent.save();
 
+        // Step 2: Fetch all users (or filter based on your logic)
+        const users = await User.find();
+
+        // Step 3: Create notifications for each user
+        const notificationPromises = users.map(async (user) => {
+            return Notification.create({
+                user: user._id,  // Reference to the user
+                event: newEvent._id,  // Reference to the created event
+                title: `New Event: ${title}`,  // Notification title
+                description: `The event "${title}" is scheduled from ${startDate} to ${endDate}.`,
+                eventDate: startDate,
+                read: false,  // Mark as unread
+            });
+        });
+
+        // Wait for all notifications to be created
+        await Promise.all(notificationPromises);
+
+        // Step 4: Send success response
         res.status(201).json({
             success: true,
-            message: 'Event created successfully',
+            message: 'Event and notifications created successfully',
             data: newEvent
         });
+
     } catch (error) {
         console.error('Error creating event:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create event'
+            message: 'Failed to create event and notifications',
+            error: error.message
         });
     }
-    
 };
 
 exports.updateEvent = async (req, res) => {

@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const NotificationBodyRightDrawer = () => {
+const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const currentTheme = localStorage.getItem("theme") || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const token = sessionStorage.getItem('token');
+      const token = sessionStorage.getItem('token'); // Load token from sessionStorage
       const config = {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // Include the token in headers
         },
       };
 
       try {
+        // Use process.env.REACT_APP_API for the base API URL
         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications`, config);
         setNotifications(data);
         setLoading(false);
@@ -31,14 +31,15 @@ const NotificationBodyRightDrawer = () => {
   }, []);
 
   const markAsRead = async (notifId) => {
-    const token = sessionStorage.getItem('token');
+    const token = sessionStorage.getItem('token'); // Load token from sessionStorage
     const config = {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Include the token in headers
       },
     };
 
     try {
+      // Use process.env.REACT_APP_API for the base API URL
       await axios.put(`${process.env.REACT_APP_API}/api/notifications/${notifId}/markAsRead`, {}, config);
       setNotifications((prev) =>
         prev.map((notif) =>
@@ -55,27 +56,23 @@ const NotificationBodyRightDrawer = () => {
   }
 
   return (
-    <>
+    <div>
+      <h2>Notifications</h2>
       {error && <p className="text-red-500">{error}</p>}
-      <div className="notification-drawer">
+      <ul>
         {notifications.map((notif) => (
-          <div
-            key={notif._id}
-            className="grid mt-3 card rounded-box p-3 cursor-pointer"
-            style={{
-              backgroundColor: notif.read
-                ? currentTheme === "light" ? '#8ecae6' : '#ffb703'
-                : currentTheme === "light" ? '#219ebc' : '#fb8500'
-            }}
-            onClick={() => markAsRead(notif._id)}
-          >
-            <p className="font-bold" style={{ color: 'black' }}>{notif.title}</p>
-            <p style={{ color: 'black' }}>{notif.description}</p>
-          </div>
+          <li key={notif._id} style={{ background: notif.read ? '#ddd' : '#fff' }}>
+            <p>{notif.title}</p>
+            <p>{notif.description}</p>
+            <button onClick={() => markAsRead(notif._id)}>
+              {notif.read ? 'Read' : 'Mark as Read'}
+            </button>
+          </li>
         ))}
-      </div>
-    </>
+      </ul>
+    </div>
   );
 };
 
-export default NotificationBodyRightDrawer;
+export default Notifications;
+    

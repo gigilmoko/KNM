@@ -1,4 +1,3 @@
-import { themeChange } from 'theme-change';
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import BellIcon from '@heroicons/react/24/outline/BellIcon';
@@ -7,17 +6,19 @@ import MoonIcon from '@heroicons/react/24/outline/MoonIcon';
 import SunIcon from '@heroicons/react/24/outline/SunIcon';
 import { openRightDrawer } from './common/rightDrawerSlice';
 import { RIGHT_DRAWER_TYPES } from '../utils/globalConstantUtil';
-import { NavLink, Routes, Link, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { themeChange } from 'theme-change';
 
 function Header() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { noOfNotifications, pageTitle } = useSelector(state => state.header);
+    const { pageTitle } = useSelector(state => state.header);
     const [currentTheme, setCurrentTheme] = useState(localStorage.getItem("theme"));
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [unreadNotifications, setUnreadNotifications] = useState(0); // Unread notifications state
 
     useEffect(() => {
         themeChange(false);
@@ -29,6 +30,7 @@ function Header() {
             }
         }
         getProfile();
+        getUnreadNotifications(); // Fetch unread notifications count on component mount
     }, [currentTheme]);
 
     const getProfile = async () => {
@@ -39,13 +41,26 @@ function Header() {
         };
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            console.log(data); // Log the fetched data
             setUser(data.user);
             setLoading(false);
         } catch (error) {
-            console.log(error);
             setError('Failed to load profile.');
             setLoading(false);
+        }
+    };
+
+    // Fetch unread notifications count
+    const getUnreadNotifications = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+            }
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications/unread-count`, config);
+            setUnreadNotifications(data.unreadCount);
+        } catch (error) {
+            console.error('Error fetching unread notifications count', error);
         }
     };
 
@@ -60,11 +75,7 @@ function Header() {
             navigate('/login');
             window.location.reload();
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                console.error(error.response.data.message);
-            } else {
-                console.error('An error occurred while logging out');
-            }
+            console.error('An error occurred while logging out', error);
         }
     };
 
@@ -87,14 +98,14 @@ function Header() {
             <div className="flex-none flex items-center space-x-4 ml-auto">
                 <label className="swap">
                     <input type="checkbox" onClick={handleThemeToggle} />
-                    <SunIcon data-set-theme="light" data-act-class="ACTIVECLASS" className={"fill-current w-6 h-6 " + (currentTheme === "dark" ? "swap-on" : "swap-off")} />
-                    <MoonIcon data-set-theme="dark" data-act-class="ACTIVECLASS" className={"fill-current w-6 h-6 " + (currentTheme === "light" ? "swap-on" : "swap-off")} />
+                    <SunIcon data-set-theme="light" className={"fill-current w-6 h-6 " + (currentTheme === "dark" ? "swap-on" : "swap-off")} />
+                    <MoonIcon data-set-theme="dark" className={"fill-current w-6 h-6 " + (currentTheme === "light" ? "swap-on" : "swap-off")} />
                 </label>
 
                 <button className="btn btn-ghost btn-circle" onClick={() => openNotification()}>
                     <div className="indicator">
                         <BellIcon className="h-6 w-6" />
-                        {noOfNotifications > 0 ? <span className="indicator-item badge badge-secondary badge-sm">{noOfNotifications}</span> : null}
+                        {unreadNotifications > 0 ? <span className="indicator-item badge badge-secondary badge-sm">{unreadNotifications}</span> : null}
                     </div>
                 </button>
 
@@ -105,13 +116,8 @@ function Header() {
                                 <img src={user ? user.avatar : "https://placeimg.com/80/80/people"} alt="profile" />
                             </div>
                         </label>
-                        
                         <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
-                            <li className="justify-between">
-                                <Link to={'/profile'}>
-                                    Profile 
-                                </Link>
-                            </li>
+                            <li><Link to={'/profile'}>Profile</Link></li>
                             <div className="divider mt-0 mb-0"></div>
                             <li><a onClick={logoutHandler}>Logout</a></li>
                         </ul>

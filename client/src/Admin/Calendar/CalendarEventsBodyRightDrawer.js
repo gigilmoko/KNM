@@ -12,6 +12,7 @@ function CalendarEventsBodyRightDrawer({ filteredEvents }) {
                             key={k}
                             className={`grid mt-3 card rounded-box p-3 ${THEME_BG[e.theme] || ""}`}
                         >
+                            <p>sdahasghjdsa </p>
                             {e.title}
                         </div>
                     );
