@@ -4,6 +4,7 @@ const {
   toggleNotificationReadStatus,
   deleteNotification,// Import the new delete function
   getUnreadNotificationsCount,
+  deleteAllNotifications
 } = require('../controller/notificationController');
 const { isAuthenticatedUser } = require('../middlewares/auth');
 
@@ -14,5 +15,6 @@ router.get('/notifications', isAuthenticatedUser, getNotifications);
 router.put('/notifications/:id/toggleReadStatus', isAuthenticatedUser, toggleNotificationReadStatus);
 router.delete('/notifications/:id', isAuthenticatedUser, deleteNotification); 
 router.get('/notifications/unread-count', isAuthenticatedUser, getUnreadNotificationsCount);
+router.delete('/notifications', isAuthenticatedUser, deleteAllNotifications); 
 
 module.exports = router;

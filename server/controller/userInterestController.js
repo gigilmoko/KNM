@@ -75,3 +75,33 @@ exports.expressInterest = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get user interest for a specific event
+exports.getUserInterest = async (req, res) => {
+  try {
+    const { userId, eventId } = req.params; // Extract userId and eventId from the URL
+
+    // Check if the user has expressed interest in the event
+    const interest = await UserInterest.findOne({ user: userId, event: eventId });
+
+    if (!interest) {
+      return res.status(404).json({ message: 'Interest not found.' });
+    }
+
+    // Find the event details
+    const event = await CalendarEvent.findById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
+
+    res.status(200).json({
+      message: 'Interest found.',
+      interest,
+      event
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error.' });
+  }
+};
+

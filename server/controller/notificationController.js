@@ -62,3 +62,19 @@ exports.deleteNotification = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error', error });
   }
 };
+
+exports.deleteAllNotifications = async (req, res) => {
+  const userId = req.user.id; // Assuming you're using authentication middleware
+
+  try {
+    const result = await Notification.deleteMany({ user: userId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ success: false, message: 'No notifications found to delete' });
+    }
+
+    res.status(200).json({ success: true, message: 'All notifications deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error', error });
+  }
+};

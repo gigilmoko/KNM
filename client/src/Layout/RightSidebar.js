@@ -1,4 +1,7 @@
+import React, { useState, useEffect } from 'react';
 import XMarkIcon from '@heroicons/react/24/solid/XMarkIcon';
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon'; // Import TrashIcon from Heroicons
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import NotificationBodyRightDrawer from '../Layout/common/components/NotificationBodyRightDrawer';
 import { closeRightDrawer } from '../Layout/common/rightDrawerSlice';
@@ -7,11 +10,61 @@ import CalendarEventsBodyRightDrawer from '../Admin/Calendar/CalendarEventsBodyR
 
 function RightSidebar() {
   const { isOpen, bodyType, extraObject, header } = useSelector(state => state.rightDrawer);
+  const [loading, setLoading] = useState(false); // For delete action
+  const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
+  // Function to close the drawer
   const close = (e) => {
     dispatch(closeRightDrawer(e));
   };
+
+  // Function to delete all notifications
+  const deleteAllNotifications = async () => {
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`, // Using sessionStorage for token
+      },
+    };
+
+    try {
+      setLoading(true); // Start loading before the request
+      await axios.delete(`${process.env.REACT_APP_API}/api/notifications`, config); // API call to delete notifications
+      setLoading(false); // Stop loading after the request
+      
+    } catch (error) {
+      setError('Failed to delete notifications.');
+      setLoading(false); // Stop loading even in case of an error
+      console.error(error);
+    }
+  };
+
+  // Fetch profile data to authenticate user (getProfile method)
+// Fetch profile data to authenticate user (getProfile method)
+const getProfile = async () => {
+  const config = {
+    headers: {
+      'Authorization': `Bearer ${sessionStorage.getItem('token')}`, // Using sessionStorage for token
+    },
+  };
+
+  try {
+    const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config); // Assuming `/api/me` returns user data
+    if (data && data.user) {
+      console.log('Fetched User ID:', data.user._id); // Log user ID to check if it's null or valid
+      // Handle profile data (e.g., set user state or do something with the returned data)
+    } else {
+      console.log('User data is missing:', data);
+    }
+  } catch (error) {
+    console.error('Failed to load profile:', error);
+  }
+};
+
+  // Use effect to load profile on component mount
+  useEffect(() => {
+    getProfile(); // Call getProfile when component mounts
+  }, []);
 
   return (
     <div
@@ -30,11 +83,20 @@ function RightSidebar() {
       >
         <div className="relative pb-5 flex flex-col h-full">
           {/* Header */}
-          <div className="navbar flex pl-4 pr-4 shadow-md">
-            <button className="float-left btn btn-circle btn-outline btn-sm" onClick={() => close()}>
-              <XMarkIcon className="h-5 w-5" />
-            </button>
-            <span className="ml-2 font-bold text-xl">{header}</span>
+          <div className="navbar flex pl-4 pr-4 shadow-md justify-between">
+            <div className="flex items-center">
+              <button className="float-left btn btn-circle btn-outline btn-sm" onClick={() => close()}>
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+              <span className="ml-2 font-bold text-xl">{header}</span>
+            </div>
+            {/* Conditionally render trash icon if header is "Notifications" */}
+            {header === "Notifications" && (
+              <button className="btn btn-circle btn-outline btn-sm" onClick={deleteAllNotifications} disabled={loading}>
+                <TrashIcon className="h-5 w-5" />
+                {loading && <span className="ml-2">Deleting...</span>} {/* Optional loading indicator */}
+              </button>
+            )}
           </div>
 
           {/* Content */}
