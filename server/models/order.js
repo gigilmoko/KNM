@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
 
-
-
 const orderItemSchema = mongoose.Schema({
-    id:{
+    id: {
         type: String,
         unique: true,
         required: true
@@ -27,7 +25,6 @@ const orderItemSchema = mongoose.Schema({
     },
     product: {
         type: mongoose.Schema.Types.ObjectId,
-        required: false,
         ref: 'Product'
     },
     status: {
@@ -41,12 +38,11 @@ const orderSchema = mongoose.Schema({
     user: {
         id: {
             type: mongoose.Schema.Types.ObjectId,
-            required: false,
             ref: 'User',
         },
         name: {
             type: String,
-            required: false,
+            required: true,
         },
         address: {
             type: String,
@@ -77,7 +73,7 @@ const orderSchema = mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }, 
+    },
 });
 
 module.exports = mongoose.model('Order', orderSchema);
