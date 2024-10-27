@@ -1,10 +1,33 @@
+require('dotenv').config();
+const axios = require('axios');
 const Order = require('../models/order');
 const User = require('../models/user');
 const Product = require('../models/product'); // Adjust the path as necessary
+const { encode: btoa } = require('base-64');
+
+// Function to create a payment intent with PayMongo
+const createPaymentIntent = async (amount) => {
+    const response = await axios.post('https://api.paymongo.com/v1/payment_intents', {
+        data: {
+            attributes: {
+                amount: amount * 100, // Amount in centavos
+                payment_method_allowed: ['gcash', 'paymaya'],
+                currency: 'PHP'
+            }
+        }
+    }, {
+        headers: {
+            'Authorization': `Basic ${btoa(process.env.PAYMONGO_SECRET_KEY + ':')}`,
+            'Content-Type': 'application/json'
+        }
+    });
+
+    return response.data.data;
+};
 
 const createOrder = async (req, res) => {
     try {
-        const { userId, orderItems, paymentType, paidAt, totalPrice, orderStatus } = req.body;
+        const { userId, orderItems, paymentType, totalPrice, paymentMethodId } = req.body;
 
         // Validate request body
         if (!orderItems || orderItems.length === 0) {
@@ -36,6 +59,29 @@ const createOrder = async (req, res) => {
             }
         }
 
+        // Create a payment intent with PayMongo
+        const paymentIntent = await createPaymentIntent(totalPrice);
+
+        // Attach the payment method to the payment intent
+        const attachPaymentResponse = await axios.post(`https://api.paymongo.com/v1/payment_intents/${paymentIntent.id}/attach`, {
+            data: {
+                attributes: {
+                    payment_method: paymentMethodId
+                }
+            }
+        }, {
+            headers: {
+                'Authorization': `Basic ${btoa(process.env.PAYMONGO_SECRET_KEY + ':')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const payment = attachPaymentResponse.data.data;
+
+        if (payment.attributes.status !== 'succeeded') {
+            return res.status(400).json({ message: 'Payment failed', payment });
+        }
+
         // Deduct stock for each order item
         for (const item of orderItems) {
             const product = await Product.findById(item._id);
@@ -61,9 +107,13 @@ const createOrder = async (req, res) => {
             },
             orderItems: newOrderItems,
             paymentType,
-            paidAt,
+            paidAt: new Date(),
             totalPrice,
-            orderStatus
+            orderStatus: 'Processing',
+            paymentInfo: {
+                id: payment.id,
+                status: payment.attributes.status
+            }
         });
 
         // Save the order to the database
@@ -76,6 +126,4 @@ const createOrder = async (req, res) => {
     }
 };
 
-module.exports = {
-    createOrder
-};
+module.exports = { createOrder };

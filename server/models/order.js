@@ -48,6 +48,10 @@ const orderSchema = mongoose.Schema({
             type: String,
             required: false,
         },
+        address: {
+            type: String,
+            required: true,
+        }
     },
     orderItems: [orderItemSchema],
     paymentType: {
