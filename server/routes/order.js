@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { isAuthenticatedUser } = require('../middlewares/auth');
+
 const { 
     createOrder, 
     getAdminOrders, 
@@ -8,7 +10,7 @@ const {
     processOrder 
 } = require("../controller/orderController");
 
-router.post("/new", createOrder);
+router.post('/neworder', createOrder);
 router.get("/my", getMyOrders);
 router.get("/admin", getAdminOrders);
 router.route("/single/:id")

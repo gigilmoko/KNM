@@ -1,8 +1,12 @@
-const { Order } = require("../models/order");
-const { Product } = require("../models/product");
+const  Order  = require("../models/order");
+const  Product = require("../models/product");
+// const  User = require("../models/user");
 
 exports.createOrder = async (req, res, next) => {
+    console.log("Request body:", req.body); // Log the entire request body to check data
+
     const {
+        userId, // Get the userId from the request body
         shippingInfo,
         orderItems,
         paymentMethod,
@@ -11,19 +15,29 @@ exports.createOrder = async (req, res, next) => {
         totalAmount,
     } = req.body;
 
+    console.log("Shipping Info:", shippingInfo); // Log individual properties
+    console.log("Order Items:", orderItems);
+    console.log("Payment Method:", paymentMethod);
+    console.log("Items Price:", itemsPrice);
+    console.log("Shipping Charges:", shippingCharges);
+    console.log("Total Amount:", totalAmount);
+    console.log("User ID:", userId); // Log the user ID to make sure it’s passed correctly
+
     // Check product stock before creating the order
     for (const item of orderItems) {
+        console.log("Checking stock for item:", item.product);
         const product = await Product.findById(item.product);
+
         if (!product || product.stock < item.quantity) {
             return res.status(400).json({
-            success: false,
-            message: "Insufficient stock for one or more items",
+                success: false,
+                message: "Insufficient stock for one or more items",
             });
         }
     }
 
     const order = await Order.create({
-        user: req.user._id,
+        user: userId, // Use the userId passed from the frontend
         shippingInfo,
         orderItems,
         paymentMethod,
@@ -31,6 +45,9 @@ exports.createOrder = async (req, res, next) => {
         shippingCharges,
         totalAmount,
     });
+
+    // Log the created order for debugging purposes
+    console.log("Created Order:", order);
 
     // Update product stock
     for (const item of orderItems) {
@@ -42,9 +59,10 @@ exports.createOrder = async (req, res, next) => {
     res.status(201).json({
         success: true,
         message: "Order Placed Successfully",
-        order
+        order,
     });
 };
+
 
 
 exports.getAdminOrders = async (req, res, next) => {
