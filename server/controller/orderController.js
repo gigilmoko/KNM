@@ -42,8 +42,10 @@ exports.createOrder = async (req, res, next) => {
     res.status(201).json({
         success: true,
         message: "Order Placed Successfully",
+        order
     });
 };
+
 
 exports.getAdminOrders = async (req, res, next) => {
     try {
