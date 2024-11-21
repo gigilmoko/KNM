@@ -4,8 +4,6 @@ const http = require('http');
 const cookie = require('cookie-parser');
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
-const cron = require('node-cron');
-
 
 const auth = require('./routes/auth');
 const category = require('./routes/category');
@@ -14,6 +12,7 @@ const calendar = require('./routes/calendar');
 const member = require('./routes/member');
 const notification = require('./routes/notification')
 const userInterest = require('./routes/userInterest')
+const order = require('./routes/order');    
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -45,6 +44,7 @@ app.use('/api', product);
 app.use('/api', member);
 app.use('/api', notification);
 app.use('/api', userInterest);
+app.use('/api', order);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));

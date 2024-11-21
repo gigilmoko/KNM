@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const { 
     createOrder, 
@@ -6,7 +6,7 @@ const {
     getMyOrders, 
     getOrderDetails, 
     processOrder 
-} = require("../controllers/orderController");
+} = require("../controller/orderController");
 
 router.post("/new", createOrder);
 router.get("/my", getMyOrders);

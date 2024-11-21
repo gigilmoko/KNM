@@ -67,8 +67,6 @@ exports.createOrder = async (req, res, next) => {
     }
 };
 
-
-
 exports.getAdminOrders = async (req, res, next) => {
     try {
         const orders = await Order.find({});

@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+const mongoose = require('mongoose')
 
-const schema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema({
     shippingInfo: {
         address: {
             type: String,
@@ -85,4 +85,4 @@ const schema = new mongoose.Schema({
     },
 });
 
-export const Order = mongoose.model("Order", schema);
+module.exports = mongoose.model('Order', orderSchema);
