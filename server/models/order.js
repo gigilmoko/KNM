@@ -1,79 +1,88 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
-const orderItemSchema = mongoose.Schema({
-    id: {
-        type: String,
-        unique: true,
-        required: true
-    },
-    name: {
-        type: String,
-        required: true
-    },
-    quantity: {
-        type: Number,
-        required: true,
-        default: 1
-    },
-    image: {
-        type: String,
-        required: true
-    },
-    price: {
-        type: Number,
-        required: true
-    },
-    product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
-    },
-    status: {
-        type: String,
-        required: true,
-        default: 'Pending'
-    }
-});
-
-const orderSchema = mongoose.Schema({
-    user: {
-        id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+const schema = new mongoose.Schema({
+    shippingInfo: {
+        address: {
+            type: String,
+            required: true,
         },
+        city: {
+            type: String,
+            required: true,
+        },
+        country: {
+            type: String,
+            required: true,
+        },
+    },
+
+    orderItems: [
+        {
         name: {
             type: String,
             required: true,
         },
-        address: {
+        price: {
+            type: Number,
+            required: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+        },
+        image: {
             type: String,
             required: true,
-        }
-    },
-    orderItems: [orderItemSchema],
-    paymentType: {
-        type: String,
+        },
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+            required: true,
+        },
+        },
+    ],
+
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: true,
-        enum: ["Online", "COD", "Card"],
-        default: 'Online'
     },
-    paidAt: {
-        type: Date
+
+    paymentMethod: {
+        type: String,
+        enum: ["COD", "ONLINE"],
+        default: "COD",
     },
-    totalPrice: {
+
+    paidAt: Date,
+    paymentInfo: {
+        id: String,
+        status: String,
+    },
+
+    itemsPrice: {
         type: Number,
         required: true,
-        default: 0.0
     },
+    shippingCharges: {
+        type: Number,
+        required: true,
+    },
+    totalAmount: {
+        type: Number,
+        required: true,
+    },
+
     orderStatus: {
         type: String,
-        required: true,
-        enum: ["Processing", "Shipped", "Delivered"],
-        default: 'Processing'
+        enum: ["Preparing", "Shipped", "Delivered"],
+        default: "Preparing",
     },
+    deliveredAt: Date,
     createdAt: {
         type: Date,
-        default: Date.now
+        default: Date.now,
     },
 });
 
-module.exports = mongoose.model('Order', orderSchema);
+export const Order = mongoose.model("Order", schema);
