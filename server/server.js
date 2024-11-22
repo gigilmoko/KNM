@@ -38,15 +38,15 @@ mongoose
         console.log(err);
     });
 
-app.use('/api/auth', auth);
-app.use('/api/calendar', calendar);
-app.use('/api/category', category);
-app.use('/api/product', product);
-app.use('/api/member', member);
-app.use('/api/notification', notification);
-app.use('/api/userInterest', userInterest);
-app.use('/api/order', order);
-app.use('/api/feedback', feedback);
+app.use('/api', auth);
+app.use('/api', calendar);
+app.use('/api', category);
+app.use('/api', product);
+app.use('/api', member);
+app.use('/api', notification);
+app.use('/api', userInterest);
+app.use('/api', order);
+app.use('/api', feedback);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
