@@ -30,12 +30,11 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    required: false,  // Set to false since it's optional
+    required: false,
   },
   role: {
     type: String,
     enum: ["admin", "user", "member"],
-    // default: "user",
   },
   dateOfBirth: {
     type: Date,
@@ -43,27 +42,26 @@ const userSchema = new mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true,  // Set to true if phone number is mandatory
+    required: true,
   },
   address: {
     type: String,
-    required: true,  // Set to true if address is mandatory
+    required: true,
   },
   memberId: {
     type: String,
-    // required: true,  // Set to true if memberId is mandatory
   },
   googleLogin: {
     type: Boolean,
-    default: false, // Default to false if not set
+    default: false,
   },
   applyMember: {
     type: Boolean,
-    default: false, // Default to false if not set
+    default: false,
   },
   imageMember: {
     type: String,
-    required: false,  // Set to false since it's optional
+    required: false,
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date

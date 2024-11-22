@@ -4,12 +4,12 @@ const upload = require("../utils/multer");
 const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
 const { registerUser, loginUser, logout, forgotPassword,
-      resetPassword, getUserProfile, updatePassword, updateProfile,
-      allUsers, getUserDetails, updateUser, updateUserRole, deleteUser, 
-      googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
-      applyingForMember, deleteImage, registerUserMember, fetchUserMemberMatch,
-      approveApplyMember, denyApplyMember, avatarUpdate,
-      updatePasswordMobile, updateProfileMobile} = require('../controller/authController');
+        resetPassword, getUserProfile, updatePassword, updateProfile,
+        allUsers, getUserDetails, updateUser, updateUserRole, deleteUser, 
+        googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
+        applyingForMember, deleteImage, registerUserMember, fetchUserMemberMatch,
+        approveApplyMember, denyApplyMember, avatarUpdate,
+        updatePasswordMobile, updateProfileMobile} = require('../controller/authController');
 
 router.post('/register', registerUser);
 router.post('/register-member', registerUserMember);
@@ -27,8 +27,6 @@ router.put('/me/update/mobile', updateProfileMobile);
 router.put('/users/:id', updateUserRole);
 router.delete('/user/:id', deleteUser);
 router.get('/users/apply', allUsersApply);
-// router.put('/users/apply/:id', updateApplyMember);
-// router.put('/users/deny-apply-member/:id', deniedApplyMember);
 router.put('/users/applying-for-member/:id', applyingForMember);
 router.delete('/users/delete-images/:public_id', deleteImage);
 router.get('/fetchusermember', fetchUserMemberMatch);
@@ -36,10 +34,4 @@ router.put('/users/approve-apply-member/:id', approveApplyMember);
 router.put('/users/deny-apply-member/:id', denyApplyMember);
 router.put('/avatar-update/:id', avatarUpdate);
 
-// router.post('/register', upload.single('avatar'), registerUser);
-// router.put('/password/update', updatePassword);
-// router.get('/admin/users', allUsers);
-// router.get('/all-users', isAuthenticatedUser, allUsers);
-// router.put('/users/:id', isAuthenticatedUser, authorizeRoles('admin'), updateUserRole);
-// router.delete('/user/:id', isAuthenticatedUser, authorizeRoles('admin'), deleteUser);
 module.exports = router;

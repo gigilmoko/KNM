@@ -11,11 +11,11 @@ const categorySchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please enter category description'],
     },
-    // user: {
-    //     type: mongoose.Schema.ObjectId,
-    //     ref: 'User',
-    //     required: true
-    // },
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now

@@ -23,13 +23,12 @@ const calendarEventSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: false // Optional field for the image URL
+    required: false 
   }
 }, {
   timestamps: true,
 });
 
-// Create the model from the schema
 const CalendarEvent = mongoose.model('CalendarEvent', calendarEventSchema);
 
 module.exports = CalendarEvent;

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Define the schema for notifications
 const notificationSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -28,7 +27,7 @@ const notificationSchema = new mongoose.Schema({
     required: true,
   }
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 module.exports = mongoose.model('Notification', notificationSchema);

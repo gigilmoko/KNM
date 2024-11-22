@@ -16,7 +16,6 @@ const memberSchema = new mongoose.Schema({
     unique: true }
 });
 
-// Create the Member model
 const Member = mongoose.model('Member', memberSchema);
 
 module.exports = Member;

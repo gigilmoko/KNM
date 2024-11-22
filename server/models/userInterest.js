@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Define the schema for user interests
 const userInterestSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
@@ -14,13 +13,12 @@ const userInterestSchema = new mongoose.Schema({
   },
   interested: {
     type: Boolean,
-    default: true, // Default to true if the user is interested
+    default: true,
   }
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true, 
 });
 
-// Create the model from the schema
 const UserInterest = mongoose.model('UserInterest', userInterestSchema);
 
 module.exports = UserInterest;

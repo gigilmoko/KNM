@@ -9,7 +9,7 @@ exports.isAuthenticatedUser = async (req, res, next) => {
     }
 
     try {
-        const token = authorizationHeader.split(' ')[1]; // Assuming the format is "Bearer token"
+        const token = authorizationHeader.split(' ')[1]; 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         console.log('Decoded Token:', decoded);
         req.user = await User.findById(decoded.id);
@@ -20,7 +20,7 @@ exports.isAuthenticatedUser = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.error('Authentication error:', error); // Log the error for debugging
+        console.error('Authentication error:', error); 
         return res.status(401).json({ message: 'Invalid token' });
     }
 };

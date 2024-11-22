@@ -2,7 +2,7 @@ const express = require('express');
 const {
   getNotifications,
   toggleNotificationReadStatus,
-  deleteNotification,// Import the new delete function
+  deleteNotification,
   getUnreadNotificationsCount,
   deleteAllNotifications
 } = require('../controller/notificationController');

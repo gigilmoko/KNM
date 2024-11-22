@@ -568,52 +568,6 @@ exports.updateUserRole = async (req, res, next) => {
   }
 };
 
-// exports.updateApplyMember = async (req, res, next) => {
-//   try {
-//     const { id } = req.params; // Get user ID from route params
-
-//     // Update the applyMember field to false and set the role to 'member'
-//     const user = await User.findByIdAndUpdate(
-//       id,
-//       { applyMember: false, role: 'member' }, // Set applyMember to false and role to 'member'
-//       { new: true }
-//     );
-
-//     if (!user) {
-//       return res.status(404).json({ success: false, message: 'User not found' });
-//     }
-
-//     // Respond with success and updated user data
-//     res.status(200).json({ success: true, user });
-//   } catch (error) {
-//     // Handle potential errors
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
-// exports.deniedApplyMember = async (req, res, next) => {
-//   try {
-//     const { id } = req.params; // Get user ID from route params
-
-//     // Update the applyMember field and set memberId to an empty string for the user
-//     const user = await User.findByIdAndUpdate(
-//       id,
-//       { applyMember: false, memberId: "" }, // Set memberId to an empty string
-//       { new: true }
-//     );
-
-//     if (!user) {
-//       return res.status(404).json({ success: false, message: 'User not found' });
-//     }
-
-//     // Respond with success and updated user data
-//     res.status(200).json({ success: true, user });
-//   } catch (error) {
-//     // Handle potential errors
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
 exports.approveApplyMember = async (req, res) => {
   try {
     const { id } = req.params; // Get the user ID from params

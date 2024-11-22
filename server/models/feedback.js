@@ -8,23 +8,23 @@ const feedbackSchema = new mongoose.Schema({
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // assuming you have a User model
+        ref: 'User', 
         required: true
     },
     rating: {
         type: Number,
         required: true,
-        min: 1, // Minimum rating value
-        max: 5  // Maximum rating value
+        min: 1, 
+        max: 5  
     },
     feedback: {
         type: String,
         required: false,
         trim: true,
-        maxlength: 500 // Limit the feedback to 500 characters
+        maxlength: 500 
     }
 }, {
-    timestamps: true // Adds createdAt and updatedAt fields
+    timestamps: true 
 });
 
 module.exports = mongoose.model('Feedback', feedbackSchema);
