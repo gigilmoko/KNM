@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { isAuthenticatedUser } = require('../middlewares/auth');
-const { createEvent, updateEvent, getEvent, getAllEvents, deleteEvent } = require('../controller/calendarController');
+const { createEvent, updateEvent, getEvent, getAllEvents, deleteEvent, afterCurrentDay, beforeCurrentDay  } = require('../controller/calendarController');
 
 // Create a new event
 router.post('/calendar/event', createEvent);
@@ -20,5 +20,7 @@ router.get('/calendar/events', getAllEvents);
 router.delete('/calendar/event/:id', deleteEvent);
 
 router.get('/calendar/events', getAllEvents); // New route for fetching all events
+router.get('/calendar/events/after', afterCurrentDay); // New route for fetching all events
+router.get('/calendar/events/before', beforeCurrentDay); // New route for fetching all events
 
 module.exports = router;

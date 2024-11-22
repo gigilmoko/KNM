@@ -46,7 +46,7 @@ function CategoryList() {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API}/api/category`);
+            const response = await axios.get(`${process.env.REACT_APP_API}/api/category/all`);
             if (response.data && Array.isArray(response.data.categories)) {
                 setCategories(response.data.categories);
                 setFilteredCategories(response.data.categories);

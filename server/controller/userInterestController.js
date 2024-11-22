@@ -1,4 +1,5 @@
 const UserInterest = require('../models/userInterest');
+const mongoose = require('mongoose');
 const Notification = require('../models/notification');
 const CalendarEvent = require('../models/calendar');
 const User = require('../models/user');
@@ -105,3 +106,31 @@ exports.getUserInterest = async (req, res) => {
   }
 };
 
+exports.getAllInterestedUsers = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+
+    // Validate the eventId (ensure it's a valid ObjectId)
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({ message: 'Invalid event ID' });
+    }
+
+    // Find all interests for the specific event
+    const interests = await UserInterest.find({ event: eventId }).populate('user', 'fname lname email avatar');
+
+    if (!interests || interests.length === 0) {
+      return res.status(404).json({ message: 'No users are interested in this event.' });
+    }
+
+    // Map through the interests and return the user details
+    const interestedUsers = interests.map(interest => interest.user);
+
+    res.status(200).json({
+      message: 'Users interested in the event retrieved successfully.',
+      interestedUsers
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

@@ -17,6 +17,7 @@ exports.getNotifications = async (req, res) => {
 
 // Toggle the 'read' status of a notification
 exports.toggleNotificationReadStatus = async (req, res) => {
+  console.log("toggleNotif Hit")
   const notifId = req.params.id;
   
   try {

@@ -48,7 +48,7 @@ function ProductsList() {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API}/api/category`);
+            const response = await axios.get(`${process.env.REACT_APP_API}/api/category/all`);
             if (response.data && Array.isArray(response.data.categories)) {
                 const categoryMap = response.data.categories.reduce((acc, category) => {
                     acc[category._id] = category.name;
@@ -67,7 +67,7 @@ function ProductsList() {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API}/api/product`);
+            const response = await axios.get(`${process.env.REACT_APP_API}/api/product/all`);
             if (response.data && Array.isArray(response.data.products)) {
                 setProducts(response.data.products);
                 setFilteredProducts(response.data.products);

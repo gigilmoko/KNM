@@ -32,6 +32,9 @@ import NewMember from './Admin/Member/NewMember';
 import UpdateMember from './Admin/Member/UpdateMember';
 import Notifications from './Admin/Notification/Notification';
 import CalendarInfo from './Admin/Calendar/CalendarInfo';
+import NewFeedback from './Public/Feedback/NewFeedback';
+import CalendarInterested from './Admin/Calendar/CalendarInterested';
+import Homepage from './Public/Homepage'
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -50,7 +53,10 @@ function App() {
     <Router>
       <Routes>
         {/* Public */}
-   
+        <Route path="/" element={<Homepage />} />
+           {/* Feedback */}
+           <Route path="/feedback/new" element={<NewFeedback />} />
+
           {/* User */}
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/edit" element={<ProfileUpdate />} />
@@ -62,31 +68,33 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/password/reset/:token" element={<NewPassword />} />
         {/* Admin */}
-          <Route path="/admin/dashboard" element={<Dashboard />} />
-          <Route path="/admin/notifications" element={<Notifications />} />
-          {/* Members */}
-            <Route path="/admin/members/new" element={<NewMember />} />
-            <Route path="/admin/members/edit/:memberId" element={<UpdateMember />} />
-            <Route path="/admin/members/list" element={<MembersList />} />
-            <Route path="/admin/members/confirmation" element={<MembersConfirmation />} />
+          <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          {/* Member */}
+            <Route path="/admin/members/new" element={<ProtectedRoute><NewMember /></ProtectedRoute>} />
+            <Route path="/admin/members/edit/:memberId" element={<ProtectedRoute><UpdateMember /></ProtectedRoute>} />
+            <Route path="/admin/members/list" element={<ProtectedRoute><MembersList /></ProtectedRoute>} />
+            <Route path="/admin/members/confirmation" element={<ProtectedRoute><MembersConfirmation /></ProtectedRoute>} />
           {/* Calendar */}
-            <Route path="/admin/calendar" element={<Calendar />} />
-            <Route path="/admin/calendar/list" element={<CalendarList />} />
-            <Route path="/admin/calendar/new" element={<NewCalendar />} />
-            <Route path="/admin/calendar/update/:id" element={<UpdateCalendar />} />
-            <Route path="/admin/calendar/info/:id" element={<CalendarInfo />} />
-          {/* Product */}
-            <Route path="/admin/products" element={<ProductsList />} />
-            <Route path="/admin/products/update/:id" element={<UpdateProduct />} />
-            <Route path="/admin/products/new" element={<NewProduct />} />
+            <Route path="/admin/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+            <Route path="/admin/calendar/list" element={<ProtectedRoute><CalendarList /></ProtectedRoute>} />
+            <Route path="/admin/calendar/new" element={<ProtectedRoute><NewCalendar /></ProtectedRoute>} />
+            <Route path="/admin/calendar/update/:id" element={<ProtectedRoute><UpdateCalendar /></ProtectedRoute>} />
+            <Route path="/admin/calendar/info/:id" element={<ProtectedRoute><CalendarInfo /></ProtectedRoute>} />
+            <Route path="/admin/calendar/info/:id/list" element={<ProtectedRoute><CalendarInterested /></ProtectedRoute>} />
+          {/* Products */}
+            <Route path="/admin/products" element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />
+            <Route path="/admin/products/update/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} />
+            <Route path="/admin/products/new" element={<ProtectedRoute><NewProduct /></ProtectedRoute>} />
           {/* Category */}
-            <Route path="/admin/category" element={<CategoryList />} />
-            <Route path="/admin/category/update/:id" element={<UpdateCategory />} />
-            <Route path="/admin/category/new" element={<NewCategory />} />
+            <Route path="/admin/category" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
+            <Route path="/admin/category/update/:id" element={<ProtectedRoute><UpdateCategory /></ProtectedRoute>} />
+            <Route path="/admin/category/new" element={<ProtectedRoute><NewCategory /></ProtectedRoute>} />
           {/* User */}
-            <Route path="/admin/users/list" element={<UsersList />} />
-            <Route path="/admin/calendar" element={<Calendar />} />
+            <Route path="/admin/users/list" element={<ProtectedRoute><UsersList /></ProtectedRoute>} />
 
+
+         
 
         
       </Routes>

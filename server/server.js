@@ -13,6 +13,7 @@ const member = require('./routes/member');
 const notification = require('./routes/notification')
 const userInterest = require('./routes/userInterest')
 const order = require('./routes/order');    
+const feedback = require('./routes/feedback')
 
 const app = express();
 const PORT = process.env.PORT || 4001;
@@ -45,6 +46,7 @@ app.use('/api', member);
 app.use('/api', notification);
 app.use('/api', userInterest);
 app.use('/api', order);
+app.use('/api', feedback);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));

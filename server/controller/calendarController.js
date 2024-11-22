@@ -1,6 +1,7 @@
 const CalendarEvent = require('../models/calendar'); 
 const Notification = require('../models/notification');
 const User = require('../models/user');
+const moment = require('moment-timezone');
 
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image } = req.body;
@@ -150,6 +151,52 @@ exports.getAllEvents = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Failed to fetch events'
+        });
+    }
+};
+
+exports.beforeCurrentDay = async (req, res) => {
+    try {
+        // Get the current date in Hong Kong Time (PH Time, UTC+8)
+        const currentDate = moment.tz('Asia/Hong_Kong').startOf('day'); // Start of the current day
+
+        // Fetch events with date before current day
+        const eventsBefore = await CalendarEvent.find({
+            date: { $lt: currentDate.toDate() } // Only events before the current date
+        });
+
+        res.status(200).json({
+            success: true,
+            data: eventsBefore
+        });
+    } catch (error) {
+        console.error('Error fetching events before current day:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch events before current day'
+        });
+    }
+};
+
+exports.afterCurrentDay = async (req, res) => {
+    try {
+        // Get the current date in Hong Kong Time (PH Time, UTC+8)
+        const currentDate = moment.tz('Asia/Hong_Kong').startOf('day'); // Start of the current day
+
+        // Fetch events with date after the current day
+        const eventsAfter = await CalendarEvent.find({
+            date: { $gt: currentDate.toDate() } // Only events after the current date
+        });
+
+        res.status(200).json({
+            success: true,
+            data: eventsAfter
+        });
+    } catch (error) {
+        console.error('Error fetching events after current day:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch events after current day'
         });
     }
 };

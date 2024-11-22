@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Header from "../../Layout/Header";
@@ -12,6 +13,7 @@ const CalendarInfo = () => {
   const [isInterested, setIsInterested] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const currentTheme = localStorage.getItem("theme") || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
 
@@ -106,6 +108,10 @@ const CalendarInfo = () => {
     }
   };
 
+  const handleListInterested = () => {
+    navigate(`/admin/calendar/info/${id}/list`);
+  };
+
   return (
     <div className="drawer lg:drawer-open">
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
@@ -143,7 +149,7 @@ const CalendarInfo = () => {
               <p>Loading event details...</p>
             )}
 
-            <div className="mt-6">
+            <div className="mt-6 mb-6">
               <button
                 onClick={handleGetNotified}
                 className={`w-full py-2 rounded ${currentTheme === "dark" ? 'bg-white text-black' : 'bg-blue-600 text-white'}`}
@@ -152,6 +158,17 @@ const CalendarInfo = () => {
                 {isInterested ? "Already Interested" : "Get Notified!"}
               </button>
             </div>
+            {user && user.role === "admin" && (
+              <div className="mt-4">
+                <button
+                  onClick={handleListInterested}
+                  className={`w-full py-2 rounded ${currentTheme === "dark" ? 'bg-green-600 text-white' : 'bg-green-500 text-white'}`}
+                >
+                  List of Interested
+                </button>
+              </div>
+            )}
+          
           </div>
         </main>
       </div>
