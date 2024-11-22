@@ -16,7 +16,7 @@ const order = require('./routes/order');
 const feedback = require('./routes/feedback')
 
 const app = express();
-const PORT = process.env.PORT || 4002;
+const PORT = process.env.PORT;
 const server = http.createServer(app);
 
 app.use(cors());
