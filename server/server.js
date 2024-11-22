@@ -10,13 +10,13 @@ const category = require('./routes/category');
 const product = require('./routes/product');
 const calendar = require('./routes/calendar');
 const member = require('./routes/member');
-const notification = require('./routes/notification')
-const userInterest = require('./routes/userInterest')
-const order = require('./routes/order');    
-const feedback = require('./routes/feedback')
+const notification = require('./routes/notification');
+const userInterest = require('./routes/userInterest');
+const order = require('./routes/order');
+const feedback = require('./routes/feedback');
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 4002; // Corrected this line
 const server = http.createServer(app);
 
 app.use(cors());
@@ -26,7 +26,7 @@ app.use(cookie());
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
 mongoose
@@ -38,15 +38,15 @@ mongoose
         console.log(err);
     });
 
-app.use('/api', auth);
-app.use('/api', calendar);
-app.use('/api', category);
-app.use('/api', product);
-app.use('/api', member);
-app.use('/api', notification);
-app.use('/api', userInterest);
-app.use('/api', order);
-app.use('/api', feedback);
+app.use('/api/auth', auth);
+app.use('/api/calendar', calendar);
+app.use('/api/category', category);
+app.use('/api/product', product);
+app.use('/api/member', member);
+app.use('/api/notification', notification);
+app.use('/api/userInterest', userInterest);
+app.use('/api/order', order);
+app.use('/api/feedback', feedback);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -54,4 +54,8 @@ db.once('open', async () => {
     server.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
     });
+});
+
+app.get("/", (req, res) => {
+    res.send("Server is running");
 });
