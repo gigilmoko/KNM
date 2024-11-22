@@ -11,7 +11,7 @@ const {
 } = require("../controller/orderController");
 
 router.post('/neworder', createOrder);
-router.get("/my", getMyOrders);
+router.get("/my", isAuthenticatedUser, getMyOrders);
 router.get("/admin", getAdminOrders);
 router.route("/single/:id")
     .get(getOrderDetails)

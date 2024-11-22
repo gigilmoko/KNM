@@ -39,7 +39,6 @@ exports.getProduct = async (req, res, next) => {
 	}
 };
 	
-
 exports.newProduct = async (req, res, next) => {
     const { name, description, price, category, stock, images } = req.body;
 
@@ -132,4 +131,15 @@ exports.updateProduct = async (req, res, next) => {
             message: 'Internal Server Error'
         });
     }
+};
+
+exports.getProductDetails = async (req, res, next) => {
+    const product = await Product.findById(req.params.id).populate("category");
+    
+    if (!product) return next(new ErrorHandler("Product not found", 404));
+    
+    res.status(200).json({
+        success: true,
+        product,
+    });
 };

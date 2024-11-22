@@ -15,17 +15,17 @@ exports.createOrder = async (req, res, next) => {
         totalAmount,
     } = req.body;
 
-    console.log("Shipping Info:", shippingInfo); // Log individual properties
-    console.log("Order Items:", orderItems);
-    console.log("Payment Method:", paymentMethod);
-    console.log("Items Price:", itemsPrice);
-    console.log("Shipping Charges:", shippingCharges);
-    console.log("Total Amount:", totalAmount);
-    console.log("User ID:", userId); // Log the user ID to make sure it’s passed correctly
+    // console.log("Shipping Info:", shippingInfo); // Log individual properties
+    // console.log("Order Items:", orderItems);
+    // console.log("Payment Method:", paymentMethod);
+    // console.log("Items Price:", itemsPrice);
+    // console.log("Shipping Charges:", shippingCharges);
+    // console.log("Total Amount:", totalAmount);
+    // console.log("User ID:", userId); // Log the user ID to make sure it’s passed correctly
 
     // Check product stock before creating the order
     for (const item of orderItems) {
-        console.log("Checking stock for item:", item.product);
+        // console.log("Checking stock for item:", item.product);
         const product = await Product.findById(item.product);
 
         if (!product || product.stock < item.quantity) {
@@ -78,16 +78,17 @@ exports.getAdminOrders = async (req, res, next) => {
 };
 
 exports.getMyOrders = async (req, res, next) => {
-    try {
-        const orders = await Order.find({ user: req.user._id });
-        res.status(200).json({
-            success: true,
-            orders,
-        });
-    } catch (error) {
-        next(error); // Pass any error to the error handling middleware
-    }
+
+    
+    const orders = await Order.find({ user: req.user._id });
+    
+    res.status(200).json({
+        success: true,
+        orders,
+    });
 };
+
+
 
 exports.getOrderDetails = async (req, res, next) => {
     try {
