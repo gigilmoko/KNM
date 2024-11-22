@@ -143,3 +143,30 @@ exports.getProductDetails = async (req, res, next) => {
         product,
     });
 };
+
+exports.getProductsByCategory = async (req, res, next) => {
+    const { id } = req.params;  // Use 'id' to get the category ID from URL params
+
+    try {
+        const products = await Product.find({ category: id });
+
+        if (!products || products.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No products found for the given category'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            count: products.length,
+            products
+        });
+    } catch (error) {
+        console.error('Error fetching products by category:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to fetch products by category'
+        });
+    }
+};

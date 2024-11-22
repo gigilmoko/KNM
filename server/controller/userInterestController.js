@@ -79,6 +79,7 @@ exports.expressInterest = async (req, res) => {
 
 // Get user interest for a specific event
 exports.getUserInterest = async (req, res) => {
+  console.log("GetUserInterested Hit")
   try {
     const { userId, eventId } = req.params; // Extract userId and eventId from the URL
 
