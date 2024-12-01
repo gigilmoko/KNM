@@ -35,6 +35,8 @@ import CalendarInfo from './Admin/Calendar/CalendarInfo';
 import NewFeedback from './Public/Feedback/NewFeedback';
 import CalendarInterested from './Admin/Calendar/CalendarInterested';
 import Homepage from './Public/Homepage'
+import FeedbackList from './Admin/Feedback/FeedbackList';
+import OrdersList from './Admin/Order/OrderList';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -70,6 +72,8 @@ function App() {
         {/* Admin */}
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          {/* Feedback */}
+            <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
           {/* Member */}
             <Route path="/admin/members/new" element={<ProtectedRoute><NewMember /></ProtectedRoute>} />
             <Route path="/admin/members/edit/:memberId" element={<ProtectedRoute><UpdateMember /></ProtectedRoute>} />
@@ -92,6 +96,8 @@ function App() {
             <Route path="/admin/category/new" element={<ProtectedRoute><NewCategory /></ProtectedRoute>} />
           {/* User */}
             <Route path="/admin/users/list" element={<ProtectedRoute><UsersList /></ProtectedRoute>} />
+          {/* Orders */}
+            <Route path="/admin/orders/list" element={<ProtectedRoute><OrdersList /></ProtectedRoute>} />
 
 
          

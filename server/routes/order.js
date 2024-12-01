@@ -12,9 +12,10 @@ const {
 
 router.post('/neworder', createOrder);
 router.get("/my", isAuthenticatedUser, getMyOrders);
-router.get("/admin", getAdminOrders);
+router.get("/orders/list", getAdminOrders);
 router.route("/single/:id")
     .get(getOrderDetails)
-    .put(processOrder);
+
+router.put("/orders/update/:id", processOrder)
 
 module.exports = router;

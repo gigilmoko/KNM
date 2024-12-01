@@ -109,6 +109,28 @@ const routes = [
     ]
   },
   {
+    path: '', // Categories with submenu
+    icon: <TagIcon className={`${iconClasses} inline`}/>, // Tag icon for 'Categories'
+    name: 'Orders',
+    submenu: [
+      {
+        path: '/admin/orders/list',
+        icon: <TagIcon className={submenuIconClasses}/>, // Tag icon for 'Category List'
+        name: 'Orders List',
+      },
+      {
+        path: '/admin/category/new',
+        icon: <TagIcon className={submenuIconClasses}/>, // Tag icon for 'New Category'
+        name: 'New Category',
+      },
+    ]
+  },
+  {
+    path: '/admin/feedback/list',
+    icon: <ChartBarIcon className={iconClasses}/>, // Chart Bar icon for 'Analytics'
+    name: 'Feedback',
+  },
+  {
     path: '/admin/charts',
     icon: <ChartBarIcon className={iconClasses}/>, // Chart Bar icon for 'Analytics'
     name: 'Analytics',
