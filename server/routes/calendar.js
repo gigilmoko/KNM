@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const { isAuthenticatedUser } = require('../middlewares/auth');
-const { createEvent, updateEvent, getEvent, getAllEvents, deleteEvent, afterCurrentDay, beforeCurrentDay  } = require('../controller/calendarController');
+const { createEvent, updateEvent, getEvent, getAllEvents, deleteEvent, afterCurrentDay, beforeCurrentDay, searchEvents  } = require('../controller/calendarController');
 
+router.get('/calendar/event/search', searchEvents);
 router.post('/calendar/event', createEvent);
 router.put('/calendar/event/:id', updateEvent);
 router.get('/calendar/event/:id', getEvent);

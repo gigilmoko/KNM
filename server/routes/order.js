@@ -13,7 +13,7 @@ const {
 router.post('/neworder', createOrder);
 router.get("/my", isAuthenticatedUser, getMyOrders);
 router.get("/orders/list", getAdminOrders);
-router.route("/single/:id")
+router.route("/orders/single/:id")
     .get(getOrderDetails)
 
 router.put("/orders/update/:id", processOrder)

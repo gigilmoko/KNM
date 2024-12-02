@@ -9,7 +9,7 @@ const { registerUser, loginUser, logout, forgotPassword,
         googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
         applyingForMember, deleteImage, registerUserMember, fetchUserMemberMatch,
         approveApplyMember, denyApplyMember, avatarUpdate,
-        updatePasswordMobile, updateProfileMobile} = require('../controller/authController');
+        updatePasswordMobile, updateProfileMobile, getUserProfileById} = require('../controller/authController');
 
 router.post('/register', registerUser);
 router.post('/register-member', registerUserMember);
@@ -19,6 +19,7 @@ router.get('/logout', logout);
 router.post('/password/forgot', forgotPassword);
 router.put('/password/reset/:token', resetPassword);
 router.get('/me', isAuthenticatedUser, getUserProfile);
+router.get('/get-user/:id', getUserProfileById);
 router.get('/all-users', allUsers);
 router.put('/password/update', isAuthenticatedUser, updatePassword)
 router.put('/password/update/mobile', updatePasswordMobile);

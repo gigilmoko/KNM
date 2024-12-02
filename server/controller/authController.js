@@ -420,6 +420,33 @@ exports.getUserProfile = async (req, res, next) => {
   }
 };
 
+exports.getUserProfileById = async (req, res, next) => {
+  try {
+    const { id } = req.params; // Get user ID from the URL params
+    const user = await User.findById(id); // Find user by ID
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
+
+
 exports.updatePassword = async (req, res, next) => {
     console.log('Update Password route hit')
     const user = await User.findById(req.user.id).select("password");
@@ -549,8 +576,6 @@ exports.updateProfileMobile = async (req, res) => {
   }
 };
 
-
-
 exports.updateUserRole = async (req, res, next) => {
   try {
       const { id } = req.params;
@@ -672,4 +697,6 @@ exports.deleteUser = async (req, res, next) => {
       res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+
 

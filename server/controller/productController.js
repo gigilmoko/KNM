@@ -170,3 +170,42 @@ exports.getProductsByCategory = async (req, res, next) => {
         });
     }
 };
+
+exports.searchProduct = async (req, res, next) => {
+    try {
+        const { keyword } = req.query; // Query parameter for the search keyword
+
+        if (!keyword) {
+            return res.status(400).json({
+                success: false,
+                message: "Keyword is required for searching",
+            });
+        }
+
+        const products = await Product.find({
+            $or: [
+                { name: { $regex: keyword, $options: "i" } }, // Case-insensitive search in name
+                { description: { $regex: keyword, $options: "i" } }, // Case-insensitive search in description
+            ],
+        });
+
+        if (products.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No products found matching the keyword",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            count: products.length,
+            products,
+        });
+    } catch (error) {
+        console.error("Error searching products:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+};

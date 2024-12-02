@@ -201,5 +201,49 @@ exports.afterCurrentDay = async (req, res) => {
     }
 };
 
+exports.searchEvents = async (req, res) => {
+    const { keyword } = req.query;
+
+    try {
+        // Check if a keyword is provided
+        if (!keyword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Keyword is required for searching events',
+            });
+        }
+
+        // Perform the search query
+        const events = await CalendarEvent.find({
+            $or: [
+                { title: { $regex: keyword, $options: 'i' } },       // Match title (case insensitive)
+                { description: { $regex: keyword, $options: 'i' } } // Match description (case insensitive)
+            ]
+        });
+
+        // Check if any events were found
+        if (events.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No events found matching the keyword',
+            });
+        }
+
+        // Return the search results
+        res.status(200).json({
+            success: true,
+            count: events.length,
+            data: events
+        });
+    } catch (error) {
+        console.error('Error searching events:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to search events',
+            error: error.message
+        });
+    }
+};
+
 
 
