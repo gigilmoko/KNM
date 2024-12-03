@@ -4,6 +4,7 @@ const http = require('http');
 const cookie = require('cookie-parser');
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
+const { wss } = require('./utils/broadcast'); // Adjust the path if necessary
 
 const auth = require('./routes/auth');
 const category = require('./routes/category');
@@ -16,7 +17,7 @@ const order = require('./routes/order');
 const feedback = require('./routes/feedback');
 
 const app = express();
-const PORT = process.env.PORT || 4002; 
+const PORT = process.env.PORT || 4002;
 const server = http.createServer(app);
 
 app.use(cors());
@@ -49,13 +50,19 @@ app.use('/api', order);
 app.use('/api', feedback);
 
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-db.once('open', async () => {
+db.on('error', console.error.bind(console, '❌ MongoDB connection error:'));
+db.once('open',async () => {
+    console.log('✅ MongoDB connection is open');
     server.listen(PORT, () => {
-        console.log(`Server is running on http://localhost:${PORT}`);
+        console.log(`🚀 Server is running on http://localhost:${PORT}`);
     });
 });
-
 app.get("/", (req, res) => {
     res.send("Server is running");
+});
+
+server.on('upgrade', (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+    });
 });

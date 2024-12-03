@@ -14,7 +14,7 @@ const Notifications = () => {
           Authorization: `Bearer ${token}`, // Include the token in headers
         },
       };
-
+      
       try {
         // Use process.env.REACT_APP_API for the base API URL
         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications`, config);

@@ -2,7 +2,7 @@ const Notification = require('../models/notification');
 
 // Fetch all notifications for a user
 exports.getNotifications = async (req, res) => {
-  const userId = req.user.id; // Assuming you're using some form of authentication
+  const userId = req.user.id; 
   
   try {
     const notifications = await Notification.find({ user: userId })

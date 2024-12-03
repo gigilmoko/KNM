@@ -23,8 +23,17 @@ const calendarEventSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required: false 
-  }
+    required: false,
+  },
+  location: {
+    type: String,
+    required: true, // Assuming location is mandatory for an event
+  },
+  audience: {
+    type: String,
+    enum: ['all', 'member'], // Options for the audience
+    required: true,
+  },
 }, {
   timestamps: true,
 });

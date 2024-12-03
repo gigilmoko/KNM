@@ -4,9 +4,9 @@ import Header from "../../Layout/Header";
 import LeftSidebar from "../../Layout/LeftSidebar";
 import RightSidebar from "../../Layout/RightSidebar";
 import ModalLayout from "../../Layout/ModalLayout";
-import TitleCard from "../../Layout/components/Cards/TitleCard"; // Assuming TitleCard is used for form titles
-import { useNavigate } from "react-router-dom"
-import { toast, ToastContainer } from 'react-toastify'
+import TitleCard from "../../Layout/components/Cards/TitleCard";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
 function EventCreateForm() {
   const navigate = useNavigate();
@@ -14,35 +14,39 @@ function EventCreateForm() {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [date, setDate] = useState(""); // New state for date
-  const [image, setImage] = useState(null); // New state for image URL
-  const [error, setError] = useState("");
+  const [date, setDate] = useState("");
   const [success, setSuccess] = useState("");
+  const [image, setImage] = useState(null);
+  const [audience, setAudience] = useState("all");
+  const [location, setLocation] = useState("");
+  const [error, setError] = useState("");
+  const [currentUserRole, setCurrentUserRole] = useState("");
 
   useEffect(() => {
-    // Set today's date in YYYY-MM-DD format
     const today = new Date().toISOString().split("T")[0];
     setDate(today);
+
+    // Get current user role (you might want to get this from sessionStorage or an API)
+    const role = sessionStorage.getItem('role'); // or get from API
+    setCurrentUserRole(role);
   }, []);
 
-  // Function to handle image upload to Cloudinary
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
+      formData.append("file", file);
+      formData.append("upload_preset", "ml_default");
 
       try {
-        // Upload file to Cloudinary
         const response = await axios.post(
-          'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+          "https://api.cloudinary.com/v1_1/dglawxazg/image/upload",
           formData
         );
-        const imageUrl = response.data.secure_url;
-        setImage(imageUrl); // Set the image URL in state
+        setImage(response.data.secure_url);
+        toast.success("Image uploaded successfully!");
       } catch (error) {
-        console.error('Failed to upload image', error);
+        console.error("Image upload failed:", error);
         setError("Failed to upload image. Please try again.");
       }
     }
@@ -51,49 +55,50 @@ function EventCreateForm() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    // Clear any previous messages
-    setError("");
-    setSuccess("");
+    if (!title || !description || !startDate) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
 
-    // Prepare event data
     const eventData = {
-        title,
-        description,
-        startDate,
-        endDate,
-        date,
-        image // Use the image URL
+      title,
+      description,
+      startDate,
+      endDate,
+      date,
+      image,
+      audience: audience === "all" ? "all" : "member",
+      location,
     };
 
-    // Log the form data for debugging
-    console.log("Submitted Data:", eventData);
-
     try {
-        const response = await axios.post(`${process.env.REACT_APP_API}/api/calendar/event`, eventData);
-
-        if (response.data) {
-            toast.success("Event created successfully!");
-            // Clear form after submission
-            setTitle("");
-            setDescription("");
-            setStartDate("");
-            setEndDate("");
-            // setImage(null);
-            setTimeout(() => {
-              navigate('/admin/calendar/');
-            }, 3000); 
-            
+      const response = await axios.post(
+        `${process.env.REACT_APP_API}/api/calendar/event`,
+        eventData
+      );
+      if (response.data.success) {
+        const targetAudience = response.data.audience;
+        if (targetAudience === "all" || (targetAudience === "members" && currentUserRole === "member")) {
+          toast.success(`Event created successfully for ${targetAudience}!`);
         }
+        setTitle("");
+        setDescription("");
+        setStartDate("");
+        setEndDate("");
+        setAudience("all"); // Reset audience to default
+        setLocation("");
+        setImage(null);
+        setTimeout(() => navigate("/admin/calendar/"), 3000);
+      }
     } catch (err) {
-        toast.error("Failed to create event. Please try again.");
-        console.error("Error creating event:", err);
+      console.error("Error creating event:", err);
+      toast.error("Failed to create event. Please try again.");
     }
-};
-;
+  };
 
   return (
     <div className="drawer lg:drawer-open">
-      <ToastContainer/>
+      <ToastContainer />
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
         <Header />
@@ -143,7 +148,6 @@ function EventCreateForm() {
                   />
                 </div>
 
-                {/* Event Date (Readonly) */}
                 <div className="form-control">
                   <label className="label">Event Date</label>
                   <input
@@ -155,7 +159,31 @@ function EventCreateForm() {
                   />
                 </div>
 
-                {/* Image Upload Field (optional) */}
+                <div className="form-control">
+                  <label className="label">Audience</label>
+                  <select
+                    value={audience}
+                    onChange={(e) => setAudience(e.target.value)}
+                    className="select select-bordered w-full"
+                    required
+                  >
+                    <option value="all">All</option>
+                    <option value="member">Members</option>
+                  </select>
+                </div>
+
+                <div className="form-control">
+                  <label className="label">Location</label>
+                  <input
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="input input-bordered w-full"
+                    placeholder="Enter event location"
+                    required
+                  />
+                </div>
+
                 <div className="form-control">
                   <label className="label">Event Image (Optional)</label>
                   <input
@@ -173,7 +201,6 @@ function EventCreateForm() {
                 </div>
 
                 {error && <p className="text-red-500 mt-2">{error}</p>}
-                {success && <p className="text-green-500 mt-2">{success}</p>}
               </form>
             </div>
           </TitleCard>

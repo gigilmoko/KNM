@@ -5,47 +5,54 @@ import Header from "../../Layout/Header";
 import LeftSidebar from "../../Layout/LeftSidebar";
 import RightSidebar from "../../Layout/RightSidebar";
 import ModalLayout from "../../Layout/ModalLayout";
-import TitleCard from "../../Layout/components/Cards/TitleCard"; // Assuming you use this for form titles
+import TitleCard from "../../Layout/components/Cards/TitleCard"; 
 import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function UpdateCalendar() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [date, setDate] = useState(""); // New state for date
-  const [image, setImage] = useState(null); // New state for image URL
+  const [date, setDate] = useState("");
+  const [image, setImage] = useState(null);
+  const [location, setLocation] = useState("");
+  const [audience, setAudience] = useState("all");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
-  const { id } = useParams(); // Get the ID from the URL
-  const navigate = useNavigate(); // To navigate after form submission
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEventData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API}/api/calendar/event/${id}`);
         const event = response.data.data;
-
+  
         const formatDateTime = (dateTime) => {
-          const [date, time] = dateTime.split("T");
-          return `${date}T${time.slice(0, 5)}`;
+          const dateObj = new Date(dateTime);
+          return dateObj.toISOString().slice(0, 16); // Formats to `YYYY-MM-DDTHH:mm`
         };
-
-        setDate(event.date.split("T")[0]);
-        setTitle(event.title);
-        setDescription(event.description);
-        setStartDate(formatDateTime(event.startDate));
-        setEndDate(formatDateTime(event.endDate));
-        setImage(event.image);
+  
+        // Update state with fetched and formatted data
+        setTitle(event.title || "");
+        setDescription(event.description || "");
+        setStartDate(event.startDate ? formatDateTime(event.startDate) : "");
+        setEndDate(event.endDate ? formatDateTime(event.endDate) : "");
+        setDate(event.date || ""); // Assuming event.date is already a valid date format
+        setImage(event.image || null);
+        setLocation(event.location || "");
+        setAudience(event.audience || "all");
       } catch (error) {
         console.error("Error fetching event data:", error);
         setError("Failed to load event data.");
       }
     };
-
+  
     fetchEventData();
   }, [id]);
+  
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -64,34 +71,28 @@ function UpdateCalendar() {
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    const eventData = { date, title, description, startDate, endDate, image, location, audience };
+  
     try {
-        await axios.put(`${process.env.REACT_APP_API}/api/calendar/event/${id}`, {
-            date,
-            title,
-            description,
-            startDate,
-            endDate,
-            image,
-        });
-
-        toast.success("Event updated successfully.");
-        setError("");
-        setTimeout(() => {
-          navigate('/admin/calendar/');
-        }, 3000); 
+      await axios.put(`${process.env.REACT_APP_API}/api/calendar/event/${id}`, eventData);
+  
+      // Success toast
+      toast.success(`Event updated successfully for ${audience === "all" ? "all users" : "members only"}!`);
+  
+      navigate("/admin/calendar/");
     } catch (error) {
-        toast.error("Failed to update event.");
-        console.error("Error updating event:", error);
+      console.error("Error updating event:", error);
+      toast.error("Failed to update event.");
     }
-};
-
-
+  };
+  
 
   return (
     <div className="drawer lg:drawer-open">
-      <ToastContainer/>
+      <ToastContainer />
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
         <Header />
@@ -142,14 +143,26 @@ function UpdateCalendar() {
                 </div>
 
                 <div className="form-control">
-                  <label className="label">Event Date</label>
+                  <label className="label">Location</label>
                   <input
-                    type="date"
-                    value={date}
-                    readOnly
+                    type="text"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                     className="input input-bordered w-full"
                     required
                   />
+                </div>
+
+                <div className="form-control">
+                  <label className="label">Audience</label>
+                  <select
+                    value={audience}
+                    onChange={(e) => setAudience(e.target.value)}
+                    className="select select-bordered w-full"
+                  >
+                    <option value="all">All</option>
+                    <option value="member">Members</option>
+                  </select>
                 </div>
 
                 <div className="form-control">
@@ -170,7 +183,6 @@ function UpdateCalendar() {
                 </div>
 
                 {error && <p className="text-red-500 mt-2">{error}</p>}
-                {success && <p className="text-green-500 mt-2">{success}</p>}
               </form>
             </div>
           </TitleCard>

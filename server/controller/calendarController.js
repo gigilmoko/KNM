@@ -1,47 +1,58 @@
-const CalendarEvent = require('../models/calendar'); 
+const CalendarEvent = require('../models/calendar');
 const Notification = require('../models/notification');
 const User = require('../models/user');
-const moment = require('moment-timezone');
+const { broadcast } = require('../utils/broadcast');
 
 exports.createEvent = async (req, res) => {
-    const { date, title, description, startDate, endDate, image } = req.body;
+    const { date, title, description, startDate, endDate, image, location, audience } = req.body;
 
     try {
-        // Step 1: Create the calendar event
         const newEvent = new CalendarEvent({
             date,
             title,
             description,
             startDate,
             endDate,
-            image
+            image,
+            location,
+            audience,
         });
 
         await newEvent.save();
 
-        // Step 2: Fetch all users (or filter based on your logic)
-        const users = await User.find();
+        const users = audience === 'all' 
+            ? await User.find()
+            : await User.find({ role: 'member' }); 
 
-        // Step 3: Create notifications for each user
         const notificationPromises = users.map(async (user) => {
             return Notification.create({
-                user: user._id,  // Reference to the user
-                event: newEvent._id,  // Reference to the created event
-                title: `New Event: ${title}`,  // Notification title
-                description: `The event "${title}" is scheduled from ${startDate} to ${endDate}.`,
+                user: user._id,
+                event: newEvent._id, 
+                title: `New Event: ${title}`,
+                description: `The event "${title}" is scheduled from ${startDate} to ${endDate} at ${location}.`,
                 eventDate: startDate,
-                read: false,  // Mark as unread
+                read: false,
             });
         });
 
-        // Wait for all notifications to be created
-        await Promise.all(notificationPromises);
+        const notifications = await Promise.all(notificationPromises);
 
-        // Step 4: Send success response
+        notifications.forEach((notification) => {
+            broadcast({
+                type: 'event-notification',
+                user: notification.user,
+                title: notification.title,
+                description: notification.description,
+                eventDate: notification.eventDate,
+                read: notification.read,
+            });
+        });
+
         res.status(201).json({
             success: true,
             message: 'Event and notifications created successfully',
-            data: newEvent
+            data: newEvent,
+            audience: audience, // Include the audience in the response
         });
 
     } catch (error) {
@@ -54,37 +65,59 @@ exports.createEvent = async (req, res) => {
     }
 };
 
+
+
 exports.updateEvent = async (req, res) => {
     const eventId = req.params.id;
-    const { date, title, description, startDate, endDate, image } = req.body;
+    const { date, title, description, startDate, endDate, image, location, audience } = req.body;
 
     try {
         const updatedEvent = await CalendarEvent.findByIdAndUpdate(
             eventId,
-            { date, title, description, startDate, endDate, image },
+            { date, title, description, startDate, endDate, image, location, audience },
             { new: true, runValidators: true }
         );
 
         if (!updatedEvent) {
             return res.status(404).json({
                 success: false,
-                message: 'Event not found'
+                message: 'Event not found',
             });
         }
+
+        // Notify the target audience if necessary
+        const users = audience === 'all' 
+            ? await User.find() 
+            : await User.find({ role: 'member' });
+
+        const notificationPromises = users.map(async (user) => {
+            return Notification.create({
+                user: user._id,
+                event: updatedEvent._id,
+                title: `Event Updated: ${title}`,
+                description: `The event "${title}" has been updated. Check details: Location - ${location}, Schedule - ${startDate} to ${endDate}.`,
+                eventDate: startDate,
+                read: false,
+            });
+        });
+
+        await Promise.all(notificationPromises);
 
         res.status(200).json({
             success: true,
             message: 'Event updated successfully',
-            data: updatedEvent
+            data: updatedEvent,
         });
     } catch (error) {
         console.error('Error updating event:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to update event'
+            message: 'Failed to update event',
+            error: error.message,
         });
     }
 };
+
 
 exports.getEvent = async (req, res) => {
     const eventId = req.params.id;
