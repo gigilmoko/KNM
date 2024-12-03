@@ -1,0 +1,88 @@
+/* General Reset */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+/* Homepage Container */
+.homepage {
+  position: relative;
+  height: 100vh;
+  background-image: url('../img/bgpic.png'); /* Replace with the actual path */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+}
+
+/* Hero Section */
+
+.hero-section {
+  position: absolute;
+  width: 598px;
+  height: 288px;
+  left: 151px;
+  top: 271px;
+  text-align: left;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  gap: 40px; /* Add consistent spacing between items */
+  
+}
+
+.hero-content h1 {
+
+
+font-style: normal;
+font-weight: 900;
+font-size: 55px;
+line-height: 48px;
+
+  color: #d32f2f; /* Red text color */
+}
+
+.hero-content p {
+
+font-style: normal;
+font-weight: 400;
+font-size: 30px;
+line-height: 24px;
+margin: 0;
+
+}
+
+.buttons {
+  position: absolute;
+width: 286px;
+height: 60px;
+left: 20px;
+top: 350px;
+
+  display: flex;
+  gap: 10px;
+  
+}
+
+.get-started, .learn-more {
+  padding: 10px 20px;
+  font-size: 18px;
+  font-weight: bolder;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  text-align: center; /* Centers text inside buttons */
+}
+
+.get-started {
+  background-color: #d32f2f; /* Red color */
+  color: white;
+}
+
+.learn-more {
+  background-color: white;
+  color: #d32f2f;
+}
