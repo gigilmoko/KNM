@@ -274,3 +274,4 @@ exports.searchEvents = async (req, res) => {
         });
     }
 };
+
