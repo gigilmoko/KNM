@@ -65,8 +65,6 @@ exports.createEvent = async (req, res) => {
     }
 };
 
-
-
 exports.updateEvent = async (req, res) => {
     const eventId = req.params.id;
     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
@@ -117,7 +115,6 @@ exports.updateEvent = async (req, res) => {
         });
     }
 };
-
 
 exports.getEvent = async (req, res) => {
     const eventId = req.params.id;
@@ -277,6 +274,3 @@ exports.searchEvents = async (req, res) => {
         });
     }
 };
-
-
-

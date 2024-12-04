@@ -33,6 +33,7 @@ function OrdersList() {
         if (response.data && Array.isArray(response.data.orders)) {
           setOrders(response.data.orders);
           setFilteredOrders(response.data.orders);
+          console.log(response.data.orders)
         } else {
           setOrders([]);
           setFilteredOrders([]);
