@@ -5,25 +5,35 @@ exports.isAuthenticatedUser = async (req, res, next) => {
     const authorizationHeader = req.header('Authorization');
 
     if (!authorizationHeader) {
+        console.log('Authorization header missing');
         return res.status(401).json({ message: 'Login first to access this resource' });
     }
 
     try {
-        const token = authorizationHeader.split(' ')[1]; 
+        // console.log('Update Category');
+        console.log('Authorization header found:', authorizationHeader);
+
+        const token = authorizationHeader.split(' ')[1];
+        console.log('Extracted token:', token);
+
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // console.log('Decoded Token:', decoded);
+        console.log('Decoded Token:', decoded);
+
         req.user = await User.findById(decoded.id);
+        console.log('User found:', req.user);
 
         if (!req.user) {
+            console.log('User not found in database');
             return res.status(401).json({ message: 'User not found' });
         }
 
         next();
     } catch (error) {
-        console.error('Authentication error:', error); 
+        console.error('Authentication error:', error.message);
         return res.status(401).json({ message: 'Invalid token' });
     }
 };
+
 
 
 exports.authorizeRoles = (...roles) => {
