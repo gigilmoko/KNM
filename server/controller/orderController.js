@@ -1,4 +1,4 @@
-const Order  = require("../models/order");
+const Order = require("../models/order");
 const Product = require("../models/product");
 const axios = require('axios'); 
 const moment = require('moment-timezone');
@@ -51,8 +51,8 @@ exports.createOrder = async (req, res, next) => {
             await product.save();
         }
 
-        // If payment method is E-wallet, create a payment intent with PayMongo
-        if (paymentMethod === "Ewallet") {
+        // If payment method is GCash, create a payment intent with PayMongo
+        if (paymentMethod === "GCash") {
             try {
                 const response = await axios.post(
                     'https://api.paymongo.com/v1/payment_intents',
@@ -61,11 +61,6 @@ exports.createOrder = async (req, res, next) => {
                             attributes: {
                                 amount: totalAmount * 100, // Amount in centavos
                                 payment_method_allowed: ["gcash"],
-                                payment_method_options: {
-                                    card: {
-                                        request_three_d_secure: "any"
-                                    }
-                                },
                                 currency: "PHP",
                                 description: `Order #${order._id}`,
                             }
@@ -98,7 +93,7 @@ exports.createOrder = async (req, res, next) => {
                     },
                     {
                         headers: {
-                            Authorization: `Basic ${Buffer.from('ssk_live_9y5MhqFpVhEJZpCtPGuPMiVD').toString('base64')}`,
+                            Authorization: `Basic ${Buffer.from('sk_live_9y5MhqFpVhEJZpCtPGuPMiVD').toString('base64')}`,
                             'Content-Type': 'application/json',
                         },
                     }
@@ -120,7 +115,7 @@ exports.createOrder = async (req, res, next) => {
                     },
                     {
                         headers: {
-                            Authorization: `Basic ${Buffer.from('sk_test_your_secret_key').toString('base64')}`,
+                            Authorization: `Basic ${Buffer.from('sk_live_9y5MhqFpVhEJZpCtPGuPMiVD').toString('base64')}`,
                             'Content-Type': 'application/json',
                         },
                     }

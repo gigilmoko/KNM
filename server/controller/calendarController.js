@@ -1,10 +1,12 @@
 const CalendarEvent = require('../models/calendar');
-const Notification = require('../models/notification');
-const User = require('../models/user');
-const { broadcast } = require('../utils/broadcast');
+const { createNotification } = require('./notificationController');
 
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
+
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ success: false, message: 'Unauthorized: User not authenticated' });
+    }
 
     try {
         const newEvent = new CalendarEvent({
@@ -16,54 +18,27 @@ exports.createEvent = async (req, res) => {
             image,
             location,
             audience,
+            user: req.user.id
         });
 
         await newEvent.save();
 
-        const users = audience === 'all' 
-            ? await User.find()
-            : await User.find({ role: 'member' }); 
-
-        const notificationPromises = users.map(async (user) => {
-            return Notification.create({
-                user: user._id,
-                event: newEvent._id, 
-                title: `New Event: ${title}`,
-                description: `The event "${title}" is scheduled from ${startDate} to ${endDate} at ${location}.`,
-                eventDate: startDate,
-                read: false,
-            });
-        });
-
-        const notifications = await Promise.all(notificationPromises);
-
-        notifications.forEach((notification) => {
-            broadcast({
-                type: 'event-notification',
-                user: notification.user,
-                title: notification.title,
-                description: notification.description,
-                eventDate: notification.eventDate,
-                read: notification.read,
-            });
-        });
-
         res.status(201).json({
             success: true,
-            message: 'Event and notifications created successfully',
-            data: newEvent,
-            audience: audience, // Include the audience in the response
+            message: 'Event created successfully',
+            data: newEvent
         });
-
     } catch (error) {
         console.error('Error creating event:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to create event and notifications',
+            message: 'Failed to create event',
             error: error.message
         });
     }
 };
+
+
 
 exports.updateEvent = async (req, res) => {
     const eventId = req.params.id;
@@ -100,6 +75,31 @@ exports.updateEvent = async (req, res) => {
         });
 
         await Promise.all(notificationPromises);
+
+        // Send push notification using OneSignal
+        const oneSignalNotification = {
+            app_id: ONESIGNAL_APP_ID,
+            included_segments: ["All"],
+            headings: { en: `Event Updated: ${title}` },
+            contents: { en: `The event "${title}" has been updated. Check details: Location - ${location}, Schedule - ${startDate} to ${endDate}.` },
+            data: { eventId: updatedEvent._id },
+        };
+
+        try {
+            const response = await axios.post(
+                'https://onesignal.com/api/v1/notifications',
+                oneSignalNotification,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ONESIGNAL_API_KEY}`,
+                    },
+                }
+            );
+            console.log('OneSignal response:', response.data);
+        } catch (error) {
+            console.error('Error sending push notification:', error.response ? error.response.data : error.message);
+        }
 
         res.status(200).json({
             success: true,
