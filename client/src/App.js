@@ -39,6 +39,8 @@ import CalendarInterested from './Admin/Calendar/CalendarInterested';
 import Homepage from './Public/Homepage';
 import FeedbackList from './Admin/Feedback/FeedbackList';
 import OrdersList from './Admin/Order/OrderList';
+import EventFeedbackList from './Admin/Feedback/EventFeedbackList';
+import ProductFeedbackList from './Admin/Feedback/ProductFeedbackList';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -64,6 +66,8 @@ function App() {
           <Route path="/" element={<Homepage />} />
           {/* Feedback */}
           <Route path="/feedback/new" element={<NewFeedback />} />
+          {/* <Route path="/event/feedback/new" element={<NewFeedback />} />
+          <Route path="/product/feedback/new" element={<NewFeedback />} /> */}
           {/* User */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/edit" element={<ProfileUpdate />} />
@@ -79,6 +83,8 @@ function App() {
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           {/* Feedback */}
           <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
+          <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />
+          <Route path="/admin/product/feedback/list" element={<ProtectedRoute><ProductFeedbackList /></ProtectedRoute>} />
           {/* Member */}
           <Route path="/admin/members/new" element={<ProtectedRoute><NewMember /></ProtectedRoute>} />
           <Route path="/admin/members/edit/:memberId" element={<ProtectedRoute><UpdateMember /></ProtectedRoute>} />

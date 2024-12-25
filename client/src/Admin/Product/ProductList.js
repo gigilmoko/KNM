@@ -24,12 +24,16 @@ function ProductsList() {
     const [categories, setCategories] = useState({});
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         mainContentRef.current.scroll({
             top: 0,
             behavior: "smooth"
         });
+        getProfile();
         fetchCategories();
         fetchProducts();
     }, []);
@@ -65,6 +69,22 @@ function ProductsList() {
         }
     };
 
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
+
     const fetchProducts = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API}/api/product/all`);
@@ -84,6 +104,7 @@ function ProductsList() {
     };
 
     const deleteCurrentProduct = async (id, index) => {
+        const token = sessionStorage.getItem("token");
         const productToDelete = products[index]; // Get the product to delete
         const imageDeletePromises = productToDelete.images.map(image => 
             axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${image.public_id}`)
@@ -94,7 +115,11 @@ function ProductsList() {
             await Promise.all(imageDeletePromises);
             
             // Now delete the product
-            await axios.delete(`${process.env.REACT_APP_API}/api/product/delete/${id}`);
+            await axios.delete(`${process.env.REACT_APP_API}/api/product/delete/${id}`,  {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             
             // Update the state to remove the deleted product
             setProducts(products.filter((_, i) => i !== index));

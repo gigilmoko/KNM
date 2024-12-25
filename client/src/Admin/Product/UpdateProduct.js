@@ -28,15 +28,14 @@ const cloudinaryUpload = async (file) => {
 
 // Cloudinary deletion function
 const cloudinaryDelete = async (public_id) => {
-  try {
-      const response = await axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${public_id}`);
-      console.log('Image deleted from Cloudinary:', response.data);
-  } catch (error) {
-      console.error('Error deleting image from Cloudinary:', error);
-  }
+    try {
+        const response = await axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${public_id}`);
+        console.log('Image deleted from Cloudinary:', response.data);
+    } catch (error) {
+        console.error('Error deleting image from Cloudinary:', error);
+    }
 };
 
-// Regular expressions for validation
 const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
 const priceRegex = /^\d+(\.\d{1,2})?$/;      // Numbers with up to 2 decimal places
 const stockRegex = /^\d{1,5}$/;              // Integer value with up to 5 digits
@@ -54,8 +53,28 @@ function UpdateProduct() {
         images: [] // Will hold URLs and public_ids
     });
     const [categories, setCategories] = useState([]);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
+        getProfile();
         fetchCategories();
         fetchProductDetails();
     }, []);
@@ -76,12 +95,10 @@ function UpdateProduct() {
     const fetchProductDetails = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API}/api/product/${id}`);
-            console.log("Fetched product details:", response.data); // Debugging line
+            console.log("Fetched product details:", response.data);
             
             if (response.data && response.data.success) {
                 const { product } = response.data; // Destructure product from the response
-                
-                // Set the productData state with the correct structure
                 setProductData({
                     name: product.name || "",
                     description: product.description || "",
@@ -90,8 +107,6 @@ function UpdateProduct() {
                     stock: product.stock || 0,
                     images: Array.isArray(product.images) ? product.images : [] // Ensure it's an array
                 });
-
-                console.log("Product data set:", productData); // Log the updated product data
             }
         } catch (error) {
             console.error('Failed to fetch product details', error);
@@ -112,7 +127,7 @@ function UpdateProduct() {
 
         const uploadedImages = await Promise.all(
             files.map(async (file) => {
-                const result = await cloudinaryUpload(file); // If you use ml_default, you can skip this
+                const result = await cloudinaryUpload(file);
                 console.log("Uploaded image:", result);
                 return result;
             })
@@ -121,28 +136,25 @@ function UpdateProduct() {
         const validImages = uploadedImages.filter(img => img !== null);
         console.log("Valid images after filtering:", validImages);
 
-        // Update productData images correctly
         setProductData((prevData) => {
             const updatedImages = [...prevData.images, ...validImages.map(img => ({ url: img.url, public_id: img.public_id }))];
-            console.log("Updated productData with images:", updatedImages); // This will show the correct updated array
+            console.log("Updated productData with images:", updatedImages);
             return {
                 ...prevData,
-                images: updatedImages, // Append new images to existing ones
+                images: updatedImages,
             };
         });
     };
 
     const handleImageRemove = async (index) => {
         const imageToRemove = productData.images[index];
-        console.log('Deleting image with public_id:', imageToRemove.public_id); // Log public_id
+        console.log('Deleting image with public_id:', imageToRemove.public_id);
 
-        // Call the cloudinaryDelete function to delete the image
         await cloudinaryDelete(imageToRemove.public_id);
         
-        // Now update the productData state
         setProductData((prevData) => {
             const updatedImages = prevData.images.filter((_, i) => i !== index);
-            console.log('Image successfully deleted from state:', imageToRemove.public_id); // Log confirmation
+            console.log('Image successfully deleted from state:', imageToRemove.public_id);
             return {
                 ...prevData,
                 images: updatedImages,
@@ -152,8 +164,7 @@ function UpdateProduct() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
-        // Validations
+
         if (!nameRegex.test(productData.name.trim())) {
             return toast.error('Product name must be between 5 and 100 characters, and only contain letters, numbers, and spaces!');
         }
@@ -163,19 +174,23 @@ function UpdateProduct() {
         if (!stockRegex.test(productData.stock.toString().trim())) {
             return toast.error('Stock must be a valid integer value (up to 5 digits)!');
         }
-    
+
         const jsonData = {
             name: productData.name,
             description: productData.description,
             price: productData.price,
             category: productData.category,
             stock: productData.stock,
-            images: productData.images // Send only URLs and public IDs
+            images: productData.images
         };
-    
+
         try {
-            const response = await axios.put(`${process.env.REACT_APP_API}/api/product/update/${id}`, jsonData, {
+            const token = sessionStorage.getItem("token");
+            const productWithUser = { ...jsonData, user: user?._id };
+
+            const response = await axios.put(`${process.env.REACT_APP_API}/api/product/update/${id}`, productWithUser, {
                 headers: {
+                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -183,13 +198,15 @@ function UpdateProduct() {
             toast.success('Product updated successfully!');
             setTimeout(() => {
                 navigate('/admin/products');
-              }, 3000); 
+            }, 3000);
         } catch (error) {
             console.error('Error updating product:', error);
             toast.error(error.response?.data?.message || 'Failed to update product');
         }
     };
-    
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p className="text-red-500">{error}</p>;
 
     return (
         <>

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -21,6 +21,9 @@ function NewMember() {
     const navigate = useNavigate();
     const { newNotificationMessage, newNotificationStatus } = useSelector(state => state.header);
     const mainContentRef = useRef(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     const [memberData, setMemberData] = useState({
         fname: '',
@@ -28,11 +31,31 @@ function NewMember() {
         memberId: ''
     });
 
+ useEffect(() => {
+        getProfile();
+    }, []);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setMemberData({ ...memberData, [name]: value });
     };
 
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
+    
     const validateForm = () => {
         // Validate first name
         if (!nameRegex.test(memberData.fname.trim())) {
@@ -62,7 +85,15 @@ function NewMember() {
         }
     
         try {
-            const response = await axios.post(`${process.env.REACT_APP_API}/api/members/new`, memberData);
+            const token = sessionStorage.getItem("token");
+            const response = await axios.post(`${process.env.REACT_APP_API}/api/members/new`, memberData, 
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+
+            );
             toast.success('Member created successfully');     
             setTimeout(() => {
                 navigate('/admin/members/list');

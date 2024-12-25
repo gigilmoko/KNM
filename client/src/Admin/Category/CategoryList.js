@@ -23,6 +23,9 @@ function CategoryList() {
     const [filteredCategories, setFilteredCategories] = useState([]);
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -33,6 +36,7 @@ function CategoryList() {
     }, []);
 
     useEffect(() => {
+        getProfile();
         applySearch(searchText);
     }, [searchText, categories]);
 
@@ -43,6 +47,22 @@ function CategoryList() {
             dispatch(removeNotificationMessage());
         }
     }, [newNotificationMessage]);
+
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -64,7 +84,13 @@ function CategoryList() {
 
     const deleteCurrentCategory = async (id, index) => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API}/api/category/delete/${id}`);
+
+            const token = sessionStorage.getItem("token");
+            await axios.delete(`${process.env.REACT_APP_API}/api/category/delete/${id}`,{
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             
             // Update state to remove the deleted category
             setCategories(categories.filter((_, i) => i !== index));

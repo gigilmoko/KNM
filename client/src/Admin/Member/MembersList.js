@@ -24,6 +24,9 @@ function MembersList() {
     const [filteredMembers, setFilteredMembers] = useState([]);
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -34,6 +37,7 @@ function MembersList() {
     }, []);
 
     useEffect(() => {
+        getProfile();
         applySearch(searchText);
     }, [searchText, members]);
 
@@ -44,6 +48,22 @@ function MembersList() {
             dispatch(removeNotificationMessage());
         }
     }, [newNotificationMessage]);
+
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
 
     const fetchMembers = async () => {
         try {
@@ -76,7 +96,12 @@ function MembersList() {
 
     const deleteCurrentMember = async (id, index) => {
         try {
-            const response = await axios.delete(`${process.env.REACT_APP_API}/api/members/${id}`);
+            const token = sessionStorage.getItem("token");
+            const response = await axios.delete(`${process.env.REACT_APP_API}/api/members/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             console.log('Member deletion response:', response.data);
     
             // Show success toast

@@ -25,11 +25,11 @@ router.put('/password/update', isAuthenticatedUser, updatePassword)
 router.put('/password/update/mobile', updatePasswordMobile);
 router.put('/me/update', isAuthenticatedUser, upload.single("avatar"), updateProfile);
 router.put('/me/update/mobile', updateProfileMobile);
-router.put('/users/:id', updateUserRole);
-router.delete('/user/:id', deleteUser);
+router.put('/users/:id', isAuthenticatedUser, updateUserRole);
+router.delete('/user/:id', isAuthenticatedUser, deleteUser);
 router.get('/users/apply', allUsersApply);
 router.put('/users/applying-for-member/:id', applyingForMember);
-router.delete('/users/delete-images/:public_id', deleteImage);
+router.delete('/users/delete-images/:public_id', isAuthenticatedUser, deleteImage);
 router.get('/fetchusermember', fetchUserMemberMatch);
 router.put('/users/approve-apply-member/:id', approveApplyMember);
 router.put('/users/deny-apply-member/:id', denyApplyMember);

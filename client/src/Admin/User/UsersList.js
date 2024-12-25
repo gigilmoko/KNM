@@ -21,6 +21,9 @@ function UsersList() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -31,6 +34,7 @@ function UsersList() {
     }, []);
 
     useEffect(() => {
+        getProfile();   
         applySearch(searchText);
     }, [searchText, users]);
 
@@ -61,15 +65,39 @@ function UsersList() {
         }
     };
     
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
 
     const deleteCurrentUser = async (id, index) => {
         try {
+            const token = sessionStorage.getItem("token");
             // First, delete the user's associated images (if applicable)
-            const deleteImagesResponse = await axios.delete(`${process.env.REACT_APP_API}/api/users/delete-images/${id}`);
+            const deleteImagesResponse = await axios.delete(`${process.env.REACT_APP_API}/api/users/delete-images/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             console.log('Images deletion response:', deleteImagesResponse.data);
             
             // Now delete the user
-            const deleteUserResponse = await axios.delete(`${process.env.REACT_APP_API}/api/user/${id}`);
+            const deleteUserResponse = await axios.delete(`${process.env.REACT_APP_API}/api/user/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             console.log('User deletion response:', deleteUserResponse.data);
             
             // Update state to remove the deleted user
@@ -89,7 +117,12 @@ function UsersList() {
 
     const handleRoleChange = async (id, index, newRole) => {
         try {
-            await axios.put(`${process.env.REACT_APP_API}/api/users/${id}`, { role: newRole });
+            const token = sessionStorage.getItem("token");
+            await axios.put(`${process.env.REACT_APP_API}/api/users/${id}`, { role: newRole }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             
             // Update users in the state
             const updatedUsers = [...users];

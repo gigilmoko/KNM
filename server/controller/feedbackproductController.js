@@ -79,3 +79,30 @@ exports.getProductFeedbacks = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getAllProductFeedbacks = async (req, res, next) => {
+
+    
+    try {
+      // Find all feedbacks from the ProductFeedback collection
+      const feedbacks = await ProductFeedback.find()
+        .populate('userId', 'firstName lastName email') // Populate user details (optional)
+        .populate('productId', 'name description price') // Populate product details (optional)
+  
+      // If no feedbacks are found
+      if (!feedbacks || feedbacks.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'No feedbacks found for any products.',
+        });
+      }
+  
+      // Return all feedbacks
+      res.status(200).json({
+        success: true,
+        feedbacks,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };

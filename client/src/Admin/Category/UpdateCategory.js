@@ -22,6 +22,25 @@ function UpdateCategory() {
     const { id } = useParams(); // Get category ID from URL
     const { newNotificationMessage, newNotificationStatus } = useSelector(state => state.header);
     const mainContentRef = useRef(null);
+    const [user, setUser] = useState(null);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState('');
+
+const getProfile = async () => {
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+    };
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+        setUser(data.user);
+        setLoading(false);
+    } catch (error) {
+        setError('Failed to load profile.');
+        setLoading(false);
+    }
+};
 
     const [categoryData, setCategoryData] = useState({
         name: '',
@@ -29,6 +48,7 @@ function UpdateCategory() {
     });
 
     useEffect(() => {
+        getProfile();
         fetchCategory();
     }, []);
 
@@ -75,26 +95,35 @@ function UpdateCategory() {
     };
     
     const updateCategory = async () => {
-        // Perform validation before submitting
-        if (!validateForm()) {
-            return; // Stop the function if validation fails
-        }
+        if (!validateForm()) return;
     
         try {
-            await axios.put(`${process.env.REACT_APP_API}/api/category/update/${id}`, categoryData);
+            const token = sessionStorage.getItem("token");
+            const categoryWithUser = { ...categoryData, user: user?._id };
     
-            // Show success toast
+            await axios.put(
+                `${process.env.REACT_APP_API}/api/category/update/${id}`,
+                categoryWithUser,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+    
             toast.success('Category updated successfully!');
             setTimeout(() => {
                 navigate('/admin/category');
-              }, 3000); 
+            }, 3000);
         } catch (error) {
             console.error('Failed to update category', error);
-    
-            // Show error toast
             toast.error('Failed to update category');
         }
     };
+    
+    if (loading) return <p>Loading...</p>;
+if (error) return <p className="text-red-500">{error}</p>;
+
     
 
     return (

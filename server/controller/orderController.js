@@ -1,6 +1,8 @@
 const Order  = require("../models/order");
 const Product = require("../models/product");
 const axios = require('axios'); 
+const moment = require('moment-timezone');
+const _ = require("lodash");
 
 exports.createOrder = async (req, res, next) => {
     console.log("Received createOrder request");
@@ -232,3 +234,179 @@ exports.processOrder = async (req, res, next) => {
         next(error); 
     }
 };
+
+exports.getDemandForecast = async (req, res) => {
+    try {
+      // Fetch all orders
+      const orders = await Order.find();
+  
+      // Initialize an empty object to store sales data by month
+      const salesData = {};
+  
+      // Loop through each order
+      orders.forEach((order) => {
+        order.orderItems.forEach((item) => {
+          // Format date as YYYY-MM (month-year format)
+          const month = moment(order.createdAt).format("YYYY-MM");
+  
+          const productId = item.product.toString(); // Get the product ID
+  
+          // Initialize the sales data for the product and month if it doesn't exist
+          if (!salesData[month]) {
+            salesData[month] = {};
+          }
+          if (!salesData[month][productId]) {
+            salesData[month][productId] = 0;
+          }
+  
+          // Accumulate the quantity for the product for the given month
+          salesData[month][productId] += item.quantity;
+        });
+      });
+  
+      // Prepare the response with top 3 products for each month
+      const sortedData = {};
+  
+      Object.keys(salesData).forEach((month) => {
+        // Sort products by quantity in descending order and pick top 3
+        const sortedProducts = Object.entries(salesData[month])
+          .sort(([, a], [, b]) => b - a) // Sort by quantity (highest first)
+          .slice(0, 3) // Pick top 3 products
+          .map(([productId, quantity]) => ({ productId, quantity }));
+  
+        sortedData[month] = sortedProducts;
+      });
+  
+      res.status(200).json({
+        success: true,
+        salesData: sortedData,
+      });
+    } catch (error) {
+      console.error("Error in demand forecasting:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  };
+   
+  exports.getMarketBasketAnalysis = async (req, res) => {
+    try {
+      const orders = await Order.find({});
+  
+      const itemPairs = {};
+      orders.forEach((order) => {
+        const items = order.orderItems.map((item) => item.product.toString());
+        for (let i = 0; i < items.length; i++) {
+          for (let j = i + 1; j < items.length; j++) {
+            const pair = [items[i], items[j]].sort().join("-");
+            itemPairs[pair] = (itemPairs[pair] || 0) + 1;
+          }
+        }
+      });
+  
+      const sortedPairs = Object.entries(itemPairs).sort(([, a], [, b]) => b - a);
+  
+      res.status(200).json({
+        success: true,
+        frequentPairs: sortedPairs,
+      });
+    } catch (error) {
+      console.error("Error in market basket analysis:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  };
+  
+  exports.getTopProducts = async (req, res) => {
+    try {
+      const orders = await Order.find({});
+  
+      const productSales = {};
+      orders.forEach((order) => {
+        order.orderItems.forEach((item) => {
+          const productId = item.product.toString();
+          productSales[productId] = (productSales[productId] || 0) + item.quantity;
+        });
+      });
+  
+      const sortedProducts = Object.entries(productSales).sort(([, a], [, b]) => b - a);
+      const topProducts = await Promise.all(
+        sortedProducts.slice(0, 5).map(async ([productId, quantity]) => {
+          const product = await Product.findById(productId);
+          return { product, quantity };
+        })
+      );
+  
+      res.status(200).json({
+        success: true,
+        topProducts,
+      });
+    } catch (error) {
+      console.error("Error in product popularity analysis:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  };
+  
+  exports.getSeasonalityAnalysis = async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const orders = await Order.find({ "orderItems.product": productId });
+  
+      const seasonalityData = orders.reduce((acc, order) => {
+        const month = moment(order.createdAt).format("MMMM");
+        order.orderItems.forEach((item) => {
+          if (item.product.toString() === productId) {
+            acc[month] = (acc[month] || 0) + item.quantity;
+          }
+        });
+        return acc;
+      }, {});
+  
+      res.status(200).json({
+        success: true,
+        seasonalityData,
+      });
+    } catch (error) {
+      console.error("Error in seasonality analysis:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  };
+  
+  exports.getPeakOrderHours = async (req, res) => {
+    try {
+      // Fetch all orders
+      const orders = await Order.find();
+  
+      // Initialize an object to store order count by hour (in Philippines time)
+      const hourlyOrders = {};
+  
+      // Iterate through the orders and convert `createdAt` time to Philippines time
+      orders.forEach((order) => {
+        const orderTimeInPhilippines = moment(order.createdAt)
+          .tz('Asia/Manila', true) // Convert to Philippines time
+          .format('YYYY-MM-DD HH:00'); // Format time to hour-level (YYYY-MM-DD HH:00)
+  
+        // Count orders by the hour
+        if (!hourlyOrders[orderTimeInPhilippines]) {
+          hourlyOrders[orderTimeInPhilippines] = 0;
+        }
+        hourlyOrders[orderTimeInPhilippines] += 1; // Increment order count for this hour
+      });
+  
+      // Convert the hourly orders object to an array of entries (key, value)
+      const sortedOrders = Object.entries(hourlyOrders)
+        .sort(([timeA, countA], [timeB, countB]) => countB - countA); // Sort by order count (descending)
+  
+      // Get the top 3 peak hours with most orders
+      const peakHours = sortedOrders.slice(0, 3).map(([hour, count]) => ({
+        hour,
+        orderCount: count,
+      }));
+  
+      res.status(200).json({
+        success: true,
+        peakHours,
+      });
+    } catch (error) {
+      console.error("Error in peak order hours:", error);
+      res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+  };
+

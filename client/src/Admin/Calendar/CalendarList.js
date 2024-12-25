@@ -17,7 +17,10 @@ function CalendarList() {
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [searchText, setSearchText] = useState("");
     const navigate = useNavigate(); // Initialize useNavigate
-
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    
     useEffect(() => {
         const fetchEvents = async () => {
             try {
@@ -40,7 +43,24 @@ function CalendarList() {
         fetchEvents();
     }, []);
 
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
+        getProfile();
         applySearch(searchText);
     }, [searchText, events]);
 
@@ -50,7 +70,12 @@ function CalendarList() {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${process.env.REACT_APP_API}/api/calendar/event/${id}`);
+            const token = sessionStorage.getItem("token");
+            await axios.delete(`${process.env.REACT_APP_API}/api/calendar/event/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             setEvents(events.filter(event => event._id !== id));
             setFilteredEvents(filteredEvents.filter(event => event._id !== id)); // Ensure filteredEvents is also updated
             toast.success('Event deleted successfully!');

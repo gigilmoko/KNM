@@ -21,8 +21,27 @@ function EventCreateForm() {
   const [location, setLocation] = useState("");
   const [error, setError] = useState("");
   const [currentUserRole, setCurrentUserRole] = useState("");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+ 
+  const getProfile = async () => {
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+    };
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+        setUser(data.user);
+        setLoading(false);
+    } catch (error) {
+        setError('Failed to load profile.');
+        setLoading(false);
+    }
+};
 
   useEffect(() => {
+    getProfile();
     const today = new Date().toISOString().split("T")[0];
     setDate(today);
 
@@ -72,9 +91,14 @@ function EventCreateForm() {
     };
 
     try {
+      const token = sessionStorage.getItem("token");
       const response = await axios.post(
         `${process.env.REACT_APP_API}/api/calendar/event`,
-        eventData
+        eventData, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      }
       );
       if (response.data.success) {
         const targetAudience = response.data.audience;
