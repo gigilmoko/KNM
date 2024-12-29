@@ -1,0 +1,46 @@
+.about-section {
+    display: flex;
+    background-color: #4a4a4a; /* Gray background color */
+    color: white; /* White text */
+    padding: 40px;
+    align-items: center;
+  }
+  
+  .about-section .left-column {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Create a grid for the collage */
+    gap: 10px;
+  }
+  
+  .about-section .left-column img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px; /* Optional for rounded corners */
+  }
+  
+  .about-section .right-column {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  .about-section h2 {
+    margin-bottom: 20px;
+    font-size: 40px; /* Increased font size for the title */
+    font-weight: bold; /* Make the title bold */
+  }
+  
+  .about-section p {
+    line-height: 1.6;
+    margin-bottom: 15px;
+    font-size: 22px;
+  }
+  
+  .about-section b {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: bold;
+    font-size: 22px;    
+    
+  }
+  

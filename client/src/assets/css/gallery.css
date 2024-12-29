@@ -1,0 +1,65 @@
+/* General Styling */
+.gallery-section {
+    text-align: center;
+    padding: 50px 20px;
+    background-color: #2d2d2d; /* Dark background */
+    color: #fff;
+  }
+  
+  .gallery-title {
+    font-size: 40px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    color: #ffffff;
+  }
+  
+  /* Grid Container */
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 columns */
+    grid-auto-rows: 1fr; /* Ensure all rows have the same height */
+    gap: 0; /* No spacing between grid items */
+    max-width: 1200px;
+    margin: 0 auto; /* Center the grid */
+    width: 100%;
+  }
+  
+  /* Grid Items */
+  .gallery-item {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    aspect-ratio: 1 / 1; /* Force a square aspect ratio */
+  }
+  
+  /* Hover Effects */
+  .gallery-item:hover img {
+    transform: scale(1.05); /* Slight zoom-in effect */
+    filter: brightness(70%); /* Darken the image */
+  }
+  
+  .gallery-hover {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .gallery-item:hover .gallery-hover {
+    opacity: 1;
+  }
+  

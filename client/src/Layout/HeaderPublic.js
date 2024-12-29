@@ -9,7 +9,8 @@ import { RIGHT_DRAWER_TYPES } from '../utils/globalConstantUtil';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { themeChange } from 'theme-change';
-import logoImg from '../assets/img/logo.png';
+import logoImg from '../assets/img/KNMlogo.png';
+
 function Header() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -94,25 +95,71 @@ function Header() {
     return (
         <div className="navbar sticky top-0 bg-base-100 z-10 shadow-md">
             <div className="flex-1 flex items-center">
+                {/* Sidebar Drawer Button */}
                 <label htmlFor="left-sidebar-drawer" className="btn btn-primary drawer-button lg:hidden">
                     <Bars3Icon className="h-5 w-5" />
                 </label>
-                <img 
-                    src= {logoImg}
-                    alt="Logo" 
-                    className="h-20 w-20 mr-2" 
-                />
+                
+                {/* Logo (Clickable and Redirects to Homepage) */}
+                <Link to="/">
+                    <img 
+                        src={logoImg}
+                        alt="Logo" 
+                        className="h-20 w-20 mr-2" 
+                    />
+                </Link>
                 <h1 className="text-2xl font-semibold ml-2">KBituin</h1>
             </div>
 
+            {/* Navigation Links */}
+            <div className="flex-none flex items-center space-x-6 ml-auto">
+                {/* About Us */}
+                <NavLink 
+                    to="/about" 
+                    className="btn btn-ghost text-sm font-medium"
+                    activeClassName="text-primary"
+                >
+                    About Us
+                </NavLink>
+
+
+                {/* Our Products */}
+                <NavLink 
+                    to="/gallery" 
+                    className="btn btn-ghost text-sm font-medium"
+                    activeClassName="text-primary"
+                >
+                    Our Products
+                </NavLink>
+
+                {/* Our Blogs */}
+                <NavLink 
+                    to="/blog" 
+                    className="btn btn-ghost text-sm font-medium"
+                    activeClassName="text-primary"
+                >
+                    Blogs
+                </NavLink>
+
+                {/* Contact Us */}
+                <NavLink 
+                    to="/contact" 
+                    className="btn btn-ghost text-sm font-medium"
+                    activeClassName="text-primary"
+                >
+                    Contact Us
+                </NavLink>
+            </div>
 
             <div className="flex-none flex items-center space-x-4 ml-auto">
+                {/* Theme Toggle */}
                 <label className="swap">
                     <input type="checkbox" onClick={handleThemeToggle} />
                     <SunIcon data-set-theme="light" className={"fill-current w-6 h-6 " + (currentTheme === "dark" ? "swap-on" : "swap-off")} />
                     <MoonIcon data-set-theme="dark" className={"fill-current w-6 h-6 " + (currentTheme === "light" ? "swap-on" : "swap-off")} />
                 </label>
 
+                {/* Notifications */}
                 <button className="btn btn-ghost btn-circle" onClick={() => openNotification()}>
                     <div className="indicator">
                         <BellIcon className="h-6 w-6" />
@@ -120,6 +167,7 @@ function Header() {
                     </div>
                 </button>
 
+                {/* User Profile Dropdown */}
                 <div>
                     <div className="dropdown dropdown-end">
                         <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
