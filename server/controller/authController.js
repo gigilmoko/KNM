@@ -163,7 +163,7 @@ exports.loginUser = async (req, res, next) => {
 
   try {
       const user = await User.findOne({ email }).select('+password');
-      console.log("User found:", user);
+      // console.log("User found:", user);
 
       if (!user) {
           return res.status(401).json({ message: 'Invalid Email or Password' });

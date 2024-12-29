@@ -22,7 +22,24 @@ function UpdateMember() {
     const { memberId } = useParams();  // Get the member ID from the URL
     const { newNotificationMessage, newNotificationStatus } = useSelector(state => state.header);
     const mainContentRef = useRef(null);
-
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
     const [memberData, setMemberData] = useState({
         fname: '',
         lname: '',
@@ -30,6 +47,7 @@ function UpdateMember() {
     });
 
     useEffect(() => {
+        getProfile();
         fetchMemberData();
     }, []);
 
@@ -103,7 +121,13 @@ function UpdateMember() {
         }
     
         try {
-            await axios.put(`${process.env.REACT_APP_API}/api/members/${memberId}`, memberData);
+            const token = sessionStorage.getItem("token");
+
+            await axios.put(`${process.env.REACT_APP_API}/api/members/${memberId}`, memberData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             toast.success('Member updated successfully');
             setTimeout(() => {
                 navigate('/admin/members/list');

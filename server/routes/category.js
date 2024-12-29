@@ -7,7 +7,7 @@ const { getCategory, newCategory, getSingleCategory, deleteCategory, updateCateg
 router.get('/category/all', getCategory);
 router.post('/category/new', isAuthenticatedUser, newCategory);
 router.get('/category/:id', getSingleCategory);
-router.delete('/category/delete/:id', deleteCategory);
+router.delete('/category/delete/:id', isAuthenticatedUser, deleteCategory);
 router.put('/category/update/:id', isAuthenticatedUser, updateCategory);
 
 module.exports = router;

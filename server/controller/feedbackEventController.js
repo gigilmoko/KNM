@@ -1,6 +1,6 @@
 const EventFeedback = require('../models/eventfeedback');
 const UserInterest = require('../models/userInterest');  // Assuming this is the path to your UserInterest model
-
+const CalendarEvent = require('../models/calendar');
 // Create Feedback Controller
 exports.createFeedback = async (req, res) => {
     const { userId, eventId, rating, description } = req.body;
@@ -78,4 +78,43 @@ exports.getEventFeedback = async (req, res) => {
   }
 };
 
-  
+// exports.getAllReviews = async (req, res) => {
+//   console.log("getAllReviews touched");
+
+//   try {
+//     // Fetch all EventFeedback entries and populate eventId with corresponding CalendarEvent data
+//     const reviews = await EventFeedback.find()
+//       .populate('eventId', 'date title description startDate endDate image location audience')  // Populate eventId with CalendarEvent fields
+//       .sort({ eventId: 1 }); // Sort by eventId in ascending order
+
+//     // If no reviews are found
+//     if (!reviews || reviews.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'No reviews found.',
+//       });
+//     }
+
+//     // Return the reviews with populated CalendarEvent data
+//     res.status(200).json({
+//       success: true,
+//       reviews,
+//     });
+//   } catch (error) {
+//     console.error('Error fetching event feedback:', error);
+//     return res.status(500).json({
+//       success: false,
+//       message: 'Server error. Failed to fetch reviews.',
+//     });
+//   }
+// };
+
+
+// Fetch All Reviews Controller
+const mongoose = require('mongoose');
+
+
+
+
+
+

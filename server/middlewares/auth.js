@@ -10,17 +10,9 @@ exports.isAuthenticatedUser = async (req, res, next) => {
     }
 
     try {
-        // console.log('Update Category');
-        console.log('Authorization header found:', authorizationHeader);
-
         const token = authorizationHeader.split(' ')[1];
-        console.log('Extracted token:', token);
-
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('Decoded Token:', decoded);
-
         req.user = await User.findById(decoded.id);
-        console.log('User found:', req.user);
 
         if (!req.user) {
             console.log('User not found in database');
@@ -34,8 +26,6 @@ exports.isAuthenticatedUser = async (req, res, next) => {
     }
 };
 
-
-
 exports.authorizeRoles = (...roles) => {
     return (req, res, next) => {
         console.log(roles, req.user, req.body);
@@ -45,3 +35,4 @@ exports.authorizeRoles = (...roles) => {
         next();
     };
 };
+

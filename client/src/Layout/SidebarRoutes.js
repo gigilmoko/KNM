@@ -126,9 +126,26 @@ const routes = [
     ]
   },
   {
-    path: '/admin/feedback/list',
-    icon: <ChartBarIcon className={iconClasses}/>, // Chart Bar icon for 'Analytics'
-    name: 'Feedback',
+    path: '', // Categories with submenu
+    icon: <TagIcon className={`${iconClasses} inline`}/>, // Tag icon for 'Categories'
+    name: 'Feedbacks',
+    submenu: [
+      {
+        path: '/admin/feedback/list',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Chart Bar icon for 'Analytics'
+        name: 'Feedback List',
+      },
+      {
+        path: '/admin/event/feedback/list',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Tag icon for 'New Category'
+        name: 'Event Feedback List',
+      },
+      {
+        path: '/admin/product/feedback/list',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Tag icon for 'New Category'
+        name: 'Product Feedback List',
+      },
+    ]
   },
   {
     path: '/admin/charts',

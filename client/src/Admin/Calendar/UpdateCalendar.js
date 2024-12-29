@@ -20,11 +20,30 @@ function UpdateCalendar() {
   const [location, setLocation] = useState("");
   const [audience, setAudience] = useState("all");
   const [error, setError] = useState("");
-
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const getProfile = async () => {
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+    };
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+        setUser(data.user);
+        setLoading(false);
+    } catch (error) {
+        setError('Failed to load profile.');
+        setLoading(false);
+    }
+};
+
   useEffect(() => {
+    getProfile();
     const fetchEventData = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API}/api/calendar/event/${id}`);
@@ -73,11 +92,15 @@ function UpdateCalendar() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+    const token = sessionStorage.getItem("token");
     const eventData = { date, title, description, startDate, endDate, image, location, audience };
   
     try {
-      await axios.put(`${process.env.REACT_APP_API}/api/calendar/event/${id}`, eventData);
+      await axios.put(`${process.env.REACT_APP_API}/api/calendar/event/${id}`, eventData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
   
       // Success toast
       toast.success(`Event updated successfully for ${audience === "all" ? "all users" : "members only"}!`);

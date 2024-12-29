@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Define the schema for a calendar event
 const calendarEventSchema = new mongoose.Schema({
   date: {
     type: Date,
@@ -32,6 +31,11 @@ const calendarEventSchema = new mongoose.Schema({
   audience: {
     type: String,
     enum: ['all', 'member'], // Options for the audience
+    required: true,
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
     required: true,
   },
 }, {
