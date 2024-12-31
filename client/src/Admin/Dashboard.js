@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import axios from 'axios';
 import { showNotification } from '../Layout/common/headerSlice';
 
 import Header from '../Layout/Header';
@@ -21,18 +22,86 @@ import UsersIcon from '@heroicons/react/24/outline/UsersIcon';
 import CircleStackIcon from '@heroicons/react/24/outline/CircleStackIcon';
 import CreditCardIcon from '@heroicons/react/24/outline/CreditCardIcon';
 
-const statsData = [
-  { title: "New Users", value: "34.7k", icon: <UserGroupIcon className='w-8 h-8' />, description: "↗︎ 2300 (22%)" },
-  { title: "Total Sales", value: "$34,545", icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
-  { title: "Pending Leads", value: "450", icon: <CircleStackIcon className='w-8 h-8' />, description: "50 in hot leads" },
-  { title: "Active Users", value: "5.6k", icon: <UsersIcon className='w-8 h-8' />, description: "↙ 300 (18%)" },
-];
-
-function Dashboard() {
+const Dashboard = () => {
   const dispatch = useDispatch();
+  const [newUsers, setNewUsers] = useState("0");
+  const [totalSales, setTotalSales] = useState("$0");
+  const [ordersCatered, setOrdersCatered] = useState("0");
+  const [totalUsers, setTotalUsers] = useState("0");
+
+  useEffect(() => {
+    const fetchNewUsers = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/currentmonth`);
+        if (response.data && response.data.success) {
+          setNewUsers(response.data.count);
+        } else {
+          setNewUsers("0");
+        }
+      } catch (error) {
+        console.error('Error fetching new users:', error);
+        setNewUsers("0");
+      }
+    };
+
+    const fetchTotalSales = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalprice`);
+        if (response.data && response.data.success) {
+          setTotalSales(`$${response.data.totalPrice.toLocaleString()}`);
+        } else {
+          setTotalSales("$0");
+        }
+      } catch (error) {
+        console.error('Error fetching total sales:', error);
+        setTotalSales("$0");
+      }
+    };
+
+    const fetchOrdersCatered = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/quantity`);
+        if (response.data && response.data.success) {
+          setOrdersCatered(response.data.orderCount.toString());
+        } else {
+          setOrdersCatered("0");
+        }
+      } catch (error) {
+        console.error('Error fetching orders catered:', error);
+        setOrdersCatered("0");
+      }
+    };
+    
+
+    const fetchTotalUsers = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/quantity`);
+        if (response.data && response.data.success) {
+          setTotalUsers(response.data.count.toString());
+        } else {
+          setTotalUsers("0");
+        }
+      } catch (error) {
+        console.error('Error fetching total users:', error);
+        setTotalUsers("0");
+      }
+    };
+
+    // Call each function
+    fetchNewUsers();
+    fetchTotalSales();
+    fetchOrdersCatered();
+    fetchTotalUsers();
+  }, []);
+
+  const statsData = [
+    { title: "New Users", value: newUsers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Current month" },
+    { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
+    { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Users", value: totalUsers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+  ];
 
   const updateDashboardPeriod = (newRange) => {
-    // Dashboard range changed, write code to refresh your values
     dispatch(showNotification({ message: `Period updated to ${newRange.startDate} to ${newRange.endDate}`, status: 1 }));
   };
 
@@ -47,13 +116,9 @@ function Dashboard() {
 
           {/** ---------------------- Different stats content 1 ------------------------- */}
           <div className="grid lg:grid-cols-4 mt-2 md:grid-cols-2 grid-cols-1 gap-6">
-            {
-              statsData.map((d, k) => {
-                return (
-                  <DashboardStats key={k} {...d} colorIndex={k} />
-                )
-              })
-            }
+            {statsData.map((d, k) => (
+              <DashboardStats key={k} {...d} colorIndex={k} />
+            ))}
           </div>
 
           {/** ---------------------- Different charts ------------------------- */}
@@ -80,6 +145,6 @@ function Dashboard() {
       <ModalLayout />
     </div>
   );
-}
+};
 
 export default Dashboard;

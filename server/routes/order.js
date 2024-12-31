@@ -14,7 +14,11 @@ const {
     getSeasonalityAnalysis,
     getPeakOrderHours,
     grabpayPayment,
-    gcashPayment
+    gcashPayment,
+    calculateTotalPrice,
+    getNumberOfOrders,
+    getMonthlyOrderTotal
+
 
 } = require("../controller/orderController");
 
@@ -33,4 +37,8 @@ router.get('/predictions/market-basket',getMarketBasketAnalysis)
 router.get('/predictions/get-top-products',getTopProducts)
 router.get('/predictions/get-seasonality',getSeasonalityAnalysis)
 router.get('/predictions/get-peak-hours',getPeakOrderHours)
+router.get('/analytics/orders/totalprice',calculateTotalPrice)
+router.get('/analytics/orders/quantity',getNumberOfOrders)
+router.get('/analytics/orders/months',getMonthlyOrderTotal)
+
 module.exports = router;

@@ -9,7 +9,8 @@ const { registerUser, loginUser, logout, forgotPassword,
         googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
         applyingForMember, deleteImage, registerUserMember, fetchUserMemberMatch,
         approveApplyMember, denyApplyMember, avatarUpdate,
-        updatePasswordMobile, updateProfileMobile, getUserProfileById} = require('../controller/authController');
+        updatePasswordMobile, updateProfileMobile, getUserProfileById,
+        getUsersByMonth, getUsersByCurrentMonth, getAllUsersCount} = require('../controller/authController');
 
 router.post('/register', registerUser);
 router.post('/register-member', registerUserMember);
@@ -34,5 +35,8 @@ router.get('/fetchusermember', fetchUserMemberMatch);
 router.put('/users/approve-apply-member/:id', approveApplyMember);
 router.put('/users/deny-apply-member/:id', denyApplyMember);
 router.put('/avatar-update/:id', avatarUpdate);
+router.get('/analytics/users/currentmonth', getUsersByCurrentMonth);
+router.get('/analytics/users/allmonths', getUsersByMonth);
+router.get('/analytics/users/quantity', getAllUsersCount);
 
 module.exports = router;
