@@ -13,13 +13,12 @@ const {
     getTopProducts,
     getSeasonalityAnalysis,
     getPeakOrderHours,
-    grabpayPayment,
     gcashPayment
 
 } = require("../controller/orderController");
 
 router.post('/neworder', isAuthenticatedUser, createOrder);
-// router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
+router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
 // router.post('/grabpay-payment/:token/:id', isAuthenticatedUser, grabpayPayment);
 
 router.get("/my", isAuthenticatedUser, getMyOrders);
