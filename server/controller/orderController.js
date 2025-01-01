@@ -184,7 +184,6 @@ exports.gcashPayment = async (req, res, next) => {
   }
 };
 
-
 exports.getAdminOrders = async (req, res, next) => {
     try {
         const orders = await Order.find({});
@@ -436,3 +435,76 @@ exports.getPeakOrderHours = async (req, res) => {
   }
 };
 
+exports.calculateTotalPrice = async (req, res) => {
+  try {
+    const orders = await Order.find();
+
+    // Sum up the total price from all orders
+    const totalPrice = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+
+    res.status(200).json({
+      success: true,
+      totalPrice,
+    });
+  } catch (error) {
+    console.error("Error calculating total price:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.getNumberOfOrders = async (req, res) => {
+  try {
+    // Count the total number of orders
+    const orderCount = await Order.countDocuments();
+
+    res.status(200).json({
+      success: true,
+      orderCount,
+    });
+  } catch (error) {
+    console.error("Error fetching number of orders:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.getMonthlyOrderTotal = async (req, res) => {
+  try {
+    // Aggregate orders by year and month, then sum the totalPrice
+    const result = await Order.aggregate([
+      {
+        $project: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          totalPrice: 1, // Include the totalPrice in the aggregation
+        },
+      },
+      {
+        $group: {
+          _id: { year: "$year", month: "$month" },
+          totalAmount: { $sum: "$totalPrice" }, // Sum the totalPrice for each month
+        },
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 }, // Sort by year and month
+      },
+    ]);
+
+    // Check if results are empty
+    if (result.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No orders found.",
+        data: [],
+      });
+    }
+
+    // Respond with the total price per month
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching monthly order totals:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

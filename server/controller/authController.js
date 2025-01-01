@@ -698,5 +698,51 @@ exports.deleteUser = async (req, res, next) => {
   }
 };
 
+exports.getUsersByMonth = async (req, res) => {
+  try {
+    const usersByMonth = await User.aggregate([
+      {
+        $group: {
+          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 },
+      },
+    ]);
 
+    res.status(200).json({ success: true, data: usersByMonth });
+  } catch (error) {
+    console.error("Error fetching users by month:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
+exports.getUsersByCurrentMonth = async (req, res) => {
+  try {
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+    const usersCount = await User.countDocuments({
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    res.status(200).json({ success: true, count: usersCount });
+  } catch (error) {
+    console.error("Error fetching users by current month:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getAllUsersCount = async (req, res) => {
+  try {
+    // Count all users in the database
+    const totalUsersCount = await User.countDocuments();
+
+    res.status(200).json({ success: true, count: totalUsersCount });
+  } catch (error) {
+    console.error("Error fetching total user count:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
