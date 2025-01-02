@@ -13,7 +13,11 @@ const {
     getTopProducts,
     getSeasonalityAnalysis,
     getPeakOrderHours,
-    gcashPayment
+    gcashPayment,
+    calculateTotalPrice,
+    getNumberOfOrders,
+    getMonthlyOrderTotal
+   
 
 } = require("../controller/orderController");
 
