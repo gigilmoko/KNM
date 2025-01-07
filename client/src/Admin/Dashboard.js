@@ -24,29 +24,61 @@ import CreditCardIcon from '@heroicons/react/24/outline/CreditCardIcon';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
-  const [newUsers, setNewUsers] = useState("0");
+  const [totalCustomers, setTotalCustomers] = useState("0");
   const [totalSales, setTotalSales] = useState("$0");
   const [ordersCatered, setOrdersCatered] = useState("0");
   const [totalUsers, setTotalUsers] = useState("0");
+  const [totalMembers, setTotalMembers] = useState("0");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const getProfile = async () => {
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+    };
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+        setUser(data.user);
+        setLoading(false);
+    } catch (error) {
+        setError('Failed to load profile.');
+        setLoading(false);
+    }
+};
 
   useEffect(() => {
-    const fetchNewUsers = async () => {
+    getProfile(); 
+    const fetchTotalCustomers = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/currentmonth`);
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalcustomers`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+        console.log(response.data);
         if (response.data && response.data.success) {
-          setNewUsers(response.data.count);
+          setTotalCustomers(response.data.totalCustomers.toString());
         } else {
-          setNewUsers("0");
+          setTotalCustomers("0");
         }
       } catch (error) {
-        console.error('Error fetching new users:', error);
-        setNewUsers("0");
+        console.error('Error fetching total customers:', error);
+        setTotalCustomers("0");
       }
     };
 
     const fetchTotalSales = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalprice`);
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalprice`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
         if (response.data && response.data.success) {
           setTotalSales(`$${response.data.totalPrice.toLocaleString()}`);
         } else {
@@ -60,7 +92,12 @@ const Dashboard = () => {
 
     const fetchOrdersCatered = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/quantity`);
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/quantity`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
         if (response.data && response.data.success) {
           setOrdersCatered(response.data.orderCount.toString());
         } else {
@@ -71,11 +108,15 @@ const Dashboard = () => {
         setOrdersCatered("0");
       }
     };
-    
 
     const fetchTotalUsers = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/quantity`);
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/quantity`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
         if (response.data && response.data.success) {
           setTotalUsers(response.data.count.toString());
         } else {
@@ -87,18 +128,38 @@ const Dashboard = () => {
       }
     };
 
+    const fetchTotalMembers = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/totalmembers`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+        if (response.data && response.data.success) {
+          setTotalMembers(response.data.totalMembers.toString());
+        } else {
+          setTotalMembers("0");
+        }
+      } catch (error) {
+        console.error('Error fetching total members:', error);
+        setTotalMembers("0");
+      }
+    };
+
     // Call each function
-    fetchNewUsers();
+    fetchTotalCustomers();
     fetchTotalSales();
     fetchOrdersCatered();
     fetchTotalUsers();
+    fetchTotalMembers();
   }, []);
 
   const statsData = [
-    { title: "New Users", value: newUsers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Current month" },
+    { title: "Total Customers", value: totalCustomers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Lifetime" },
     { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
     { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Total Users", value: totalUsers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Users | Members", value: `${totalUsers} | ${totalMembers}`, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
   ];
 
   const updateDashboardPeriod = (newRange) => {

@@ -746,3 +746,54 @@ exports.getAllUsersCount = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
+
+exports.getUsersCountForPast7Days = async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Count users created in the past 7 days
+    const usersCount = await User.countDocuments({
+      createdAt: { $gte: sevenDaysAgo },
+    });
+
+    res.status(200).json({ success: true, count: usersCount });
+  } catch (error) {
+    console.error("Error fetching user count for past 7 days:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getUsersCountForToday = async (req, res) => {
+  try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    // Count users created today
+    const usersCount = await User.countDocuments({
+      createdAt: { $gte: todayStart, $lte: todayEnd },
+    });
+
+    res.status(200).json({ success: true, count: usersCount });
+  } catch (error) {
+    console.error("Error fetching user count for today:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getTotalMembers = async (req, res) => {
+  try {
+    const totalMembers = await User.countDocuments({ role: "member" });
+
+    res.status(200).json({
+      success: true,
+      totalMembers,
+    });
+  } catch (error) {
+    console.error("Error fetching total members:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

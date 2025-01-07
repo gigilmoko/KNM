@@ -48,7 +48,12 @@ function UsersList() {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API}/api/all-users`);
+            const token = sessionStorage.getItem("token");
+            const response = await axios.get(`${process.env.REACT_APP_API}/api/all-users`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             if (response.data && Array.isArray(response.data.users)) {
                 setUsers(response.data.users);
                 setFilteredUsers(response.data.users);

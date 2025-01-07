@@ -508,3 +508,139 @@ exports.getMonthlyOrderTotal = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
+exports.getLast7DaysOrderTotal = async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const result = await Order.aggregate([
+      {
+        $match: { createdAt: { $gte: sevenDaysAgo } },
+      },
+      {
+        $project: {
+          day: { $dayOfWeek: "$createdAt" },
+          totalPrice: 1,
+        },
+      },
+      {
+        $group: {
+          _id: { day: "$day" },
+          totalAmount: { $sum: "$totalPrice" },
+        },
+      },
+      {
+        $sort: { "_id.day": 1 },
+      },
+    ]);
+
+    if (result.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No orders found.",
+        data: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching past 7 days order totals:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.getDailyOrderTotalByInterval = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const result = await Order.aggregate([
+      {
+        $match: { createdAt: { $gte: today, $lt: tomorrow } },
+      },
+      {
+        $project: {
+          interval: {
+            $switch: {
+              branches: [
+                { case: { $lt: [{ $hour: "$createdAt" }, 3] }, then: "00:00 - 03:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 6] }, then: "03:00 - 06:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 9] }, then: "06:00 - 09:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 12] }, then: "09:00 - 12:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 15] }, then: "12:00 - 15:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 18] }, then: "15:00 - 18:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 21] }, then: "18:00 - 21:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 24] }, then: "21:00 - 00:00" },
+              ],
+              default: "Unknown",
+            },
+          },
+          totalPrice: 1,
+        },
+      },
+      {
+        $group: {
+          _id: "$interval",
+          totalAmount: { $sum: "$totalPrice" },
+        },
+      },
+      {
+        $sort: { "_id": 1 },
+      },
+    ]);
+
+    if (result.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No orders found.",
+        data: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    console.error("Error fetching daily order totals:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.getTotalCustomer = async (req, res) => {
+  try {
+    const result = await Order.aggregate([
+      {
+        // Group by user ID to ensure each user is counted only once
+        $group: {
+          _id: "$user",
+        },
+      },
+      {
+        // Count the unique user IDs
+        $group: {
+          _id: null,
+          totalCustomers: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const totalCustomers = result.length > 0 ? result[0].totalCustomers : 0;
+
+    res.status(200).json({
+      success: true,
+      totalCustomers,
+    });
+  } catch (error) {
+    console.error("Error fetching total customers:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+

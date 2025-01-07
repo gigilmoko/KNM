@@ -15,66 +15,110 @@ import TitleCard from "../../Layout/components/Cards/TitleCard";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function BarChart() {
+  const [activeTab, setActiveTab] = useState('monthly'); // Default to monthly
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
       {
-        label: 'Store 1',
+        label: '',
         data: [],
         backgroundColor: 'rgba(53, 162, 235, 1)',
       },
     ],
   });
+  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem("theme"));
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-    },
+  const getProfile = async () => {
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+    };
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+        setUser(data.user);
+        setLoading(false);
+    } catch (error) {
+        setError('Failed to load profile.');
+        setLoading(false);
+    }
+};
+
+  const fetchData = async (endpoint, labelFormatter) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/${endpoint}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+      if (response.data.success) {
+        const labels = [];
+        const data = [];
+
+        response.data.data.forEach(item => {
+          labels.push(labelFormatter(item));
+          data.push(item.totalAmount);
+        });
+
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: `Revenue (${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)})`,
+              data,
+              backgroundColor: 'rgba(53, 162, 235, 1)',
+            },
+          ],
+        });
+      }
+    } catch (error) {
+      console.error(`Error fetching ${activeTab} data:`, error);
+    }
   };
 
   useEffect(() => {
-    // Fetch the data from the API
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/months`);
-        
-        if (response.data.success) {
-          const labels = [];
-          const data = [];
-
-          // Map the data to labels (months) and total amounts
-          response.data.data.forEach(item => {
-            const month = new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'long' });
-            labels.push(month);
-            data.push(item.totalAmount);
-          });
-
-          // Update chart data
-          setChartData({
-            labels,
-            datasets: [
-              {
-                label: 'Store 1', // Only one store
-                data,
-                backgroundColor: 'rgba(53, 162, 235, 1)', // Color for the bar chart
-              },
-            ],
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, []); // Empty dependency array to fetch data once when component mounts
+    getProfile();
+    if (activeTab === 'monthly') {
+      fetchData('months', item =>
+        new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'long' })
+      );
+    } else if (activeTab === 'weekly') {
+      fetchData('weekly', item => `Day ${item._id.day}`);
+    } else if (activeTab === 'daily') {
+      fetchData('daily', item => item._id.interval);
+    }
+  }, [activeTab]);
 
   return (
     <TitleCard title={"Revenue"}>
-      <Bar options={options} data={chartData} />
+      <div className="flex justify-center w-full mb-4">
+      <div className="flex space-x-4 max-w-md w-full justify-center">
+        <button
+          className={`btn btn-primary ${activeTab === 'monthly' ? 'border-2 border-blue-500' : ''}`}
+          onClick={() => setActiveTab('monthly')}
+        >
+          Monthly
+        </button>
+        <button
+          className={`btn btn-primary ${activeTab === 'weekly' ? 'border-2 border-blue-500' : ''}`}
+          onClick={() => setActiveTab('weekly')}
+        >
+          Weekly
+        </button>
+        <button
+          className={`btn btn-primary ${activeTab === 'daily' ? 'border-2 border-blue-500' : ''}`}
+          onClick={() => setActiveTab('daily')}
+        >
+          Daily
+        </button>
+      </div>
+      </div>
+      <Bar options={{ responsive: true }} data={chartData} />
     </TitleCard>
   );
 }

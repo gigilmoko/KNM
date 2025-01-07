@@ -36,6 +36,14 @@ exports.authorizeRoles = (...roles) => {
     };
 };
 
+exports.isAdmin = async (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Admin resources access denied' });
+    }
+    next();
+};
+
+
 // exports.protect = async (req, res, next) => {
 //     let token;
 //     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {

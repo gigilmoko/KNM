@@ -19,7 +19,28 @@ function MembersConfirmation() {
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchText, setSearchText] = useState("");
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
     const mainContentRef = useRef(null);
+
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+            setLoading(false);
+        } catch (error) {
+            setError('Failed to load profile.');
+            setLoading(false);
+        }
+    };
+
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -31,6 +52,7 @@ function MembersConfirmation() {
     }, [pageTitle]);
 
     useEffect(() => {
+        getProfile();
         applySearch(searchText);
     }, [searchText, users]);
 
@@ -44,7 +66,12 @@ function MembersConfirmation() {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API}/api/fetchusermember`);
+            const token = sessionStorage.getItem("token");
+            const response = await axios.get(`${process.env.REACT_APP_API}/api/fetchusermember`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             if (response.data && Array.isArray(response.data.data)) {
                 setUsers(response.data.data); // Access 'data' field from the response
                 setFilteredUsers(response.data.data);
@@ -72,8 +99,14 @@ function MembersConfirmation() {
     const handleApplyMember = async (id, index) => {
         console.log('Approve button clicked for user:', id);  // Debug log
         try {
+            const token = sessionStorage.getItem("token");
+            console.log('Token:', token);  // Debug log     
             // Call the backend to approve the application and change role to 'member'
-            await axios.put(`${process.env.REACT_APP_API}/api/users/approve-apply-member/${id}`);
+            await axios.put(`${process.env.REACT_APP_API}/api/users/approve-apply-member/${id}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             
             // Show success toast
             toast.success('User approved as a member successfully!');
@@ -92,8 +125,14 @@ function MembersConfirmation() {
     const handleDenyApplyMember = async (id, index) => {
         console.log('Deny button clicked for user:', id);  // Debug log
         try {
+            const token = sessionStorage.getItem("token");
             // Call the backend to deny the application (only update applyMember to false)
-            await axios.put(`${process.env.REACT_APP_API}/api/users/deny-apply-member/${id}`);
+            await axios.put(`${process.env.REACT_APP_API}/api/users/deny-apply-member/${id}`, {}, 
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
             
             // Show success toast
             toast.success('User application denied successfully!');

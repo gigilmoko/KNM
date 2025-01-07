@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { isAuthenticatedUser } = require('../middlewares/auth');
+const { isAuthenticatedUser, isAdmin } = require('../middlewares/auth');
 
 const { 
     createOrder, 
@@ -16,8 +16,10 @@ const {
     gcashPayment,
     calculateTotalPrice,
     getNumberOfOrders,
-    getMonthlyOrderTotal
-   
+    getMonthlyOrderTotal,
+    getLast7DaysOrderTotal,
+    getDailyOrderTotalByInterval,
+    getTotalCustomer
 
 } = require("../controller/orderController");
 
@@ -31,13 +33,17 @@ router.route("/orders/single/:id")
     .get(getOrderDetails)
 
 router.put("/orders/update/:id", processOrder)
-router.get('/predictions/demand-forecast',getDemandForecast)
-router.get('/predictions/market-basket',getMarketBasketAnalysis)
-router.get('/predictions/get-top-products',getTopProducts)
-router.get('/predictions/get-seasonality',getSeasonalityAnalysis)
-router.get('/predictions/get-peak-hours',getPeakOrderHours)
-router.get('/analytics/orders/totalprice',calculateTotalPrice)
-router.get('/analytics/orders/quantity',getNumberOfOrders)
-router.get('/analytics/orders/months',getMonthlyOrderTotal)
+router.get('/predictions/demand-forecast',isAuthenticatedUser, isAdmin,getDemandForecast)
+router.get('/predictions/market-basket',isAuthenticatedUser, isAdmin,getMarketBasketAnalysis)
+router.get('/predictions/get-top-products',isAuthenticatedUser, isAdmin,getTopProducts)
+router.get('/predictions/get-seasonality',isAuthenticatedUser, isAdmin,getSeasonalityAnalysis)
+router.get('/predictions/get-peak-hours',isAuthenticatedUser, isAdmin,getPeakOrderHours)
+router.get('/analytics/orders/totalprice',isAuthenticatedUser, isAdmin,calculateTotalPrice)
+router.get('/analytics/orders/quantity',isAuthenticatedUser, isAdmin,getNumberOfOrders)
+router.get('/analytics/orders/months',isAuthenticatedUser, isAdmin,getMonthlyOrderTotal)
+router.get('/analytics/orders/weekly',isAuthenticatedUser, isAdmin,getLast7DaysOrderTotal)
+router.get('/analytics/orders/daily',isAuthenticatedUser, isAdmin, getDailyOrderTotalByInterval)
+router.get('/analytics/orders/totalcustomers', isAuthenticatedUser, isAdmin, getTotalCustomer)
+
 
 module.exports = router;
