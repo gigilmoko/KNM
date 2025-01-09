@@ -86,56 +86,57 @@ const fetchData = async (type) => {
 
     console.log("Fetched data:", response.data); // Log full response
 
-    // Check if the response structure matches expectations
-    if (response.data.success && Array.isArray(response.data.data)) {
-      const labels = [];
-      const data = [];
+    // Default labels and data
+    let labels = [];
+    let data = [];
 
-      response.data.data.forEach(item => {
-        if (type === 'monthly') {
+    if (response.data.success) {
+      if (type === 'monthly') {
+        response.data.data.forEach(item => {
           const month = new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'long' });
           labels.push(month);
-        } else if (type === 'weekly') {
-          labels.push(`Week ${item.week}`);
-        } else if (type === 'daily') {
-          const date = new Date(item._id).toLocaleDateString();
-          labels.push(date);
-        }
-        data.push(item.count);
-      });
+          data.push(item.count);
+        });
+      } else if (type === 'weekly') {
+        const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const weeklyData = {};
 
-      setChartData({
-        labels,
-        datasets: [{
-          fill: true,
-          label: 'Users',
-          data, // Updated data directly here
-          borderColor: 'rgb(53, 162, 235)',
-          backgroundColor: 'rgba(53, 162, 235, 0.5)',
-        }],
-      });
-    } else if (response.data.count !== undefined) {
-      // Handle the case where only the count is returned
-      setChartData({
-        labels: ['Total'],
-        datasets: [{
-          fill: true,
-          label: 'Users',
-          data: [response.data.count], // Use the count data directly
-          borderColor: 'rgb(53, 162, 235)',
-          backgroundColor: 'rgba(53, 162, 235, 0.5)',
-        }],
-      });
+        daysOfWeek.forEach(day => {
+          weeklyData[day] = 0;
+        });
+
+        response.data.data.forEach(item => {
+          if (weeklyData[item.day] !== undefined) {
+            weeklyData[item.day] = item.count;
+          }
+        });
+
+        labels = daysOfWeek;
+        data = daysOfWeek.map(day => weeklyData[day]);
+      } else if (type === 'daily') {
+        response.data.data.forEach(item => {
+          labels.push(item.interval); // Use interval as label
+          data.push(item.count);
+        });
+      }
     } else {
       console.error("Invalid data format: ", response.data);
     }
+
+    setChartData({
+      labels,
+      datasets: [{
+        fill: true,
+        label: 'Users',
+        data,
+        borderColor: 'rgb(53, 162, 235)',
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      }],
+    });
   } catch (error) {
     console.error("Error fetching data: ", error);
   }
 };
-
-
-
 
 
   useEffect(() => {

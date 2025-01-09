@@ -514,6 +514,8 @@ exports.getLast7DaysOrderTotal = async (req, res) => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
     const result = await Order.aggregate([
       {
         $match: { createdAt: { $gte: sevenDaysAgo } },
@@ -535,23 +537,31 @@ exports.getLast7DaysOrderTotal = async (req, res) => {
       },
     ]);
 
-    if (result.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No orders found.",
-        data: [],
-      });
-    }
+    // Convert numeric day values to day names
+    const formattedResult = result.map(item => ({
+      day: daysOfWeek[item._id.day - 1], // Map day number to name
+      count: item.totalAmount,
+    }));
+
+    // Ensure all 7 days are included even if there's no data for some days
+    const completeData = daysOfWeek.map(day => {
+      const found = formattedResult.find(item => item.day === day);
+      return {
+        day,
+        count: found ? found.count : 0,
+      };
+    });
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: completeData,
     });
   } catch (error) {
     console.error("Error fetching past 7 days order totals:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 exports.getDailyOrderTotalByInterval = async (req, res) => {
   try {
@@ -569,14 +579,12 @@ exports.getDailyOrderTotalByInterval = async (req, res) => {
           interval: {
             $switch: {
               branches: [
-                { case: { $lt: [{ $hour: "$createdAt" }, 3] }, then: "00:00 - 03:00" },
-                { case: { $lt: [{ $hour: "$createdAt" }, 6] }, then: "03:00 - 06:00" },
-                { case: { $lt: [{ $hour: "$createdAt" }, 9] }, then: "06:00 - 09:00" },
-                { case: { $lt: [{ $hour: "$createdAt" }, 12] }, then: "09:00 - 12:00" },
-                { case: { $lt: [{ $hour: "$createdAt" }, 15] }, then: "12:00 - 15:00" },
-                { case: { $lt: [{ $hour: "$createdAt" }, 18] }, then: "15:00 - 18:00" },
-                { case: { $lt: [{ $hour: "$createdAt" }, 21] }, then: "18:00 - 21:00" },
-                { case: { $lt: [{ $hour: "$createdAt" }, 24] }, then: "21:00 - 00:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 4] }, then: "00:00 - 04:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 8] }, then: "04:00 - 08:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 12] }, then: "08:00 - 12:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 16] }, then: "12:00 - 16:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 20] }, then: "16:00 - 20:00" },
+                { case: { $lt: [{ $hour: "$createdAt" }, 24] }, then: "20:00 - 00:00" },
               ],
               default: "Unknown",
             },
@@ -605,13 +613,17 @@ exports.getDailyOrderTotalByInterval = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: result.map(item => ({
+        interval: item._id,
+        totalAmount: item.totalAmount,
+      })),
     });
   } catch (error) {
     console.error("Error fetching daily order totals:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 exports.getTotalCustomer = async (req, res) => {
   try {

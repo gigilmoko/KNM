@@ -189,16 +189,16 @@ const Dashboard = () => {
           </div>
 
           {/** ---------------------- Different stats content 2 ------------------------- */}
-          <div className="grid lg:grid-cols-2 mt-10 grid-cols-1 gap-6">
+          {/* <div className="grid lg:grid-cols-2 mt-10 grid-cols-1 gap-6">
             <AmountStats />
             <PageStats />
-          </div>
+          </div> */}
 
           {/** ---------------------- User source channels table  ------------------------- */}
-          <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
+          {/* <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
             <UserChannels />
             <DoughnutChart />
-          </div>
+          </div> */}
         </main>
       </div>
       <LeftSidebar />
