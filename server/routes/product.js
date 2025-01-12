@@ -11,15 +11,15 @@ const {
     getProductsByCategory,   
     searchProduct
 } = require('../controller/productController');
-const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
+const { isAuthenticatedUser, authorizeRoles, isAdmin } = require('../middlewares/auth');
 
 router.get('/product/all', getProduct);
 router.get('/product/search', searchProduct);
-router.post('/product/new', isAuthenticatedUser, newProduct);
+router.post('/product/new', isAuthenticatedUser, isAdmin, newProduct);
 router.get('/product/:id', getSingleProduct);
-router.delete('/product/delete/:id', isAuthenticatedUser, deleteProduct);
-router.put('/product/update/:id', isAuthenticatedUser, updateProduct);
-router.delete('/product/delete-image/:public_id', isAuthenticatedUser, deleteImage);
+router.delete('/product/delete/:id', isAuthenticatedUser, isAdmin, deleteProduct);
+router.put('/product/update/:id', isAuthenticatedUser, isAdmin, updateProduct);
+router.delete('/product/delete-image/:public_id', isAuthenticatedUser, isAdmin, deleteImage);
 router.get('/product/details/:id', getProductDetails);
 router.get('/product/category/:id', getProductsByCategory);
 

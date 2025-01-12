@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID
 const ONESIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY
-console.log('ONESIGNAL_APP_ID:', ONESIGNAL_APP_ID);
+// console.log('ONESIGNAL_APP_ID:', ONESIGNAL_APP_ID);
 
 exports.createNotification = async (req, res) => {
     const { eventId } = req.body;

@@ -445,8 +445,6 @@ exports.getUserProfileById = async (req, res, next) => {
   }
 };
 
-
-
 exports.updatePassword = async (req, res, next) => {
     console.log('Update Password route hit')
     const user = await User.findById(req.user.id).select("password");
@@ -698,5 +696,198 @@ exports.deleteUser = async (req, res, next) => {
   }
 };
 
+exports.getUsersByMonth = async (req, res) => {
+  try {
+    const usersByMonth = await User.aggregate([
+      {
+        $group: {
+          _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 },
+      },
+    ]);
 
+    res.status(200).json({ success: true, data: usersByMonth });
+  } catch (error) {
+    console.error("Error fetching users by month:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
 
+exports.getUsersByCurrentMonth = async (req, res) => {
+  try {
+    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const endOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+    const usersCount = await User.countDocuments({
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    res.status(200).json({ success: true, count: usersCount });
+  } catch (error) {
+    console.error("Error fetching users by current month:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getAllUsersCount = async (req, res) => {
+  try {
+    // Count all users in the database
+    const totalUsersCount = await User.countDocuments();
+
+    res.status(200).json({ success: true, count: totalUsersCount });
+  } catch (error) {
+    console.error("Error fetching total user count:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getUsersCountForPast7Days = async (req, res) => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    // Aggregate user creation counts for the past 7 days
+    const usersCountByDay = await User.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sevenDaysAgo }, // Filter users created in the past 7 days
+        },
+      },
+      {
+        $group: {
+          _id: { $dayOfWeek: "$createdAt" }, // Group by day of the week (1=Sunday, 7=Saturday)
+          count: { $sum: 1 }, // Count the number of users
+        },
+      },
+      {
+        $project: {
+          day: {
+            $arrayElemAt: [
+              [
+                "Sunday",
+                "Monday",
+                "Tuesday",
+                "Wednesday",
+                "Thursday",
+                "Friday",
+                "Saturday",
+              ],
+              { $subtract: ["$_id", 1] },
+            ],
+          },
+          count: 1,
+        },
+      },
+      {
+        $sort: { _id: 1 }, // Ensure days are in chronological order
+      },
+    ]);
+
+    // Map results to ensure all days have a count (default to 0 if no users created)
+    const result = Array(7)
+      .fill(0)
+      .map((_, i) => ({
+        day: [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ][(new Date().getDay() + i - 6 + 7) % 7], // Calculate day names for the past week
+        count:
+          usersCountByDay.find((d) => d.day ===
+          [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ][(new Date().getDay() + i - 6 + 7) % 7])?.count || 0,
+      }));
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error("Error fetching user count for past 7 days:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getUsersCountForToday = async (req, res) => {
+  try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    // Aggregate users created today by 4-hour intervals
+    const usersCountByInterval = await User.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: todayStart, $lte: todayEnd },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $hour: "$createdAt", // Group by the hour field
+          },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          _id: 1, // Sort by hour
+        },
+      },
+    ]);
+
+    // Format results into 4-hour intervals
+    const intervals = [
+      { start: 0, end: 4, label: "12:00 AM - 4:00 AM" },
+      { start: 4, end: 8, label: "4:00 AM - 8:00 AM" },
+      { start: 8, end: 12, label: "8:00 AM - 12:00 PM" },
+      { start: 12, end: 16, label: "12:00 PM - 4:00 PM" },
+      { start: 16, end: 20, label: "4:00 PM - 8:00 PM" },
+      { start: 20, end: 24, label: "8:00 PM - 12:00 AM" },
+    ];
+
+    const result = intervals.map(interval => {
+      const count = usersCountByInterval
+        .filter(item => item._id >= interval.start && item._id < interval.end)
+        .reduce((sum, item) => sum + item.count, 0);
+
+      return {
+        interval: interval.label,
+        count,
+      };
+    });
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    console.error("Error fetching user count for today:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getTotalMembers = async (req, res) => {
+  try {
+    const totalMembers = await User.countDocuments({ role: "member" });
+
+    res.status(200).json({
+      success: true,
+      totalMembers,
+    });
+  } catch (error) {
+    console.error("Error fetching total members:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

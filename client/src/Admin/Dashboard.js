@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import axios from 'axios';
 import { showNotification } from '../Layout/common/headerSlice';
 
 import Header from '../Layout/Header';
@@ -21,18 +22,147 @@ import UsersIcon from '@heroicons/react/24/outline/UsersIcon';
 import CircleStackIcon from '@heroicons/react/24/outline/CircleStackIcon';
 import CreditCardIcon from '@heroicons/react/24/outline/CreditCardIcon';
 
-const statsData = [
-  { title: "New Users", value: "34.7k", icon: <UserGroupIcon className='w-8 h-8' />, description: "↗︎ 2300 (22%)" },
-  { title: "Total Sales", value: "$34,545", icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
-  { title: "Pending Leads", value: "450", icon: <CircleStackIcon className='w-8 h-8' />, description: "50 in hot leads" },
-  { title: "Active Users", value: "5.6k", icon: <UsersIcon className='w-8 h-8' />, description: "↙ 300 (18%)" },
-];
-
-function Dashboard() {
+const Dashboard = () => {
   const dispatch = useDispatch();
+  const [totalCustomers, setTotalCustomers] = useState("0");
+  const [totalSales, setTotalSales] = useState("$0");
+  const [ordersCatered, setOrdersCatered] = useState("0");
+  const [totalUsers, setTotalUsers] = useState("0");
+  const [totalMembers, setTotalMembers] = useState("0");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const getProfile = async () => {
+    const config = {
+        headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+        },
+    };
+    try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+        setUser(data.user);
+        setLoading(false);
+    } catch (error) {
+        setError('Failed to load profile.');
+        setLoading(false);
+    }
+};
+
+  useEffect(() => {
+    getProfile(); 
+    const fetchTotalCustomers = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalcustomers`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+        console.log(response.data);
+        if (response.data && response.data.success) {
+          setTotalCustomers(response.data.totalCustomers.toString());
+        } else {
+          setTotalCustomers("0");
+        }
+      } catch (error) {
+        console.error('Error fetching total customers:', error);
+        setTotalCustomers("0");
+      }
+    };
+
+    const fetchTotalSales = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalprice`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+        if (response.data && response.data.success) {
+          setTotalSales(`$${response.data.totalPrice.toLocaleString()}`);
+        } else {
+          setTotalSales("$0");
+        }
+      } catch (error) {
+        console.error('Error fetching total sales:', error);
+        setTotalSales("$0");
+      }
+    };
+
+    const fetchOrdersCatered = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/quantity`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+        if (response.data && response.data.success) {
+          setOrdersCatered(response.data.orderCount.toString());
+        } else {
+          setOrdersCatered("0");
+        }
+      } catch (error) {
+        console.error('Error fetching orders catered:', error);
+        setOrdersCatered("0");
+      }
+    };
+
+    const fetchTotalUsers = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/quantity`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+        if (response.data && response.data.success) {
+          setTotalUsers(response.data.count.toString());
+        } else {
+          setTotalUsers("0");
+        }
+      } catch (error) {
+        console.error('Error fetching total users:', error);
+        setTotalUsers("0");
+      }
+    };
+
+    const fetchTotalMembers = async () => {
+      try {
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/totalmembers`, {
+          headers: {
+              Authorization: `Bearer ${token}`,
+          },
+      });
+        if (response.data && response.data.success) {
+          setTotalMembers(response.data.totalMembers.toString());
+        } else {
+          setTotalMembers("0");
+        }
+      } catch (error) {
+        console.error('Error fetching total members:', error);
+        setTotalMembers("0");
+      }
+    };
+
+    // Call each function
+    fetchTotalCustomers();
+    fetchTotalSales();
+    fetchOrdersCatered();
+    fetchTotalUsers();
+    fetchTotalMembers();
+  }, []);
+
+  const statsData = [
+    { title: "Total Customers", value: totalCustomers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
+    { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Users | Members", value: `${totalUsers} | ${totalMembers}`, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+  ];
 
   const updateDashboardPeriod = (newRange) => {
-    // Dashboard range changed, write code to refresh your values
     dispatch(showNotification({ message: `Period updated to ${newRange.startDate} to ${newRange.endDate}`, status: 1 }));
   };
 
@@ -47,13 +177,9 @@ function Dashboard() {
 
           {/** ---------------------- Different stats content 1 ------------------------- */}
           <div className="grid lg:grid-cols-4 mt-2 md:grid-cols-2 grid-cols-1 gap-6">
-            {
-              statsData.map((d, k) => {
-                return (
-                  <DashboardStats key={k} {...d} colorIndex={k} />
-                )
-              })
-            }
+            {statsData.map((d, k) => (
+              <DashboardStats key={k} {...d} colorIndex={k} />
+            ))}
           </div>
 
           {/** ---------------------- Different charts ------------------------- */}
@@ -63,16 +189,16 @@ function Dashboard() {
           </div>
 
           {/** ---------------------- Different stats content 2 ------------------------- */}
-          <div className="grid lg:grid-cols-2 mt-10 grid-cols-1 gap-6">
+          {/* <div className="grid lg:grid-cols-2 mt-10 grid-cols-1 gap-6">
             <AmountStats />
             <PageStats />
-          </div>
+          </div> */}
 
           {/** ---------------------- User source channels table  ------------------------- */}
-          <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
+          {/* <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
             <UserChannels />
             <DoughnutChart />
-          </div>
+          </div> */}
         </main>
       </div>
       <LeftSidebar />
@@ -80,6 +206,6 @@ function Dashboard() {
       <ModalLayout />
     </div>
   );
-}
+};
 
 export default Dashboard;

@@ -44,10 +44,28 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  address: {
-    type: String,
-    required: true,
-  },
+  deliveryAddress: {
+    houseNo: {
+        type: String,
+    },
+    streetName: {
+        type: String,
+    },
+    barangay: {
+        type: String,
+    },
+    city: {
+        type: String,
+    },
+    latitude: {
+        type: Number,
+        default: 0,
+    },
+    longitude: {
+        type: Number,
+        default: 0,
+    },
+},
   memberId: {
     type: String,
   },

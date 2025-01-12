@@ -1,91 +1,63 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const Product = require('./product');
 
 const orderSchema = new mongoose.Schema({
-    // shippingInfo: {
-    //     address: {
-    //         type: String,
-    //         required: true,
-    //     },
-    //     city: {
-    //         type: String,
-    //         required: true,
-    //     },
-    //     country: {
-    //         type: String,
-    //         required: true,
-    //     },
-    // },
-    shippingInfo: {
-        address: {
-            type: String,
-            required: true,
-        },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: "User",
     },
 
-    orderItems: [
+    orderProducts: [
         {
-        name: {
-            type: String,
-            required: true,
-        },
-        price: {
-            type: Number,
-            required: true,
-        },
-        quantity: {
-            type: Number,
-            required: true,
-        },
-        image: {
-            type: String,
-            required: true,
-        },
-        product: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Product",
-            required: true,
-        },
+            product: {
+                type: mongoose.Schema.Types.ObjectId,
+                required: true,
+                ref: "Product",
+            },
+            quantity: {
+                type: Number,
+                default: 1,
+            },
+            price: {
+                type: Number,
+                required: true,
+            },
         },
     ],
 
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+    deliveryAddress: {
+        houseNo: {
+            type: String,
+        },
+        streetName: {
+            type: String,
+        },
+        barangay: {
+            type: String,
+        },
+        city: {
+            type: String,
+        },
+        latitude: {
+            type: Number,
+            default: 0,
+        },
+        longitude: {
+            type: Number,
+            default: 0,
+        },
     },
-
-    paymentMethod: {
-        type: String,
-        enum: ["COD", "Ewallet"],
-        default: "COD",
-    },
-
-    paidAt: Date,
+    
     paymentInfo: {
-        id: String,
-        status: String,
-    },
-
-    itemsPrice: {
-        type: Number,
-        required: true,
-    },
-    shippingCharges: {
-        type: Number,
-        required: true,
-    },
-    totalAmount: {
-        type: Number,
-        required: true,
-    },
-
-    orderStatus: {
         type: String,
-        enum: ["Preparing", "Shipped", "Delivered"],
-        default: "Preparing",
+        required: true,
     },
-    deliveredAt: Date,
+    totalPrice: {
+        type: Number,
+        required: true,
+        default: 0.0,
+    },
     createdAt: {
         type: Date,
         default: Date.now,
