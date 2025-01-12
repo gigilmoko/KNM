@@ -1,8 +1,16 @@
+@font-face {
+  font-family: 'Poppins'; /* Name of the font */
+  src: url('../fonts/poppins/Poppins-Black.ttf') format('truetype'); /* Path to the font file */
+  font-weight: normal; /* Optional */
+  font-style: normal; /* Optional */
+}
+
+
 /* General Reset */
 body, html {
   margin: 0;
   padding: 0;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Open Sans', sans-serif;
   overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
@@ -23,43 +31,85 @@ body, html {
 }
 
 /* Hero Section */
-.hero-section {
+.hero {
+  width: 100%;
+  min-height: 80vh;
+  position: relative;
+  padding: 80px 0;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh; /* Take full viewport height */
-  padding: 90px; /* Add padding for spacing */
-  box-sizing: border-box;
-  text-align: left;
-  width: 598px;
-  height: 288px;
-  left: 151px;
-  top: 271px;
-  text-align: left;
+  color: var(--default-color);
 }
 
-.hero-content {
-  display: flex;
-  flex-direction: column; /* Stack elements vertically */
-  gap: 40px; /* Add consistent spacing between items */
+.hero img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
 }
 
-.hero-content h1 {
-  font-style: normal;
-  font-weight: 900;
-  font-size: 55px;
-  line-height: 1.1; /* Adjust line-height for better spacing */
-  color: #d32f2f; /* Red text color */
-  margin: 0; /* Remove default margin */
+.hero:before {
+  content: "";
+  background: color-mix(in srgb, var(--background-color), transparent 60%);
+  position: absolute;
+  inset: 0;
+  z-index: 2;
 }
 
-.hero-content p {
-  font-style: normal;
-  font-weight: 400;
-  font-size: 20px;
-  line-height: 1.5; /* Improve readability */
+.hero .container {
+  position: relative;
+  z-index: 3;
+}
+
+.hero h2 {
   margin: 0;
+  font-size: 48px;
+  font-weight: 700;
+  font-family: 'Poppins', cursive;
+
+}
+.hero .h2-down {
+  font-size: 48px;
+  font-weight: 700;
+  color:#d32f2f;
+}
+
+.hero p {
+  color: color-mix(in srgb, var(--default-color), transparent 20%);
+  margin: 10px 0 0 0;
+  font-size: 24px;
+}
+
+.hero .btn-get-started {
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 1px;
+  display: inline-block;
+  padding: 8px 35px 10px 35px;
+  border-radius: 50px;
+  transition: 0.4s;
+  margin-top: 30px;
+  border: 2px solid var(--default-color);
+  color: var(--default-color);
+}
+
+.hero .btn-get-started:hover {
+  background: var(--accent-color);
+  border: 2px solid var(--accent-color);
+}
+
+@media (max-width: 768px) {
+  .hero h2 {
+    font-size: 32px;
+  }
+
+  .hero p {
+    font-size: 18px;
+  }
 }
 
 .buttons {
@@ -85,7 +135,8 @@ body, html {
 }
 
 .get-started:hover {
-  background-color: #b71c1c; /* Darker red on hover */
+  background-color: white;
+  color: #d32f2f;
 }
 
 .learn-more {
@@ -95,8 +146,9 @@ body, html {
 }
 
 .learn-more:hover {
-  background-color: #f5f5f5; /* Light gray on hover */
-}
+  background-color: #d32f2f;
+  color: white;}
+
 
 /* About Section */
 .about-section {
@@ -148,3 +200,22 @@ body, html {
   margin-bottom: 15px;
   font-weight: bold;
 }
+
+.read-more-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #d32f2f;
+  background-color: white;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.read-more-link:hover {
+  background-color: #d32f2f;
+  color: white;
+}
+

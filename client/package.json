@@ -11,6 +11,7 @@
     "@testing-library/react": "^12.1.5",
     "@testing-library/user-event": "^13.5.0",
     "ajv": "^8.17.1",
+    "aos": "^2.3.4",
     "axios": "^1.7.7",
     "capitalize-the-first-letter": "^1.0.8",
     "chart.js": "^4.4.4",
