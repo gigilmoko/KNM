@@ -41,6 +41,8 @@ import About from './Public/About';
 import ProductGallery from './Public/ProductGallery';
 import FeedbackList from './Admin/Feedback/FeedbackList';
 import OrdersList from './Admin/Order/OrderList';
+import Contact from './Public/Contact';
+import Blog from './Public/Blog';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
