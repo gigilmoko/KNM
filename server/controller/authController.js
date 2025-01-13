@@ -891,3 +891,83 @@ exports.getTotalMembers = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
+exports.updateAddressAndDetails = async (req, res, next) => {
+  try {
+    console.log('Update Address route hit');
+    console.log('Request Body:', req.body);  // Log the incoming request body
+
+    const { userId, deliveryAddress } = req.body;  // Accept userId from the request body
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
+    // Validate if deliveryAddress is provided
+    if (!deliveryAddress) {
+      console.log('No delivery address provided');
+      return res.status(400).json({
+        success: false,
+        message: 'Delivery address is required',
+      });
+    }
+
+    const updateData = {
+      deliveryAddress: {
+        houseNo: deliveryAddress.houseNo,
+        streetName: deliveryAddress.streetName,
+        barangay: deliveryAddress.barangay,
+        city: deliveryAddress.city,
+        latitude: deliveryAddress.latitude,
+        longitude: deliveryAddress.longitude,
+      },
+    };
+
+    console.log('Update Data:', updateData);  // Log the data to be updated
+
+    // Fetch the current user data before updating
+    const originalUser = await User.findById(userId);
+    console.log('Original Address:', originalUser.deliveryAddress);
+
+    const isAddressChanged = JSON.stringify(originalUser.deliveryAddress) !== JSON.stringify(updateData.deliveryAddress);
+
+    if (!isAddressChanged) {
+      console.log('No actual change in address data, skipping update.');
+      return res.status(200).json({
+        success: true,
+        user: originalUser,  // Return the original user if no change occurred
+      });
+    }
+
+    // Perform the update
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedUser) {
+      console.log('User not found or update failed');
+      return res.status(404).json({
+        success: false,
+        message: 'User Not Found or Not Updated',
+      });
+    }
+
+    console.log('Address successfully updated');
+    res.status(200).json({
+      success: true,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error occurred:', error);  // Log the error for better traceability
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+
+
+
+
+

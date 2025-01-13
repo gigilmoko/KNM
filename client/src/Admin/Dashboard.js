@@ -156,10 +156,16 @@ const Dashboard = () => {
   }, []);
 
   const statsData = [
-    { title: "Total Customers", value: totalCustomers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Lifetime" },
+   
     { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
     { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Total Users | Members", value: `${totalUsers} | ${totalMembers}`, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Pending Orders", value: '0', icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Delivered Orders", value: '0', icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Customers", value: totalCustomers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Users ", value: `${totalUsers} `, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+   
+    { title: "Total Members", value: ` ${totalMembers}`, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Applying Members", value: '0', icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
   ];
 
   const updateDashboardPeriod = (newRange) => {
