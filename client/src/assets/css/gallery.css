@@ -1,0 +1,230 @@
+@font-face {
+  font-family: 'Poppins'; /* Name of the font */
+  src: url('../fonts/poppins/Poppins-Black.ttf') format('truetype'); /* Path to the font file */
+  font-weight: normal; /* Optional */
+  font-style: normal; /* Optional */
+}
+
+/* General Styling */
+.gallery-section {
+  text-align: center;
+  padding: 50px 20px;
+  background-color: #4a4a4a;
+  color: white;
+}
+
+.gallery-title {
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  font-family: 'Poppins', cursive;
+  color: #fff;
+}
+
+/* Carousel Container */
+.gallery-carousel {
+  position: relative;
+  max-width: 90%;
+  margin: 0 auto;
+  overflow: hidden; /* Hides overflowing cards */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease;
+  gap: 15px; /* Adds spacing between cards */
+}
+
+.card-container {
+  flex: 0 0 30%; /* Shows 3 cards at a time */
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  text-align: left; /* Aligns text to the left */
+  transition: transform 0.3s ease;
+}
+
+.card-container:hover {
+  transform: scale(1.05); /* Slight zoom effect on hover */
+}
+
+/* Image Styling */
+.card-container img {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Ensures square images */
+  object-fit: cover;
+}
+
+/* Product Info */
+.product-info {
+  padding: 15px;
+  background-color: #fff;
+  color: #333;
+  position: relative;
+  z-index: 1;
+  font-size: 16px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.product-name {
+  font-weight: bold;
+  font-family: 'Poppins', cursive;
+  margin-bottom: 5px;
+}
+
+.product-price {
+  color: #777;
+  font-size: 14px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* Grid Layout for Full Product Gallery */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
+  gap: 20px;
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 1200px;
+}
+
+/* Hover Buttons */
+.hover-buttons {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+}
+
+.card-container:hover .hover-buttons {
+  opacity: 1;
+}
+
+.hover-button {
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #333;
+  padding: 8px 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.hover-button:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+/* Navigation Arrows */
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #333;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 12px 15px;
+  z-index: 10;
+  transition: background-color 0.3s ease;
+  border-radius: 0; /* Makes them square */
+  width: 60px; /* Ensures consistent size */
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.carousel-arrow.left {
+  left: -5px; /* Position closer to the carousel */
+  background-color: #33333347;
+  color: #fff;
+}
+
+.carousel-arrow.right {
+  right: -5px; /* Position closer to the carousel */
+  background-color: #33333347;
+  color: #fff;
+}
+
+.carousel-arrow:hover {
+  background-color: #d32f2f; /* Red color */
+  color: white;
+  transition: background-color 0.3s ease;
+  border-color: #333;
+}
+
+/* Card Styling (Shared with Carousel) */
+.card-container {
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  text-align: left;
+  transition: transform 0.3s ease;
+}
+
+.card-container:hover {
+  transform: scale(1.05);
+}
+
+.card-container img {
+  width: 100%;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 15px;
+  background-color: #fff;
+  color: #333;
+}
+
+.product-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.product-price {
+  color: #777;
+  font-size: 14px;
+}
+
+/* Adjust Carousel for Homepage */
+.gallery-carousel {
+  position: relative;
+  max-width: 90%;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-track {
+  display: flex;
+  gap: 15px;
+  transition: transform 0.5s ease;
+}
+
+
+.read-more-link{
+  background-color: transparent;
+  border: 1px solid #d32f2f;
+}
