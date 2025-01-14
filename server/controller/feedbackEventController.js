@@ -1,6 +1,7 @@
 const EventFeedback = require('../models/eventfeedback');
 const UserInterest = require('../models/userInterest');  // Assuming this is the path to your UserInterest model
 const CalendarEvent = require('../models/calendar');
+
 // Create Feedback Controller
 exports.createFeedback = async (req, res) => {
     const { userId, eventId, rating, description } = req.body;
@@ -52,14 +53,20 @@ exports.getEventFeedback = async (req, res) => {
   const { eventId } = req.params; // Extract the eventId from the URL parameters
 
   try {
-    // Fetch all feedback for the given eventId
-    const feedbacks = await EventFeedback.find({ eventId });
+    let feedbacks;
+    if (eventId === "all") {
+      // Fetch all feedbacks if eventId is "all"
+      feedbacks = await EventFeedback.find();
+    } else {
+      // Fetch feedbacks for the given eventId
+      feedbacks = await EventFeedback.find({ eventId });
+    }
 
-    // Check if there is no feedback for the event
+    // Check if there is no feedback
     if (feedbacks.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No feedback found for this event.',
+        message: 'No feedback found.',
       });
     }
 
@@ -78,43 +85,46 @@ exports.getEventFeedback = async (req, res) => {
   }
 };
 
-// exports.getAllReviews = async (req, res) => {
-//   console.log("getAllReviews touched");
+// Fetch All Feedback Events Controller
+exports.getAllFeedbackEvents = async (req, res) => {
+  try {
+    // Use MongoDB aggregation to group feedback by eventId and calculate average rating
+    const feedbackEvents = await EventFeedback.aggregate([
+      {
+        $group: {
+          _id: '$eventId', // Group by eventId
+          averageRating: { $avg: '$rating' }, // Calculate the average rating
+        },
+      },
+      {
+        $project: {
+          eventId: '$_id', // Rename _id to eventId
+          averageRating: 1,
+          _id: 0, // Exclude the original _id field
+        },
+      },
+    ]);
 
-//   try {
-//     // Fetch all EventFeedback entries and populate eventId with corresponding CalendarEvent data
-//     const reviews = await EventFeedback.find()
-//       .populate('eventId', 'date title description startDate endDate image location audience')  // Populate eventId with CalendarEvent fields
-//       .sort({ eventId: 1 }); // Sort by eventId in ascending order
+    // Check if there are no feedback events
+    if (feedbackEvents.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No feedback events found.',
+      });
+    }
 
-//     // If no reviews are found
-//     if (!reviews || reviews.length === 0) {
-//       return res.status(404).json({
-//         success: false,
-//         message: 'No reviews found.',
-//       });
-//     }
-
-//     // Return the reviews with populated CalendarEvent data
-//     res.status(200).json({
-//       success: true,
-//       reviews,
-//     });
-//   } catch (error) {
-//     console.error('Error fetching event feedback:', error);
-//     return res.status(500).json({
-//       success: false,
-//       message: 'Server error. Failed to fetch reviews.',
-//     });
-//   }
-// };
-
-
-// Fetch All Reviews Controller
-const mongoose = require('mongoose');
-
-
-
-
-
+    // Return grouped feedback events
+    return res.status(200).json({
+      success: true,
+      message: 'Feedback events grouped and fetched successfully.',
+      data: feedbackEvents,
+    });
+  } catch (error) {
+    console.error('Error fetching feedback events:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error. Failed to fetch feedback events.',
+    });
+  }
+};
 

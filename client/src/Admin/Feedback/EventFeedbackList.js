@@ -35,7 +35,7 @@ const EventFeedbackList = () => {
             Authorization: `Bearer ${token}`,
           },
         };
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/feedback/all`, config);
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/feedback/product/list`, config);
         setFeedbacks(response.data.feedbacks);
       } catch (error) {
         toast.error('Failed to load feedbacks');

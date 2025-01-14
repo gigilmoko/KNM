@@ -47,6 +47,7 @@ import EventFeedbackList from './Admin/Feedback/EventFeedbackList';
 import ProductFeedbackList from './Admin/Feedback/ProductFeedbackList';
 
 
+import SingleProduct from './Admin/Feedback/SingleProduct';
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -94,6 +95,7 @@ function App() {
           <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
           <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />
           <Route path="/admin/product/feedback/list" element={<ProtectedRoute><ProductFeedbackList /></ProtectedRoute>} />
+          <Route path="/admin/product/feedback/list/:productId" element={<ProtectedRoute><SingleProduct/></ProtectedRoute>} />
           {/* Member */}
           <Route path="/admin/members/new" element={<ProtectedRoute><NewMember /></ProtectedRoute>} />
           <Route path="/admin/members/edit/:memberId" element={<ProtectedRoute><UpdateMember /></ProtectedRoute>} />

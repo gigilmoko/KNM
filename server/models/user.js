@@ -47,15 +47,19 @@ const userSchema = new mongoose.Schema({
   deliveryAddress: {
     houseNo: {
         type: String,
+        default: 'none',
     },
     streetName: {
         type: String,
+        default: 'none',
     },
     barangay: {
         type: String,
+        default: 'none',
     },
     city: {
         type: String,
+        default: 'none',
     },
     latitude: {
         type: Number,
