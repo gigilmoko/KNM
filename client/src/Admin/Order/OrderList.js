@@ -131,13 +131,14 @@ function OrdersList() {
                             <td>{order._id}</td>
                             <td>{getUserNameById(order.user)}</td>
                             <td>
-                              {order.orderItems.map((item, i) => (
-                                <div key={i} className="text-sm">
-                                  {item.name} x {item.quantity}
-                                </div>
-                              ))}
-                            </td>
-                            <td>${order.totalAmount.toFixed(2)}</td>
+  {order.orderProducts.map((item, i) => (
+    <div key={i} className="text-sm">
+      Product ID: {item.product} x {item.quantity}
+    </div>
+  ))}
+</td>
+
+<td>${order.totalPrice?.toFixed(2) || "0.00"}</td>
                             <td>
                               <select
                                 value={order.orderStatus}
