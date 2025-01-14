@@ -37,10 +37,16 @@ import CalendarInfo from './Admin/Calendar/CalendarInfo';
 import NewFeedback from './Public/Feedback/NewFeedback';
 import CalendarInterested from './Admin/Calendar/CalendarInterested';
 import Homepage from './Public/Homepage';
+import About from './Public/About';
+import ProductGallery from './Public/ProductGallery';
 import FeedbackList from './Admin/Feedback/FeedbackList';
 import OrdersList from './Admin/Order/OrderList';
+import Contact from './Public/Contact';
+import Blog from './Public/Blog';
 import EventFeedbackList from './Admin/Feedback/EventFeedbackList';
 import ProductFeedbackList from './Admin/Feedback/ProductFeedbackList';
+
+
 import SingleProduct from './Admin/Feedback/SingleProduct';
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -64,6 +70,10 @@ function App() {
         <Routes>
           {/* Public */}
           <Route path="/" element={<Homepage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/gallery" element={<ProductGallery />} />
+          <Route path="/contact" element={<Contact/>} />
+          <Route path="/blog" element={<Blog/>} />
           {/* Feedback */}
           <Route path="/feedback/new" element={<NewFeedback />} />
           {/* <Route path="/event/feedback/new" element={<NewFeedback />} />

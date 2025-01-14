@@ -1,5 +1,5 @@
 import TemplatePointers from "./TemplatePointers";
-import logo from './../assets/img/logo.png';
+import logo from './../assets/img/KNMlogowhite.jpg';
 
 function LandingIntro() {
     return (

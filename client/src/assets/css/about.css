@@ -1,0 +1,55 @@
+@font-face {
+  font-family: 'Poppins'; /* Name of the font */
+  src: url('../fonts/poppins/Poppins-Black.ttf') format('truetype'); /* Path to the font file */
+  font-weight: normal; /* Optional */
+  font-style: normal; /* Optional */
+}
+
+.about-section {
+  display: flex;
+  background-color: #4a4a4a; /* Gray background color */
+  color: white; /* White text */
+  padding: 40px;
+  align-items: center;
+}
+
+.about-section .left-column {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Create 2 columns for the collage */
+  gap: 0; /* No spacing between the grid items */
+}
+
+.about-section .left-column img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image covers the grid cell */
+  aspect-ratio: 1 / 1; /* Maintain square aspect ratio */
+  display: block;
+}
+
+.about-section .right-column {
+  flex: 1;
+  padding: 20px;
+}
+
+.about-section h2 {
+  margin-bottom: 20px;
+  font-size: 40px; /* Increased font size for the title */
+  font-weight: bold; /* Make the title bold */
+  font-family: 'Poppins', cursive;
+}
+
+.about-section p {
+  line-height: 1.6;
+  margin-bottom: 15px;
+  font-size: 22px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+.about-section b {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: bold;
+  font-size: 22px;
+}
