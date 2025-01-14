@@ -28,7 +28,7 @@ router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
 // router.post('/grabpay-payment/:token/:id', isAuthenticatedUser, grabpayPayment);
 
 router.get("/my", isAuthenticatedUser, getMyOrders);
-router.get("/orders/list", getAdminOrders);
+router.get("/orders/list", isAuthenticatedUser, isAdmin, getAdminOrders);
 router.route("/orders/single/:id")
     .get(getOrderDetails)
 

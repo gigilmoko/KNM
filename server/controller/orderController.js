@@ -4,8 +4,9 @@ const Product = require("../models/product"); // Import the Product model
 const PaymongoToken = require("../models/paymongoToken");
 const crypto = require("crypto");
 const axios = require('axios');
+const sendEmail = require("../utils/sendEmail");
 
-const handlePayMongo = async (orderItemsDetails, temporaryLink) => {
+const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink) => {
   try {
     const lineItems = await Promise.all(orderItemsDetails.map(async detail => {
       const product = await Product.findById(detail.product);
@@ -17,13 +18,21 @@ const handlePayMongo = async (orderItemsDetails, temporaryLink) => {
       };
     }));
 
+    // Add shipping charges as a line item
+    lineItems.push({
+      currency: "PHP",
+      amount: shippingCharges * 100, // Amount in centavos
+      name: "Shipping Charges",
+      quantity: 1,
+    });
+
     const options = {
       method: "POST",
       url: "https://api.paymongo.com/v1/checkout_sessions",
       headers: {
         accept: "application/json",
         "Content-Type": "application/json",
-        authorization: `Basic c2tfbGl2ZV85eTVNaHFGcFZoRUpacEN0UEd1UE1pVkQ=`,
+        authorization: `Basic c2tfdGVzdF9QNTIyb005TEhkSDRURUcxY0JFdm1UMTY=`,
       },
       data: {
         data: {
@@ -52,6 +61,34 @@ const handlePayMongo = async (orderItemsDetails, temporaryLink) => {
   }
 };
 
+const sendOrderConfirmationEmail = async (order) => {
+  console.log('Preparing to send order confirmation email...');
+
+  const orderDetails = order.orderProducts.map(item => `
+    <li>${item.name} - Quantity: ${item.quantity} - Price: ₱${item.price}</li>
+  `).join('');
+
+  const message = `
+    <h1>Order Confirmation</h1>
+    <p>Thank you for your order. Here are the details:</p>
+    <ul>
+      ${orderDetails}
+    </ul>
+    <p>Total Amount: ₱${order.totalPrice}</p>
+  `;
+
+  try {
+    await sendEmail({
+      email: order.user.email,
+      subject: 'Order Confirmation',
+      message,
+    });
+    console.log(`Order confirmation email sent to: ${order.user.email}`);
+  } catch (error) {
+    console.error(`Failed to send order confirmation email to: ${order.user.email}`, error);
+  }
+};
+
 exports.createOrder = async (req, res, next) => {
   const {
     orderProducts,
@@ -59,7 +96,7 @@ exports.createOrder = async (req, res, next) => {
     paymentInfo,
     itemsPrice,
     shippingCharges,
-    totalAmount,
+    totalPrice,
   } = req.body;
 
   try {
@@ -83,6 +120,11 @@ exports.createOrder = async (req, res, next) => {
       }
     }
 
+    // Log the amounts being saved
+    console.log("Items Price:", itemsPrice);
+    console.log("Shipping Charges:", shippingCharges);
+    console.log("Total Amount:", totalPrice);
+
     // Create order in the database
     const order = await Order.create({
       user: req.user._id, // Ensure the user field is set correctly
@@ -91,7 +133,7 @@ exports.createOrder = async (req, res, next) => {
       paymentInfo,
       itemsPrice,
       shippingCharges,
-      totalAmount,
+      totalPrice,
       createdAt: Date.now(),
     });
 
@@ -122,7 +164,7 @@ exports.createOrder = async (req, res, next) => {
       console.log(temporaryLink, "temporaryLink");
 
       try {
-        const checkoutUrl = await handlePayMongo(order.orderProducts, temporaryLink);
+        const checkoutUrl = await handlePayMongo(order.orderProducts, shippingCharges, temporaryLink);
         console.log(checkoutUrl, "checkout");
         return res.json({ checkoutUrl });
       } catch (error) {
@@ -133,6 +175,10 @@ exports.createOrder = async (req, res, next) => {
 
     console.log(order);
     console.log(paymongoToken);
+
+    // Send order confirmation email
+    await sendOrderConfirmationEmail(order);
+
     res.status(200).json({
       success: true,
       order,
@@ -226,38 +272,38 @@ exports.getOrderDetails = async (req, res, next) => {
 };
 
 exports.processOrder = async (req, res, next) => {
-    try {
-        const order = await Order.findById(req.params.id);
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: "Order Not Found",
-            });
-        }
+  try {
+      const order = await Order.findById(req.params.id);
+      if (!order) {
+          return res.status(404).json({
+              success: false,
+              message: "Order Not Found",
+          });
+      }
 
-        const newStatus = req.body.status; 
+      const newStatus = req.body.status; 
 
-        if (newStatus === "Shipped" && order.orderStatus === "Preparing") {
-            order.orderStatus = newStatus;
-        } else if (newStatus === "Delivered" && order.orderStatus === "Shipped") {
-            order.orderStatus = newStatus;
-            order.deliveredAt = new Date(Date.now());
-        } else {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid Status Update",
-            });
-        }
+      if (newStatus === "Shipping" && order.status === "Preparing") {
+          order.status = newStatus;
+      } else if (newStatus === "Delivered" && order.status === "Shipping") {
+          order.status = newStatus;
+          order.deliveredAt = new Date(Date.now());
+      } else {
+          return res.status(400).json({
+              success: false,
+              message: "Invalid Status Update",
+          });
+      }
 
-        await order.save();
+      await order.save();
 
-        res.status(200).json({
-            success: true,
-            message: "Order Processed Successfully",
-        });
-    } catch (error) {
-        next(error); 
-    }
+      res.status(200).json({
+          success: true,
+          message: "Order Processed Successfully",
+      });
+  } catch (error) {
+      next(error); 
+  }
 };
 
 exports.getDemandForecast = async (req, res) => {
@@ -481,7 +527,7 @@ exports.getMonthlyOrderTotal = async (req, res) => {
       {
         $group: {
           _id: { year: "$year", month: "$month" },
-          totalAmount: { $sum: "$totalPrice" }, // Sum the totalPrice for each month
+          totalPrice: { $sum: "$totalPrice" }, // Sum the totalPrice for each month
         },
       },
       {
@@ -529,7 +575,7 @@ exports.getLast7DaysOrderTotal = async (req, res) => {
       {
         $group: {
           _id: { day: "$day" },
-          totalAmount: { $sum: "$totalPrice" },
+          totalPrice: { $sum: "$totalPrice" },
         },
       },
       {
@@ -540,7 +586,7 @@ exports.getLast7DaysOrderTotal = async (req, res) => {
     // Convert numeric day values to day names
     const formattedResult = result.map(item => ({
       day: daysOfWeek[item._id.day - 1], // Map day number to name
-      count: item.totalAmount,
+      count: item.totalPrice,
     }));
 
     // Ensure all 7 days are included even if there's no data for some days
@@ -561,7 +607,6 @@ exports.getLast7DaysOrderTotal = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
-
 
 exports.getDailyOrderTotalByInterval = async (req, res) => {
   try {
@@ -595,7 +640,7 @@ exports.getDailyOrderTotalByInterval = async (req, res) => {
       {
         $group: {
           _id: "$interval",
-          totalAmount: { $sum: "$totalPrice" },
+          totalPrice: { $sum: "$totalPrice" },
         },
       },
       {
@@ -615,7 +660,7 @@ exports.getDailyOrderTotalByInterval = async (req, res) => {
       success: true,
       data: result.map(item => ({
         interval: item._id,
-        totalAmount: item.totalAmount,
+        totalPrice: item.totalPrice,
       })),
     });
   } catch (error) {
@@ -623,7 +668,6 @@ exports.getDailyOrderTotalByInterval = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
-
 
 exports.getTotalCustomer = async (req, res) => {
   try {

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Product = require('./product');
 
 const orderSchema = new mongoose.Schema({
     user: {
@@ -57,6 +56,11 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0.0,
+    },
+    status: {
+        type: String,
+        enum: ["Preparing", "Shipped", "Delivered"],
+        default: "Preparing",
     },
     createdAt: {
         type: Date,
