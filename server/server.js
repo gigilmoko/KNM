@@ -17,6 +17,8 @@ const order = require('./routes/order');
 const feedback = require('./routes/feedback');
 const feedbackproduct = require('./routes/feedbackproduct');
 const feedbackevent = require('./routes/eventfeedback');
+const rider = require('./routes/rider');
+const truckRoute = require('./routes/truck');
 
 const app = express();
 const PORT = process.env.PORT || 4002;
@@ -52,6 +54,8 @@ app.use('/api', order);
 app.use('/api', feedback);
 app.use('/api', feedbackproduct);
 app.use('/api', feedbackevent);
+app.use('/api', rider);
+app.use('/api', truckRoute);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, '❌ MongoDB connection error:'));

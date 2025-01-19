@@ -45,9 +45,15 @@ import Contact from './Public/Contact';
 import Blog from './Public/Blog';
 import EventFeedbackList from './Admin/Feedback/EventFeedbackList';
 import ProductFeedbackList from './Admin/Feedback/ProductFeedbackList';
-
-
+import NewRider from './Admin/Rider/NewRider';
+import UpdateRider from './Admin/Rider/UpdateRider';
+import RiderList from './Admin/Rider/RiderList';
+import ChangePassword from './Admin/Rider/ChangePassword';
 import SingleProduct from './Admin/Feedback/SingleProduct';
+import TruckList from './Admin/Truck/TruckList';
+import NewTruck from './Admin/Truck/NewTruck';
+import UpdateTruck from './Admin/Truck/UpdateTruck';
+
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -91,6 +97,15 @@ function App() {
           {/* Admin */}
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          {/* Rider */}
+          <Route path="/admin/rider/list" element={<ProtectedRoute><RiderList /></ProtectedRoute>} />
+          <Route path="/admin/rider/new" element={<ProtectedRoute><NewRider /></ProtectedRoute>} />
+          <Route path="/admin/rider/edit/:riderId" element={<ProtectedRoute><UpdateRider /></ProtectedRoute>} />
+          <Route path="/admin/rider/changepassword/:riderId" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+          {/* Truck */}
+          <Route path="/admin/truck/list" element={<ProtectedRoute><TruckList /></ProtectedRoute>} />
+          <Route path="/admin/truck/new" element={<ProtectedRoute><NewTruck /></ProtectedRoute>} />
+          <Route path="/admin/truck/edit/:truckId" element={<ProtectedRoute><UpdateTruck /></ProtectedRoute>} />
           {/* Feedback */}
           <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
           <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />

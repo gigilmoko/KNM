@@ -281,11 +281,11 @@ exports.processOrder = async (req, res, next) => {
           });
       }
 
-      const newStatus = req.body.status; 
+      const newStatus = req.body.status;
 
-      if (newStatus === "Shipping" && order.status === "Preparing") {
+      if (newStatus === "Shipped" && order.status === "Preparing") {
           order.status = newStatus;
-      } else if (newStatus === "Delivered" && order.status === "Shipping") {
+      } else if (newStatus === "Delivered" && order.status === "Shipped") {
           order.status = newStatus;
           order.deliveredAt = new Date(Date.now());
       } else {
@@ -302,7 +302,7 @@ exports.processOrder = async (req, res, next) => {
           message: "Order Processed Successfully",
       });
   } catch (error) {
-      next(error); 
+      next(error);
   }
 };
 
@@ -699,4 +699,31 @@ exports.getTotalCustomer = async (req, res) => {
   }
 };
 
+exports.getOrderStatusCounts = async (req, res) => {
+  try {
+    const result = await Order.aggregate([
+      {
+        // Group by the status field and count occurrences of each status
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Transform the result into an object for easier access
+    const statusCounts = result.reduce((acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      success: true,
+      statusCounts,
+    });
+  } catch (error) {
+    console.error("Error fetching order status counts:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
 

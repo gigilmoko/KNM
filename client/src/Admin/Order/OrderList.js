@@ -13,7 +13,10 @@ function OrdersList() {
     const [searchText, setSearchText] = useState("");
     const [users, setUsers] = useState([]);
     const mainContentRef = useRef(null);
-  
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
     useEffect(() => {
       mainContentRef.current.scroll({
         top: 0,
@@ -29,7 +32,12 @@ function OrdersList() {
   
     const fetchOrders = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/orders/list`);
+        const token = sessionStorage.getItem("token");
+        const response = await axios.get(`${process.env.REACT_APP_API}/api/orders/list`, {
+         headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+      });
         if (response.data && Array.isArray(response.data.orders)) {
           setOrders(response.data.orders);
           setFilteredOrders(response.data.orders);
@@ -67,20 +75,19 @@ function OrdersList() {
   
     const updateOrderStatus = async (id, index, newStatus) => {
       try {
-        await axios.put(`${process.env.REACT_APP_API}/api/orders/update/${id}`, { status: newStatus });
+          await axios.put(`${process.env.REACT_APP_API}/api/orders/update/${id}`, { status: newStatus });
   
-        const updatedOrders = [...orders];
-        updatedOrders[index].orderStatus = newStatus;
-        setOrders(updatedOrders);
-        setFilteredOrders(updatedOrders);
+          const updatedOrders = [...orders];
+          updatedOrders[index].status = newStatus; // Changed orderStatus to status
+          setOrders(updatedOrders);
+          setFilteredOrders(updatedOrders);
   
-        toast.success("Order status updated successfully!");
+          toast.success("Order status updated successfully!");
       } catch (error) {
-        console.error("Failed to update order status", error);
-        toast.error("Failed to update order status");
+          console.error("Failed to update order status", error);
+          toast.error("Failed to update order status");
       }
-    };
-  
+  };
     const applySearch = (value) => {
       const lowercasedValue = value.toLowerCase();
       const filtered = orders.filter(

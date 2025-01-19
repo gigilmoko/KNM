@@ -29,37 +29,85 @@ const Dashboard = () => {
   const [ordersCatered, setOrdersCatered] = useState("0");
   const [totalUsers, setTotalUsers] = useState("0");
   const [totalMembers, setTotalMembers] = useState("0");
+  const [pendingOrders, setPendingOrders] = useState("0");
+  const [deliveredOrders, setDeliveredOrders] = useState("0");
+  const [applyingMembers, setApplyingMembers] = useState("0");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const getProfile = async () => {
     const config = {
-        headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
     };
     try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-        setUser(data.user);
-        setLoading(false);
+      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+      setUser(data.user);
+      setLoading(false);
     } catch (error) {
-        setError('Failed to load profile.');
-        setLoading(false);
+      setError('Failed to load profile.');
+      setLoading(false);
     }
-};
+  };
+
+  const fetchApplyingMembers = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/countapplying`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.data && response.data.success) {
+        setApplyingMembers(response.data.count.toString());
+      } else {
+        setApplyingMembers("0");
+      }
+    } catch (error) {
+      console.error('Error fetching applying members count:', error);
+      setApplyingMembers("0");
+    }
+  };
+  
+
+  const fetchOrderStatusCounts = async () => {
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.get(`${process.env.REACT_APP_API}/api/orders/status/count`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.data && response.data.success) {
+        const { statusCounts } = response.data;
+        const delivered = statusCounts.Delivered || 0;
+        const pending = (statusCounts.Preparing || 0) + (statusCounts.Shipped || 0);
+        setDeliveredOrders(delivered.toString());
+        setPendingOrders(pending.toString());
+      } else {
+        setDeliveredOrders("0");
+        setPendingOrders("0");
+      }
+    } catch (error) {
+      console.error('Error fetching order status counts:', error);
+      setDeliveredOrders("0");
+      setPendingOrders("0");
+    }
+  };
 
   useEffect(() => {
-    getProfile(); 
+    getProfile();
+
     const fetchTotalCustomers = async () => {
       try {
         const token = sessionStorage.getItem("token");
         const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalcustomers`, {
           headers: {
-              Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-      });
-        console.log(response.data);
+        });
         if (response.data && response.data.success) {
           setTotalCustomers(response.data.totalCustomers.toString());
         } else {
@@ -76,9 +124,9 @@ const Dashboard = () => {
         const token = sessionStorage.getItem("token");
         const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/totalprice`, {
           headers: {
-              Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-      });
+        });
         if (response.data && response.data.success) {
           setTotalSales(`$${response.data.totalPrice.toLocaleString()}`);
         } else {
@@ -95,9 +143,9 @@ const Dashboard = () => {
         const token = sessionStorage.getItem("token");
         const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/orders/quantity`, {
           headers: {
-              Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-      });
+        });
         if (response.data && response.data.success) {
           setOrdersCatered(response.data.orderCount.toString());
         } else {
@@ -114,9 +162,9 @@ const Dashboard = () => {
         const token = sessionStorage.getItem("token");
         const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/quantity`, {
           headers: {
-              Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-      });
+        });
         if (response.data && response.data.success) {
           setTotalUsers(response.data.count.toString());
         } else {
@@ -133,9 +181,9 @@ const Dashboard = () => {
         const token = sessionStorage.getItem("token");
         const response = await axios.get(`${process.env.REACT_APP_API}/api/analytics/users/totalmembers`, {
           headers: {
-              Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-      });
+        });
         if (response.data && response.data.success) {
           setTotalMembers(response.data.totalMembers.toString());
         } else {
@@ -147,24 +195,24 @@ const Dashboard = () => {
       }
     };
 
-    // Call each function
     fetchTotalCustomers();
     fetchTotalSales();
     fetchOrdersCatered();
     fetchTotalUsers();
     fetchTotalMembers();
+    fetchOrderStatusCounts();
+    fetchApplyingMembers();
   }, []);
 
   const statsData = [
-    
     { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
     { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Pending Orders", value: '0', icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Delivered Orders", value: '0', icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Pending Orders", value: pendingOrders, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Delivered Orders", value: deliveredOrders, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
     { title: "Total Customers", value: totalCustomers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Total Users ", value: `${totalUsers} `, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Total Members", value: ` ${totalMembers}`, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Applying Members", value: '0', icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Users", value: totalUsers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Members", value: totalMembers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Applying Members", value: applyingMembers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
   ];
 
   const updateDashboardPeriod = (newRange) => {
@@ -177,33 +225,16 @@ const Dashboard = () => {
       <div className="drawer-content flex flex-col">
         <Header />
         <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200">
-          {/** ---------------------- Select Period Content ------------------------- */}
           <DashboardTopBar updateDashboardPeriod={updateDashboardPeriod} />
-
-          {/** ---------------------- Different stats content 1 ------------------------- */}
           <div className="grid lg:grid-cols-4 mt-2 md:grid-cols-2 grid-cols-1 gap-6">
             {statsData.map((d, k) => (
               <DashboardStats key={k} {...d} colorIndex={k} />
             ))}
           </div>
-
-          {/** ---------------------- Different charts ------------------------- */}
           <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
             <LineChart />
             <BarChart />
           </div>
-
-          {/** ---------------------- Different stats content 2 ------------------------- */}
-          {/* <div className="grid lg:grid-cols-2 mt-10 grid-cols-1 gap-6">
-            <AmountStats />
-            <PageStats />
-          </div> */}
-
-          {/** ---------------------- User source channels table  ------------------------- */}
-          {/* <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
-            <UserChannels />
-            <DoughnutChart />
-          </div> */}
         </main>
       </div>
       <LeftSidebar />
@@ -214,3 +245,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
