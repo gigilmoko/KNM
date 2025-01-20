@@ -4,19 +4,22 @@ const { isAuthenticatedUser, authorizeRoles, isAdmin } = require('../middlewares
 
 const { getTruck, newTruck, getSingleTruck, updateTruck,
     unassignRider, assignRider, deleteTruck, getTruckOrders, addTruckOrder,
-     removeAllTruckOrders, removeSingleTruckOrder } = require('../controller/trucksController'); // Corrected path
+     removeAllTruckOrders, removeSingleTruckOrder, declinedWork, acceptedWork } = require('../controller/trucksController'); // Corrected path
 
-router.get('/trucks', isAuthenticatedUser, isAdmin, getTruck);
+router.get('/trucks', getTruck);
 router.post('/truck/new', isAuthenticatedUser, isAdmin, newTruck);
-router.get('/truck/:id', isAuthenticatedUser, isAdmin, getSingleTruck);
+router.get('/truck/:id', getSingleTruck);
 router.put('/truck/update/:id', isAuthenticatedUser, isAdmin, updateTruck);
 router.put('/truck/unassign/:id', isAuthenticatedUser, isAdmin, unassignRider);
 router.put('/truck/assign/:id', isAuthenticatedUser, isAdmin, assignRider);
 router.delete('/truck/delete/:id', isAuthenticatedUser, isAdmin, deleteTruck);
 router.get('/truck/:id/orders', isAuthenticatedUser, getTruckOrders);
-router.put('/truck/:id/addOrder',  isAuthenticatedUser, isAdmin, addTruckOrder);
-router.delete('/truck/:id/remove/:id', isAuthenticatedUser, isAdmin, removeSingleTruckOrder);
-router.delete('/truck/:id/remove/all', isAuthenticatedUser, isAdmin, removeAllTruckOrders);
+router.put('/truck/:id/addOrder/:orderId',   addTruckOrder);
+router.delete('/truck/:id/remove/allOrders',  removeAllTruckOrders);
+router.delete('/truck/:id/remove/:orderId', removeSingleTruckOrder);
+router.put('/truck/:id/order/accept',   acceptedWork);
+router.put('/truck/:id/order/decline',   declinedWork);
+
 
 
 

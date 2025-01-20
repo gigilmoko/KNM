@@ -170,6 +170,125 @@ exports.getTruckOrders = async (req, res, next) => {
     }
 }
 
+// exports.addTruckOrder = async (req, res, next) => {
+//     try {
+//         let truck = await Truck.findById(req.params.id);
+//         if (!truck) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Truck not found'
+//             });
+//         }
+//         const order = await Order.create(req.body);
+//         truck.orders.push(order._id);
+//         await truck.save();
+//         res.status(201).json({
+//             success: true,
+//             order
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// }
+
+// exports.addTruckOrder = async (req, res, next) => {
+//     try {
+//         let truck = await Truck.findById(req.params.id);
+//         if (!truck) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Truck not found'
+//             });
+//         }
+
+//         let order = await Order.findById(req.params.orderId);
+//         if (!order) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Order not found'
+//             });
+//         }
+
+//         // Add the order ID to the truck's orders array
+//         truck.orders.push(order._id);
+//         await truck.save();
+
+//         res.status(200).json({
+//             success: true,
+//             order
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// }
+
+// exports.removeSingleTruckOrder = async (req, res, next) => {
+//     console.log('Removing single order from truck');
+//     try {
+//         let truck = await Truck.findById(req.params.id);
+//         if (!truck) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Truck not found',
+//             });
+//         }
+
+//         const initialOrdersLength = truck.orders.length;
+//         truck.orders = truck.orders.filter(orderId => orderId.toString() !== req.params.orderId);
+
+//         if (truck.orders.length === initialOrdersLength) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Order not found in truck',
+//             });
+//         }
+
+//         await truck.save();
+
+//         res.status(200).json({
+//             success: true,
+//             message: 'Order removed successfully',
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
+// exports.removeAllTruckOrders = async (req, res, next) => {
+//     console.log("removeAll orders");
+//     try {
+//         let truck = await Truck.findById(req.params.id);
+//         if (!truck) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Truck not found',
+//             });
+//         }
+
+//         // Check if the truck has any orders
+//         if (!truck.orders || truck.orders.length === 0) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'No orders found in truck',
+//             });
+//         }
+
+//         // Clear all orders from the truck
+//         console.log("Before clearing orders:", truck.orders);
+//         truck.orders = [];
+//         await truck.save();
+//         console.log("After clearing orders:", truck.orders);
+
+//         res.status(200).json({
+//             success: true,
+//             message: 'All orders removed successfully',
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
+// Add Order to Truck and set insideTruck to true
 exports.addTruckOrder = async (req, res, next) => {
     try {
         let truck = await Truck.findById(req.params.id);
@@ -179,19 +298,37 @@ exports.addTruckOrder = async (req, res, next) => {
                 message: 'Truck not found'
             });
         }
-        const order = await Order.create(req.body);
+
+        let order = await Order.findById(req.params.orderId);
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: 'Order not found'
+            });
+        }
+
+        // Add the order ID to the truck's orders array
         truck.orders.push(order._id);
+        
+        // Set insideTruck to true for the order
+        order.insideTruck = true;
+        await order.save();
+
+        // Save the truck with the updated orders
         await truck.save();
-        res.status(201).json({
+
+        res.status(200).json({
             success: true,
             order
         });
     } catch (error) {
         next(error);
     }
-}
+};
 
+// Remove Single Order from Truck and set insideTruck to false
 exports.removeSingleTruckOrder = async (req, res, next) => {
+    console.log('Removing single order from truck');
     try {
         let truck = await Truck.findById(req.params.id);
         if (!truck) {
@@ -211,6 +348,13 @@ exports.removeSingleTruckOrder = async (req, res, next) => {
             });
         }
 
+        // Find the order and set insideTruck to false
+        let order = await Order.findById(req.params.orderId);
+        if (order) {
+            order.insideTruck = false;
+            await order.save();
+        }
+
         await truck.save();
 
         res.status(200).json({
@@ -222,7 +366,9 @@ exports.removeSingleTruckOrder = async (req, res, next) => {
     }
 };
 
+// Remove All Orders from Truck and set insideTruck to false for all orders
 exports.removeAllTruckOrders = async (req, res, next) => {
+    console.log("removeAll orders");
     try {
         let truck = await Truck.findById(req.params.id);
         if (!truck) {
@@ -232,7 +378,23 @@ exports.removeAllTruckOrders = async (req, res, next) => {
             });
         }
 
-        truck.orders = []; // Clear all orders
+        // Check if the truck has any orders
+        if (!truck.orders || truck.orders.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No orders found in truck',
+            });
+        }
+
+        // Find each order and set insideTruck to false
+        const orders = await Order.find({ '_id': { $in: truck.orders } });
+        for (let order of orders) {
+            order.insideTruck = false;
+            await order.save();
+        }
+
+        // Clear all orders from the truck
+        truck.orders = [];
         await truck.save();
 
         res.status(200).json({
@@ -243,3 +405,79 @@ exports.removeAllTruckOrders = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.acceptedWork = async (req, res, next) => {
+    try {
+        let truck = await Truck.findById(req.params.id).populate('orders');
+        if (!truck) {
+            return res.status(404).json({
+                success: false,
+                message: 'Truck not found'
+            });
+        }
+
+        // Check if the authenticated rider matches the truck's assigned rider
+        if (truck.rider.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: You are not assigned to this truck'
+            });
+        }
+
+        // Update the truck's riderAccepted status to "accepted"
+        truck.riderAccepted = 'accepted';
+
+        // Update all assigned orders to "Shipped"
+        for (let order of truck.orders) {
+            order.status = 'Shipped';
+            await order.save();
+        }
+
+        await truck.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Work accepted, orders are shipped',
+            truck
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.declinedWork = async (req, res, next) => {
+    try {
+        let truck = await Truck.findById(req.params.id).populate('orders');
+        if (!truck) {
+            return res.status(404).json({
+                success: false,
+                message: 'Truck not found'
+            });
+        }
+
+        // Check if the authenticated rider matches the truck's assigned rider
+        if (truck.rider.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Unauthorized: You are not assigned to this truck'
+            });
+        }
+
+        // Update the truck's riderAccepted status to "rejected"
+        truck.riderAccepted = 'rejected';
+
+        // Retain order status and remove the rider from the truck
+        truck.rider = null;
+
+        await truck.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Work declined, rider removed from truck',
+            truck
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+

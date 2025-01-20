@@ -175,50 +175,60 @@ function TruckList() {
                         >
                             <div className="overflow-x-auto w-full">
                                 <table className="table w-full">
-                                    <thead>
-                                        <tr>
-                                            <th>Model</th>
-                                            <th>Plate Number</th>
-                                            <th>Assigned Rider</th>
-                                            <th>Assign/Unassign</th>
-                                            <th>Edit</th>
-                                            <th>Delete</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-            {filteredTrucks.length > 0 ? (
-                filteredTrucks.map((truck) => (
-                    <tr key={truck._id}>
-                        <td>{truck.model}</td>
-                        <td>{truck.plateNo}</td>
-                        <td>
-                            {truck.rider && riders[truck.rider]
-                                ? `${riders[truck.rider].fname} ${riders[truck.rider].lname}`
-                                : "Not Assigned"}
-                        </td>
-                        <td>
-                            {truck.rider ? (
-                                <button
-                                    className="btn btn-xs btn-danger"
-                                    onClick={() => handleUnassignRider(truck._id)}
-                                >
-                                    Unassign
-                                </button>
-                            ) : (
-                                <select
-                                    value=""
-                                    onChange={(e) => handleAssignRider(truck._id, e.target.value)}
-                                    className="select select-bordered w-full max-w-xs"
-                                >
-                                    <option value="" disabled>Select Rider</option>
-                                    {Object.values(riders).map((rider) => (
-                                        <option key={rider._id} value={rider._id}>
-                                            {rider.fname} {rider.lname}
-                                        </option>
-                                    ))}
-                                </select>
-                            )}
-                        </td>
+                                <thead>
+    <tr>
+        <th>Model</th>
+        <th>Plate Number</th>
+        <th>Assigned Rider</th>
+        <th>Assign/Unassign</th>
+        <th>Orders</th>
+        <th>Edit</th>
+        <th>Delete</th>
+        
+    </tr>
+</thead>
+<tbody>
+    {filteredTrucks.length > 0 ? (
+        filteredTrucks.map((truck) => (
+            <tr key={truck._id}>
+                <td>{truck.model}</td>
+                <td>{truck.plateNo}</td>
+                <td>
+                    {truck.rider && riders[truck.rider]
+                        ? `${riders[truck.rider].fname} ${riders[truck.rider].lname}`
+                        : "Not Assigned"}
+                </td>
+                <td>
+                    {truck.rider ? (
+                        <button
+                            className="btn btn-xs btn-danger"
+                            onClick={() => handleUnassignRider(truck._id)}
+                        >
+                            Unassign
+                        </button>
+                    ) : (
+                        <select
+                            value=""
+                            onChange={(e) => handleAssignRider(truck._id, e.target.value)}
+                            className="select select-bordered w-full max-w-xs"
+                        >
+                            <option value="" disabled>Select Rider</option>
+                            {Object.values(riders).map((rider) => (
+                                <option key={rider._id} value={rider._id}>
+                                    {rider.fname} {rider.lname}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                </td>
+                <td>
+                    <button
+                        className="btn btn-xs btn-info"
+                        onClick={() => navigate(`/admin/truck/order/${truck._id}`)}
+                    >
+                        Add Orders
+                    </button>
+                </td>
                 <td>
                     <button
                         className="btn btn-xs btn-primary"
@@ -228,15 +238,19 @@ function TruckList() {
                     </button>
                 </td>
                 <td>
-                    <button className="btn btn-square btn-ghost" onClick={() => deleteCurrentTruck(truck._id)}>
+                    <button
+                        className="btn btn-square btn-ghost"
+                        onClick={() => deleteCurrentTruck(truck._id)}
+                    >
                         <TrashIcon className="w-5" />
                     </button>
                 </td>
+                
             </tr>
         ))
     ) : (
         <tr>
-            <td colSpan="6" className="text-center">No trucks found</td>
+            <td colSpan="7" className="text-center">No trucks found</td>
         </tr>
     )}
 </tbody>

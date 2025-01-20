@@ -24,6 +24,11 @@ const truckSchema = new mongoose.Schema(
         ref: 'Order',  // This will link to the Order model
       },
     ],  // Add the orders field here
+    riderAccepted: {
+      type: String,
+      enum: ['accepted', 'rejected', 'pending'],
+      default: 'pending',
+    },
   },
   { timestamps: true }
 );

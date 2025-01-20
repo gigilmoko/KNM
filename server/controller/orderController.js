@@ -727,3 +727,21 @@ exports.getOrderStatusCounts = async (req, res) => {
   }
 };
 
+exports.getPreparingOrders = async (req, res) => {
+  try {
+    // Find all orders where status is "Preparing" and insideTruck is false
+    const preparingOrders = await Order.find({ 
+      status: "Preparing",
+      insideTruck: false
+    });
+
+    res.status(200).json({
+      success: true,
+      count: preparingOrders.length,
+      orders: preparingOrders,
+    });
+  } catch (error) {
+    console.error("Error fetching preparing orders:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

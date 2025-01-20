@@ -20,7 +20,8 @@ const {
     getLast7DaysOrderTotal,
     getDailyOrderTotalByInterval,
     getTotalCustomer,
-    getOrderStatusCounts
+    getOrderStatusCounts,
+    getPreparingOrders
 
 } = require("../controller/orderController");
 
@@ -29,7 +30,7 @@ router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
 // router.post('/grabpay-payment/:token/:id', isAuthenticatedUser, grabpayPayment);
 
 router.get("/my", isAuthenticatedUser, getMyOrders);
-router.get("/orders/list", isAuthenticatedUser, isAdmin, getAdminOrders);
+router.get("/orders/list",  getAdminOrders);
 router.route("/orders/single/:id")
     .get(getOrderDetails)
     
@@ -45,7 +46,7 @@ router.get('/analytics/orders/months',isAuthenticatedUser, isAdmin,getMonthlyOrd
 router.get('/analytics/orders/weekly',isAuthenticatedUser, isAdmin,getLast7DaysOrderTotal)
 router.get('/analytics/orders/daily',isAuthenticatedUser, isAdmin, getDailyOrderTotalByInterval)
 router.get('/analytics/orders/totalcustomers', isAuthenticatedUser, isAdmin, getTotalCustomer)
-router.get('/orders/status/count',  getOrderStatusCounts)
-
+router.get('/orders/status/count',  isAuthenticatedUser, isAdmin, getOrderStatusCounts)
+router.get('/truck/orders/preparing',   getPreparingOrders)
 
 module.exports = router;

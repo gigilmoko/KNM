@@ -53,7 +53,7 @@ import SingleProduct from './Admin/Feedback/SingleProduct';
 import TruckList from './Admin/Truck/TruckList';
 import NewTruck from './Admin/Truck/NewTruck';
 import UpdateTruck from './Admin/Truck/UpdateTruck';
-
+import TruckOrder from './Admin/Truck/TruckOrder';
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -106,6 +106,7 @@ function App() {
           <Route path="/admin/truck/list" element={<ProtectedRoute><TruckList /></ProtectedRoute>} />
           <Route path="/admin/truck/new" element={<ProtectedRoute><NewTruck /></ProtectedRoute>} />
           <Route path="/admin/truck/edit/:truckId" element={<ProtectedRoute><UpdateTruck /></ProtectedRoute>} />
+          <Route path="/admin/truck/order/:truckId" element={<ProtectedRoute><TruckOrder /></ProtectedRoute>} />
           {/* Feedback */}
           <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
           <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />

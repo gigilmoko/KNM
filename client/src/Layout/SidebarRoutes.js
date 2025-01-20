@@ -148,6 +148,42 @@ const routes = [
     ]
   },
   {
+    path: '', 
+    icon: <TagIcon className={`${iconClasses} inline`}/>, // Tag icon for 'Categories'
+    name: 'Rider',
+    submenu: [
+      {
+        path: '/admin/rider/list',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Chart Bar icon for 'Analytics'
+        name: 'Rider List',
+      },
+      {
+        path: '/admin/rider/new/',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Tag icon for 'New Category'
+        name: 'Create New Rider ',
+      },
+      
+    ]
+  },
+  {
+    path: '', // Categories with submenu
+    icon: <TagIcon className={`${iconClasses} inline`}/>, // Tag icon for 'Categories'
+    name: 'Trucks',
+    submenu: [
+      {
+        path: '/admin/truck/list',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Chart Bar icon for 'Analytics'
+        name: 'Truck List',
+      },
+      {
+        path: '/admin/truck/new',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Tag icon for 'New Category'
+        name: 'Create New Truck ',
+      },
+      
+    ]
+  },
+  {
     path: '/admin/charts',
     icon: <ChartBarIcon className={iconClasses}/>, // Chart Bar icon for 'Analytics'
     name: 'Analytics',
