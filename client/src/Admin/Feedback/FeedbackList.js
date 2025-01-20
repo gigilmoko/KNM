@@ -25,6 +25,26 @@ const FeedbackList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [feedbacks, setFeedbacks] = useState([]);
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [sortByDate, setSortByDate] = useState('desc'); // New state for date sorting
+
+  const toggleSortOrder = () => {
+    const sortedFeedbacks = [...feedbacks].sort((a, b) =>
+      sortOrder === 'asc' ? a.rating - b.rating : b.rating - a.rating
+    );
+    setFeedbacks(sortedFeedbacks);
+    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  };
+
+  const toggleSortByDate = () => {
+    const sortedFeedbacks = [...feedbacks].sort((a, b) =>
+      sortByDate === 'desc'
+        ? new Date(b.createdAt) - new Date(a.createdAt)
+        : new Date(a.createdAt) - new Date(b.createdAt)
+    );
+    setFeedbacks(sortedFeedbacks);
+    setSortByDate(sortByDate === 'desc' ? 'asc' : 'desc');
+  };
 
   useEffect(() => {
     const fetchFeedbacks = async () => {
@@ -35,8 +55,12 @@ const FeedbackList = () => {
             Authorization: `Bearer ${token}`,
           },
         };
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/feedback/all`, config);
+        const response = await axios.get(
+          `${process.env.REACT_APP_API}/api/feedback/all`,
+          config
+        );
         setFeedbacks(response.data.feedbacks);
+        console.log('Feedbacks:', response.data.feedbacks);
       } catch (error) {
         toast.error('Failed to load feedbacks');
         console.error('Error fetching feedbacks:', error.response ? error.response.data : error);
@@ -97,32 +121,54 @@ const FeedbackList = () => {
           <Header />
           <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200">
             <TitleCard title="Feedback Ratings Distribution">
-            <div className="flex justify-center" style={{ width: '300px', height: '300px' }}>
-    <Doughnut options={options} data={data}  />
-  </div>
-                    </TitleCard>
-            <TitleCard title="Feedback List" topMargin="mt-2">
+              <div className="flex justify-center" style={{ width: '300px', height: '300px' }}>
+                <Doughnut options={options} data={data} />
+              </div>
+            </TitleCard>
+            <TitleCard
+              title="Feedback List"
+              topMargin="mt-2"
+              TopSideButtons={
+                <div className="flex items-center space-x-2">
+                  <button
+                    className="btn btn-primary"
+                    onClick={toggleSortOrder}
+                  >
+                    {sortOrder === 'asc' ? 'Sort by Rating Descending' : 'Sort by Rating Ascending'}
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={toggleSortByDate}
+                  >
+                    {sortByDate === 'desc' ? 'Sort by Date Ascending' : 'Sort by Date Descending'}
+                  </button>
+                </div>
+              }
+            >
               <div className="grid grid-cols-1 gap-6">
                 {feedbacks.length === 0 ? (
                   <p>No feedback available.</p>
                 ) : (
                   <div>
                     {/* Doughnut chart displaying ratings distribution */}
-                    
                     <table className="table-auto w-full mt-6">
                       <thead>
                         <tr>
+                          <th className="px-4 py-2">Email</th>
                           <th className="px-4 py-2">Feedback</th>
                           <th className="px-4 py-2">Rating</th>
-                          
+                          <th className="px-4 py-2">Date</th> {/* Added Date column */}
                         </tr>
                       </thead>
                       <tbody>
                         {feedbacks.map((feedback) => (
                           <tr key={feedback._id}>
+                            <td className="border px-4 py-2">{feedback.userId.email}</td>
                             <td className="border px-4 py-2">{feedback.feedback}</td>
                             <td className="border px-4 py-2">{feedback.rating}</td>
-                           
+                            <td className="border px-4 py-2">
+                              {new Date(feedback.createdAt).toLocaleDateString()} {/* Display date */}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

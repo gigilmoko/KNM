@@ -27,6 +27,18 @@ function CategoryList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const [sortOrder, setSortOrder] = useState("asc");
+
+const toggleSortOrder = () => {
+    const sortedCategories = [...filteredCategories].sort((a, b) => {
+        return sortOrder === "asc" 
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name);
+    });
+
+    setFilteredCategories(sortedCategories);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+};
     useEffect(() => {
         mainContentRef.current.scroll({
             top: 0,
@@ -131,7 +143,17 @@ function CategoryList() {
                         <TitleCard
                             title="All Categories"
                             topMargin="mt-2"
-                            TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
+                            TopSideButtons={
+                                <div className="flex items-center space-x-2">
+                                    <SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />
+                                    <button 
+                                        className="btn btn-primary"
+                                        onClick={toggleSortOrder}
+                                    >
+                                        {sortOrder === "asc" ? "Sort Descending" : "Sort Ascending"}
+                                    </button>
+                                </div>
+                            }
                         >
                             <div className="overflow-x-auto w-full">
                                 <table className="table w-full">

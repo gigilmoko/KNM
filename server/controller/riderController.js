@@ -1,5 +1,6 @@
 const Rider = require('../models/rider')
 const bcrypt = require('bcryptjs'); 
+const sendToken = require('../utils/jwtToken')
 
 exports.getRider = async (req, res, next) => {
     try {
@@ -35,6 +36,7 @@ exports.newRider = async (req, res, next) => {
 };      
 
 exports.getSingleRider = async (req, res, next) => {
+    console.log('Get Single Rider route hit');
     const rider = await Rider.findById(req.params.id);
     if (!rider) {
         return res.status(404).json({
@@ -93,32 +95,39 @@ exports.deleteRider = async (req, res, next) => {
 
 exports.riderLogin = async (req, res, next) => {
     const { email, password } = req.body;
+    console.log('Rider Login route hit');
+    console.log('Email:', email);
+    console.log('Password:', password);
+
     if (!email || !password) {
         return res.status(400).json({
             success: false,
             message: 'Please enter email and password'
         });
     }
+
+    // Finding rider in database
     const rider = await Rider.findOne({ email }).select('+password');
+
     if (!rider) {
-        return res.status(404).json({
+        return res.status(401).json({
             success: false,
-            message: 'Invalid email or password'
+            message: 'Invalid Email or Password'
         });
     }
-    const isMatch = await rider.comparePassword(password);
-    if (!isMatch) {
-        return res.status(404).json({
+
+    // Check if password is correct
+    const isPasswordMatched = await rider.comparePassword(password);
+
+    if (!isPasswordMatched) {
+        return res.status(401).json({
             success: false,
-            message: 'Invalid email or password'
+            message: 'Invalid Email or Password'
         });
     }
-    const token = rider.getJwtToken();
-    res.status(200).json({
-        success: true,
-        token
-    });
-}
+
+    sendToken(rider, 200, res);
+};
 
 exports.riderLogout = async (req, res, next) => {
     res.cookie('token', null, {
