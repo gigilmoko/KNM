@@ -61,38 +61,10 @@ const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink)
   }
 };
 
-const sendOrderConfirmationEmail = async (order) => {
-  console.log('Preparing to send order confirmation email...');
-
-  const orderDetails = order.orderProducts.map(item => `
-    <li>${item.name} - Quantity: ${item.quantity} - Price: ₱${item.price}</li>
-  `).join('');
-
-  const message = `
-    <h1>Order Confirmation</h1>
-    <p>Thank you for your order. Here are the details:</p>
-    <ul>
-      ${orderDetails}
-    </ul>
-    <p>Total Amount: ₱${order.totalPrice}</p>
-  `;
-
-  try {
-    await sendEmail({
-      email: order.user.email,
-      subject: 'Order Confirmation',
-      message,
-    });
-    console.log(`Order confirmation email sent to: ${order.user.email}`);
-  } catch (error) {
-    console.error(`Failed to send order confirmation email to: ${order.user.email}`, error);
-  }
-};
-
 exports.createOrder = async (req, res, next) => {
   const {
     orderProducts,
-    shippingInfo,
+    deliveryAddress,
     paymentInfo,
     itemsPrice,
     shippingCharges,
@@ -127,9 +99,9 @@ exports.createOrder = async (req, res, next) => {
 
     // Create order in the database
     const order = await Order.create({
-      user: req.user._id, // Ensure the user field is set correctly
+      user: req.user._id, 
       orderProducts,
-      shippingInfo,
+      deliveryAddress,
       paymentInfo,
       itemsPrice,
       shippingCharges,
@@ -159,7 +131,6 @@ exports.createOrder = async (req, res, next) => {
           message: "BASE_URL environment variable is not set",
         });
       }
-
       const temporaryLink = `${process.env.BASE_URL}/paymongo-gcash/${paymongoToken.token}/${order._id}`;
       console.log(temporaryLink, "temporaryLink");
 
@@ -176,8 +147,8 @@ exports.createOrder = async (req, res, next) => {
     console.log(order);
     console.log(paymongoToken);
 
-    // Send order confirmation email
-    await sendOrderConfirmationEmail(order);
+    // // Send order confirmation email
+    // await sendOrderConfirmationEmail(order);
 
     res.status(200).json({
       success: true,
@@ -254,22 +225,26 @@ exports.getMyOrders = async (req, res, next) => {
 };
 
 exports.getOrderDetails = async (req, res, next) => {
-    try {
-        const order = await Order.findById(req.params.id);
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: "Order Not Found",
-            });
-        }
-        res.status(200).json({
-            success: true,
-            order,
-        });
-    } catch (error) {
-        next(error); 
+  console.log("Fetching order details for ID:", req.params.id);
+
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order Not Found",
+      });
     }
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("Error fetching order with ID:", req.params.id, error);
+    next(error);
+  }
 };
+
 
 exports.processOrder = async (req, res, next) => {
   try {
@@ -281,11 +256,11 @@ exports.processOrder = async (req, res, next) => {
           });
       }
 
-      const newStatus = req.body.status; 
+      const newStatus = req.body.status;
 
-      if (newStatus === "Shipping" && order.status === "Preparing") {
+      if (newStatus === "Shipped" && order.status === "Preparing") {
           order.status = newStatus;
-      } else if (newStatus === "Delivered" && order.status === "Shipping") {
+      } else if (newStatus === "Delivered" && order.status === "Shipped") {
           order.status = newStatus;
           order.deliveredAt = new Date(Date.now());
       } else {
@@ -302,7 +277,7 @@ exports.processOrder = async (req, res, next) => {
           message: "Order Processed Successfully",
       });
   } catch (error) {
-      next(error); 
+      next(error);
   }
 };
 
@@ -699,4 +674,49 @@ exports.getTotalCustomer = async (req, res) => {
   }
 };
 
+exports.getOrderStatusCounts = async (req, res) => {
+  try {
+    const result = await Order.aggregate([
+      {
+        // Group by the status field and count occurrences of each status
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
+    // Transform the result into an object for easier access
+    const statusCounts = result.reduce((acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    }, {});
+
+    res.status(200).json({
+      success: true,
+      statusCounts,
+    });
+  } catch (error) {
+    console.error("Error fetching order status counts:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.getPreparingOrders = async (req, res) => {
+  try {
+    // Find all orders where status is "Preparing" and insideTruck is false
+    const preparingOrders = await Order.find({ 
+      status: "Preparing",
+      insideTruck: false
+    });
+
+    res.status(200).json({
+      success: true,
+      count: preparingOrders.length,
+      orders: preparingOrders,
+    });
+  } catch (error) {
+    console.error("Error fetching preparing orders:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};

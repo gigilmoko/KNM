@@ -1,11 +1,8 @@
-import logo from './logo.svg';
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import Header from './Layout/Header';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { themeChange } from 'theme-change';
 import { gapi } from 'gapi-script';
-import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from './Public/Login';
 import Register from './Public/Register';
@@ -45,9 +42,17 @@ import Contact from './Public/Contact';
 import Blog from './Public/Blog';
 import EventFeedbackList from './Admin/Feedback/EventFeedbackList';
 import ProductFeedbackList from './Admin/Feedback/ProductFeedbackList';
-
-
+import NewRider from './Admin/Rider/NewRider';
+import UpdateRider from './Admin/Rider/UpdateRider';
+import RiderList from './Admin/Rider/RiderList';
+import ChangePassword from './Admin/Rider/ChangePassword';
 import SingleProduct from './Admin/Feedback/SingleProduct';
+import TruckList from './Admin/Truck/TruckList';
+import NewTruck from './Admin/Truck/NewTruck';
+import UpdateTruck from './Admin/Truck/UpdateTruck';
+import TruckOrder from './Admin/Truck/TruckOrder';
+import ForecastList from './Admin/Forecast/ForecastList';
+
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -57,7 +62,7 @@ function App() {
     function start() {
       gapi.client.init({
         clientId: clientId,
-        scope: "" // Add necessary scopes
+        scope: ""
       });
     }
     gapi.load('client:auth2', start);
@@ -91,6 +96,17 @@ function App() {
           {/* Admin */}
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/admin/forecast" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} />
+          {/* Rider */}
+          <Route path="/admin/rider/list" element={<ProtectedRoute><RiderList /></ProtectedRoute>} />
+          <Route path="/admin/rider/new" element={<ProtectedRoute><NewRider /></ProtectedRoute>} />
+          <Route path="/admin/rider/edit/:riderId" element={<ProtectedRoute><UpdateRider /></ProtectedRoute>} />
+          <Route path="/admin/rider/changepassword/:riderId" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
+          {/* Truck */}
+          <Route path="/admin/truck/list" element={<ProtectedRoute><TruckList /></ProtectedRoute>} />
+          <Route path="/admin/truck/new" element={<ProtectedRoute><NewTruck /></ProtectedRoute>} />
+          <Route path="/admin/truck/edit/:truckId" element={<ProtectedRoute><UpdateTruck /></ProtectedRoute>} />
+          <Route path="/admin/truck/order/:truckId" element={<ProtectedRoute><TruckOrder /></ProtectedRoute>} />
           {/* Feedback */}
           <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
           <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />

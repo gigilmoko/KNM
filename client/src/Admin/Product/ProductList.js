@@ -105,34 +105,20 @@ function ProductsList() {
 
     const deleteCurrentProduct = async (id, index) => {
         const token = sessionStorage.getItem("token");
-        const productToDelete = products[index]; // Get the product to delete
-        const imageDeletePromises = productToDelete.images.map(image => 
-            axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${image.public_id}`)
-        );
-    
         try {
-            // Delete all images from Cloudinary
-            await Promise.all(imageDeletePromises);
-            
-            // Now delete the product
-            await axios.delete(`${process.env.REACT_APP_API}/api/product/delete/${id}`,  {
+            await axios.delete(`${process.env.REACT_APP_API}/api/product/delete/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            
-            // Update the state to remove the deleted product
             setProducts(products.filter((_, i) => i !== index));
             setFilteredProducts(filteredProducts.filter((_, i) => i !== index));
-    
-            // Show success toast
             toast.success('Product deleted successfully!');
         } catch (error) {
-            console.error('Failed to delete product or images', error);
-            // Show error toast
+            console.error('Failed to delete product', error);
             toast.error('Failed to delete product');
         }
-    }
+    };
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();

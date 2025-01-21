@@ -28,8 +28,8 @@ const ProductGallery = () => {
 
   useEffect(() => {
     AOS.init({
-      duration: 1000, // Animation duration in milliseconds
-      once: true, // Animation happens only once
+      duration: 1000,
+      once: true, 
     });
   }, []);
 

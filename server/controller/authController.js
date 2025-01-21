@@ -392,6 +392,22 @@ exports.allUsersApply = async (req, res, next) => {
   }
 };
 
+exports.countUsersApply = async (req, res, next) => {
+  try {
+      const count = await User.countDocuments({ applyMember: true });
+      res.status(200).json({
+          success: true,
+          count,
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: "Failed to count users who applied",
+          error: error.message,
+      });
+  }
+};
+
 exports.getUserProfile = async (req, res, next) => {
   try {
     

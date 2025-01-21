@@ -20,6 +20,18 @@ function CalendarList() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [sortOrder, setSortOrder] = useState("asc");
+
+    const toggleSortOrder = () => {
+        const sortedEvents = [...filteredEvents].sort((a, b) => {
+            return sortOrder === "asc" 
+                ? new Date(a.startDate) - new Date(b.startDate)
+                : new Date(b.startDate) - new Date(a.startDate);
+        });
+    
+        setFilteredEvents(sortedEvents);
+        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    };
     
     useEffect(() => {
         const fetchEvents = async () => {
@@ -110,7 +122,17 @@ function CalendarList() {
                         <TitleCard
                             title="Calendar Events"
                             topMargin="mt-2"
-                            TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
+                            TopSideButtons={
+                                <div className="flex items-center space-x-2">
+                                    <SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />
+                                    <button 
+                                        className="btn btn-primary"
+                                        onClick={toggleSortOrder}
+                                    >
+                                        {sortOrder === "asc" ? "Sort Descending" : "Sort Ascending"}
+                                    </button>
+                                </div>
+                            }
                         >
                             <div className="overflow-x-auto w-full">
                                 <table className="table w-full">

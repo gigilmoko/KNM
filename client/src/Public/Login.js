@@ -79,7 +79,7 @@ function Login() {
                 if (response.data.user && response.data.user.role === 'admin') {
                     navigate("/admin/dashboard");
                 } else {
-                    navigate(redirect || "/profile");
+                    navigate(redirect || "/");
                 }
             }, 3000); // 3-second delay before navigating
     
@@ -212,8 +212,8 @@ function Login() {
 
                             <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
                             <button type="submit" className="btn mt-2 w-full btn-primary">
-    Login
-</button>
+                                Login
+                            </button>
 
                             <div className="container-login100-form-btn p-t-13">
                                 <div className="wrap-login100-form-btn">

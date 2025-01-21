@@ -19,7 +19,9 @@ const {
     getMonthlyOrderTotal,
     getLast7DaysOrderTotal,
     getDailyOrderTotalByInterval,
-    getTotalCustomer
+    getTotalCustomer,
+    getOrderStatusCounts,
+    getPreparingOrders
 
 } = require("../controller/orderController");
 
@@ -28,10 +30,10 @@ router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
 // router.post('/grabpay-payment/:token/:id', isAuthenticatedUser, grabpayPayment);
 
 router.get("/my", isAuthenticatedUser, getMyOrders);
-router.get("/orders/list", isAuthenticatedUser, isAdmin, getAdminOrders);
+router.get("/orders/list",  getAdminOrders);
 router.route("/orders/single/:id")
     .get(getOrderDetails)
-
+    
 router.put("/orders/update/:id", processOrder)
 router.get('/predictions/demand-forecast',isAuthenticatedUser, isAdmin,getDemandForecast)
 router.get('/predictions/market-basket',isAuthenticatedUser, isAdmin,getMarketBasketAnalysis)
@@ -44,6 +46,7 @@ router.get('/analytics/orders/months',isAuthenticatedUser, isAdmin,getMonthlyOrd
 router.get('/analytics/orders/weekly',isAuthenticatedUser, isAdmin,getLast7DaysOrderTotal)
 router.get('/analytics/orders/daily',isAuthenticatedUser, isAdmin, getDailyOrderTotalByInterval)
 router.get('/analytics/orders/totalcustomers', isAuthenticatedUser, isAdmin, getTotalCustomer)
-
+router.get('/orders/status/count',  isAuthenticatedUser, isAdmin, getOrderStatusCounts)
+router.get('/truck/orders/preparing',   getPreparingOrders)
 
 module.exports = router;
