@@ -218,12 +218,12 @@ const Dashboard = () => {
     const tableRows = [
       ["Total Sales", totalSales],
       ["Orders Catered", ordersCatered],
-      ["Pending Orders", '0'],
-      ["Delivered Orders", '0'],
+      ["Pending Orders", pendingOrders],
+      ["Delivered Orders", deliveredOrders],
       ["Total Customers", totalCustomers],
       ["Total Users", totalUsers],
       ["Total Members", totalMembers],
-      ["Applying Members", '0'],
+      ["Applying Members", applyingMembers],
     ];
   
     doc.autoTable({
@@ -293,7 +293,6 @@ const Dashboard = () => {
               <DashboardStats key={k} {...d} colorIndex={k} />
             ))}
           </div>
-          <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
 
           {/** ---------------------- Different charts ------------------------- */}
           <div ref={chartRef} className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
