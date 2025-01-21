@@ -86,22 +86,31 @@ function TruckList() {
         }
     };
 
-    const handleAssignRider = async (truckId, rider) => {
+    const handleAssignRider = async (truckId, riderId) => {
         try {
             const token = sessionStorage.getItem("token");
             const url = `${process.env.REACT_APP_API}/api/truck/assign/${truckId}`;
+    
+            const payload = { riderId };  // Updated key to match expected JSON format
+    
+            console.log('Assigning rider with payload:', JSON.stringify(payload));
+    
             const response = await axios.put(
                 url,
-                { rider },
+                payload,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
                     },
                 }
             );
+    
+            console.log('Response from assignment:', response.data);
+    
             if (response.data.success) {
-                console.log(`Assignment success: Truck ID ${truckId} assigned to Rider ${rider}`);
-                window.location.reload(); // Reload the page to reflect the changes
+                console.log(`Assignment success: Truck ID ${truckId} assigned to Rider ID ${riderId}`);
+                window.location.reload();
             } else {
                 console.error(`Assignment failed: ${response.data.message}`);
             }
@@ -109,6 +118,7 @@ function TruckList() {
             console.error('Error assigning rider:', error);
         }
     };
+    
     
     const handleUnassignRider = async (truckId) => {
         try {
@@ -208,17 +218,22 @@ function TruckList() {
                         </button>
                     ) : (
                         <select
-                            value=""
-                            onChange={(e) => handleAssignRider(truck._id, e.target.value)}
-                            className="select select-bordered w-full max-w-xs"
-                        >
-                            <option value="" disabled>Select Rider</option>
-                            {Object.values(riders).map((rider) => (
-                                <option key={rider._id} value={rider._id}>
-                                    {rider.fname} {rider.lname}
-                                </option>
-                            ))}
-                        </select>
+    value=""
+    onChange={(e) => {
+        const selectedRiderId = e.target.value;
+        console.log('Selected Rider ID:', selectedRiderId);
+        handleAssignRider(truck._id, selectedRiderId);
+    }}
+    className="select select-bordered w-full max-w-xs"
+>
+    <option value="" disabled>Select Rider</option>
+    {Object.values(riders).map((rider) => (
+        <option key={rider._id} value={rider._id}>
+            {rider.fname} {rider.lname}
+        </option>
+    ))}
+</select>
+
                     )}
                 </td>
                 <td>

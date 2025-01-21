@@ -1,7 +1,7 @@
 const Rider = require('../models/rider')
 const bcrypt = require('bcryptjs'); 
 const sendToken = require('../utils/jwtToken')
-
+const Truck = require('../models/truck');
 exports.getRider = async (req, res, next) => {
     try {
         const riders = await Rider.find();
@@ -227,3 +227,41 @@ exports.updatePassword = async (req, res, next) => {
         return res.status(500).json({ message: "An error occurred while updating the password" });
     }
 };
+
+exports.getPendingTruck = async (req, res, next) => {
+    try {
+      // Get the rider ID from the URL parameter
+      const { id: rider } = req.params;
+  
+      if (!rider) {
+        return res.status(400).json({
+          success: false,
+          message: 'Rider ID is required.',
+        });
+      }
+  
+      // Find the truck based on the rider ID and pending status
+      const truck = await Truck.findOne({
+        rider: rider,
+        riderAccepted: 'pending',
+      });
+  
+      if (!truck) {
+        return res.status(404).json({
+          success: false,
+          message: 'No pending truck found for this rider.',
+        });
+      }
+  
+      res.status(200).json({
+        success: true,
+        truck,
+      });
+    } catch (error) {
+      console.error('Error fetching pending truck:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+      });
+    }
+  };

@@ -225,22 +225,26 @@ exports.getMyOrders = async (req, res, next) => {
 };
 
 exports.getOrderDetails = async (req, res, next) => {
-    try {
-        const order = await Order.findById(req.params.id);
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: "Order Not Found",
-            });
-        }
-        res.status(200).json({
-            success: true,
-            order,
-        });
-    } catch (error) {
-        next(error); 
+  console.log("Fetching order details for ID:", req.params.id);
+
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order Not Found",
+      });
     }
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("Error fetching order with ID:", req.params.id, error);
+    next(error);
+  }
 };
+
 
 exports.processOrder = async (req, res, next) => {
   try {
