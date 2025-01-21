@@ -92,6 +92,7 @@ exports.deleteTruck = async (req, res, next) => {
 }
 
 exports.assignRider = async (req, res, next) => {
+    console.log('Assigning rider to truck');
     try {
         const { id } = req.params; // Truck ID
         const { riderId } = req.body; // Rider ID

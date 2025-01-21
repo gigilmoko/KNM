@@ -11,7 +11,7 @@ router.post('/truck/new', isAuthenticatedUser, isAdmin, newTruck);
 router.get('/truck/:id', getSingleTruck);
 router.put('/truck/update/:id', isAuthenticatedUser, isAdmin, updateTruck);
 router.put('/truck/unassign/:id', isAuthenticatedUser, isAdmin, unassignRider);
-router.put('/truck/assign/:id', isAuthenticatedUser, isAdmin, assignRider);
+router.put('/truck/assign/:id', assignRider);
 router.delete('/truck/delete/:id', isAuthenticatedUser, isAdmin, deleteTruck);
 router.get('/truck/:id/orders', isAuthenticatedUser, getTruckOrders);
 router.put('/truck/:id/addOrder/:orderId',   addTruckOrder);
