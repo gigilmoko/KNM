@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {
   Chart as ChartJS,
@@ -15,6 +15,7 @@ import TitleCard from "../../Layout/components/Cards/TitleCard";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 function BarChart() {
+  const chartRef = useRef(null); // Create a ref
   const [activeTab, setActiveTab] = useState("monthly"); // Default to monthly
   const [chartData, setChartData] = useState({
     labels: [],
@@ -122,7 +123,10 @@ function BarChart() {
       ) : error ? (
         <div className="text-center text-red-500">{error}</div>
       ) : (
-        <Bar options={{ responsive: true }} data={chartData} />
+        <div id="barChart">
+          <Bar ref={chartRef} options={{ responsive: true }} data={chartData} />
+        </div>
+
       )}
     </TitleCard>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import {
   Chart as ChartJS,
@@ -26,6 +26,7 @@ ChartJS.register(
 );
 
 function LineChart() {
+  const chartRef = useRef(null);
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [{
@@ -166,7 +167,9 @@ const fetchData = async (type) => {
           Daily
         </button>
       </div>
-      <Line data={chartData} options={options} />
+      <div id="lineChart">
+        <Line ref={chartRef} data={chartData} options={options} />
+      </div>
     </TitleCard>
   );
 }
