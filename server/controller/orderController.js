@@ -61,38 +61,10 @@ const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink)
   }
 };
 
-const sendOrderConfirmationEmail = async (order) => {
-  console.log('Preparing to send order confirmation email...');
-
-  const orderDetails = order.orderProducts.map(item => `
-    <li>${item.name} - Quantity: ${item.quantity} - Price: ₱${item.price}</li>
-  `).join('');
-
-  const message = `
-    <h1>Order Confirmation</h1>
-    <p>Thank you for your order. Here are the details:</p>
-    <ul>
-      ${orderDetails}
-    </ul>
-    <p>Total Amount: ₱${order.totalPrice}</p>
-  `;
-
-  try {
-    await sendEmail({
-      email: order.user.email,
-      subject: 'Order Confirmation',
-      message,
-    });
-    console.log(`Order confirmation email sent to: ${order.user.email}`);
-  } catch (error) {
-    console.error(`Failed to send order confirmation email to: ${order.user.email}`, error);
-  }
-};
-
 exports.createOrder = async (req, res, next) => {
   const {
     orderProducts,
-    shippingInfo,
+    deliveryAddress,
     paymentInfo,
     itemsPrice,
     shippingCharges,
@@ -127,9 +99,9 @@ exports.createOrder = async (req, res, next) => {
 
     // Create order in the database
     const order = await Order.create({
-      user: req.user._id, // Ensure the user field is set correctly
+      user: req.user._id, 
       orderProducts,
-      shippingInfo,
+      deliveryAddress,
       paymentInfo,
       itemsPrice,
       shippingCharges,
@@ -159,7 +131,6 @@ exports.createOrder = async (req, res, next) => {
           message: "BASE_URL environment variable is not set",
         });
       }
-
       const temporaryLink = `${process.env.BASE_URL}/paymongo-gcash/${paymongoToken.token}/${order._id}`;
       console.log(temporaryLink, "temporaryLink");
 
@@ -176,8 +147,8 @@ exports.createOrder = async (req, res, next) => {
     console.log(order);
     console.log(paymongoToken);
 
-    // Send order confirmation email
-    await sendOrderConfirmationEmail(order);
+    // // Send order confirmation email
+    // await sendOrderConfirmationEmail(order);
 
     res.status(200).json({
       success: true,

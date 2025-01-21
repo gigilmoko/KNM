@@ -184,7 +184,7 @@ const routes = [
     ]
   },
   {
-    path: '/admin/charts',
+    path: '/admin/forecast',
     icon: <ChartBarIcon className={iconClasses}/>, // Chart Bar icon for 'Analytics'
     name: 'Analytics',
   },
