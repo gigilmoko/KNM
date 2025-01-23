@@ -98,7 +98,7 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-userSchema.methods.comparePassword = async function (enteredPassword) {
+userSchema.methods.comparePassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 userSchema.methods.getResetPasswordToken = function () {
@@ -109,6 +109,11 @@ userSchema.methods.getResetPasswordToken = function () {
   // Set token expire time
   this.resetPasswordExpire = Date.now() + 30 * 60 * 1000; // 30 minutes
   return resetToken;
+};
+userSchema.methods.getJwtToken = function () {
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_TIME,
+  });
 };
 
 module.exports = mongoose.model('User', userSchema);
