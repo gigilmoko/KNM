@@ -13,6 +13,8 @@ import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon'; 
+import ChevronUpIcon from '@heroicons/react/24/outline/ChevronUpIcon';
+import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
 import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
 function ProductsList() {
@@ -28,6 +30,7 @@ function ProductsList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [lowStockProducts, setLowStockProducts] = useState([]); // State to manage low stock products
+    const [showLowStockWarning, setShowLowStockWarning] = useState(true); // State to manage visibility of low stock warning
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -137,6 +140,10 @@ function ProductsList() {
         navigate(`/admin/products/update/${id}`);
     };
 
+    const toggleLowStockWarning = () => {
+        setShowLowStockWarning(!showLowStockWarning);
+    };
+
     return (
         <>
             <div className="drawer lg:drawer-open">
@@ -213,12 +220,19 @@ function ProductsList() {
             {/* Low Stock Banner */}
             {lowStockProducts.length > 0 && (
                 <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg">
-                    <h3 className="font-bold">Low Stock Warning</h3>
-                    <ul>
-                        {lowStockProducts.map(product => (
-                            <li key={product._id}>{product.name} - {product.stock} left</li>
-                        ))}
-                    </ul>
+                    <div className="flex justify-between items-center">
+                        <h3 className="font-bold">Low Stock Warning</h3>
+                        <button className="btn btn-sm btn-outline border-none" onClick={toggleLowStockWarning}>
+                            {showLowStockWarning ? <ChevronDownIcon className="w-5 h-5" /> : <ChevronUpIcon className="w-5 h-5" />}
+                        </button>
+                    </div>
+                    {showLowStockWarning && (
+                        <ul>
+                            {lowStockProducts.map(product => (
+                                <li key={product._id}>{product.name} - {product.stock} left</li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
             )}
         </>

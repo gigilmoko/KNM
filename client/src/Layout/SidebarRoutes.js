@@ -125,6 +125,28 @@ const routes = [
     ]
   },
   {
+    path: '', 
+    icon: <ChartBarIcon className={`${iconClasses} inline`}/>, 
+    name: 'Delivery',
+    submenu: [
+      {
+        path: '/admin/delivery/list',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'Delivery List',
+      },
+      {
+        path: '/admin/delivery/new',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'New Delivery',
+      },
+      {
+        path: '/admin/delivery/update/:id',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'Update Delivery',
+      },
+    ]
+  },
+  {
     path: '', // Categories with submenu
     icon: <TagIcon className={`${iconClasses} inline`}/>, // Tag icon for 'Categories'
     name: 'Feedbacks',

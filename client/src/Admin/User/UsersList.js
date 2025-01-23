@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import moment from "moment";
@@ -69,7 +69,7 @@ function UsersList() {
             setFilteredUsers([]);
         }
     };
-    
+
     const getProfile = async () => {
         const config = {
             headers: {
@@ -117,8 +117,6 @@ function UsersList() {
             toast.error('Failed to delete user or user images');
         }
     };
-    
-    
 
     const handleRoleChange = async (id, index, newRole) => {
         try {
@@ -143,7 +141,6 @@ function UsersList() {
             toast.error('Failed to update user role');
         }
     };
-    
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
@@ -158,7 +155,7 @@ function UsersList() {
     return (
         <>
             <div className="drawer lg:drawer-open">
-                <ToastContainer/>
+                <ToastContainer />
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col">
                     <Header />
@@ -213,7 +210,13 @@ function UsersList() {
                                                         </select>
                                                     </td>
                                                     <td>{user.phone || 'N/A'}</td>
-                                                    <td>{user.address || 'N/A'}</td>
+                                                    <td>
+                                                        {user.address.map((addr, index) => (
+                                                            <div key={index}>
+                                                                {`${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`}
+                                                            </div>
+                                                        ))}
+                                                    </td>
                                                     <td>{user.memberId || 'N/A'}</td>
                                                     <td>
                                                         <button className="btn btn-square btn-ghost" onClick={() => deleteCurrentUser(user._id, index)} >
