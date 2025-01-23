@@ -5,7 +5,6 @@ const PaymongoToken = require("../models/paymongoToken");
 const crypto = require("crypto");
 const axios = require('axios');
 const sendEmail = require("../utils/sendEmail");
-const axios = require('axios');
 
 const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink) => {
   try {
