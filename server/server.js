@@ -19,7 +19,7 @@ const feedbackproduct = require('./routes/feedbackproduct');
 const feedbackevent = require('./routes/eventfeedback');
 const rider = require('./routes/rider');
 const truckRoute = require('./routes/truck');
-const deliverySession = require('./routes/deliverySession')
+const deliverySession = require('./routes/deliverysession')
 
 const app = express();
 const PORT = process.env.PORT || 4002;
