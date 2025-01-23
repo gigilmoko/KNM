@@ -5,6 +5,7 @@ const PaymongoToken = require("../models/paymongoToken");
 const crypto = require("crypto");
 const axios = require('axios');
 const sendEmail = require("../utils/sendEmail");
+const axios = require('axios');
 
 const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink) => {
   try {
@@ -257,6 +258,71 @@ exports.getOrderDetails = async (req, res, next) => {
   }
 };
 
+//THIS IS FOR NOTIFICATION PURPOSES ONLY UNCOMMENT IF YOU WANT TO USE IT
+// exports.processOrder = async (req, res, next) => {
+//   try {
+//       const order = await Order.findById(req.params.id).populate('user');
+//       if (!order) {
+//           return res.status(404).json({
+//               success: false,
+//               message: "Order Not Found",
+//           });
+//       }
+
+//       const newStatus = req.body.status;
+//       let notificationMessage = '';
+
+//       if (newStatus === "Shipped" && order.status === "Preparing") {
+//           order.status = newStatus;
+//           notificationMessage = `Your order #${order._id} has been shipped and is on its way!`;
+//       } else if (newStatus === "Delivered" && order.status === "Shipped") {
+//           order.status = newStatus;
+//           order.deliveredAt = new Date(Date.now());
+//           notificationMessage = `Your order #${order._id} has been delivered successfully!`;
+//       } else {
+//           return res.status(400).json({
+//               success: false,
+//               message: "Invalid Status Update",
+//           });
+//       }
+
+//       await order.save();
+
+//       // Send push notification to user if they have a device token
+//       if (order.user.deviceToken) {
+//           const notification = {
+//               app_id: process.env.ONESIGNAL_APP_ID,
+//               include_player_ids: [order.user.deviceToken],
+//               contents: { en: notificationMessage },
+//               headings: { en: "Order Status Update" },
+//               data: { 
+//                   orderId: order._id.toString(),
+//                   status: newStatus
+//               }
+//           };
+
+//           try {
+//               await axios.post('https://onesignal.com/api/v1/notifications', notification, {
+//                   headers: {
+//                       'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+//                       'Content-Type': 'application/json'
+//                   }
+//               });
+//               console.log('Order status notification sent successfully');
+//           } catch (error) {
+//               console.error('Error sending order notification:', error);
+//           }
+//       }
+
+//       res.status(200).json({
+//           success: true,
+//           message: "Order Processed Successfully",
+//           order
+//       });
+//   } catch (error) {
+//       next(error);
+//   }
+// };
 
 exports.processOrder = async (req, res, next) => {
   try {
