@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const cloudinary = require("cloudinary");
 const jwt = require('jsonwebtoken');
 const express = require('express');
+const axios = require('axios');
 
 
 cloudinary.config({
@@ -153,9 +154,10 @@ exports.googleLogin = async (req, res, next) => {
 };
 
 exports.loginUser = async (req, res, next) => {
-  const { email, password } = req.body;
+  const { email, password, deviceToken } = req.body;
   console.log("Received email:", email);
   console.log("Received password:", password);
+  console.log("Received deviceToken:", deviceToken);
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Please enter email & password' });
@@ -170,6 +172,35 @@ exports.loginUser = async (req, res, next) => {
     const isPasswordMatched = await user.comparePassword(password);
     if (!isPasswordMatched) {
       return res.status(401).json({ message: 'Invalid Email or Password' });
+    }
+
+    // Update OneSignal player tags and device token
+    if (deviceToken) {
+      try {
+        await axios.put(
+          `https://onesignal.com/api/v1/players/${deviceToken}`,
+          {
+            app_id: process.env.ONESIGNAL_APP_ID,
+            tags: {
+              role: user.role[0],
+              userId: user._id.toString()
+            }
+          },
+          {
+            headers: {
+              'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        user.deviceToken = deviceToken;
+        await user.save();
+        console.log('Updated player tags and device token:', { deviceToken, role: user.roles[0] });
+      } catch (oneSignalError) {
+        console.error('OneSignal update error:', oneSignalError);
+        // Continue with login even if OneSignal update fails
+      }
     }
 
     sendToken(user, 200, res);
