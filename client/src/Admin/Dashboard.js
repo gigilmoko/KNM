@@ -1,10 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import axios from 'axios';
 import { showNotification } from '../Layout/common/headerSlice';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import html2canvas from 'html2canvas-pro';
 
 import Header from '../Layout/Header';
 import LeftSidebar from '../Layout/LeftSidebar';
@@ -38,7 +35,6 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const chartRef = useRef(); // Reference to capture charts as images
 
   const getProfile = async () => {
     const config = {
@@ -208,64 +204,6 @@ const Dashboard = () => {
     fetchApplyingMembers();
   }, []);
 
-  const generatePDF = async () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text('Dashboard Report', 14, 20);
-
-  
-    const tableColumn = ["Statistic", "Value"];
-    const tableRows = [
-      ["Total Sales", totalSales],
-      ["Orders Catered", ordersCatered],
-      ["Pending Orders", pendingOrders],
-      ["Delivered Orders", deliveredOrders],
-      ["Total Customers", totalCustomers],
-      ["Total Users", totalUsers],
-      ["Total Members", totalMembers],
-      ["Applying Members", applyingMembers],
-    ];
-  
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 30,
-    });
-  
-    if (chartRef.current) {
-      try {
-        // Ensure charts are fully rendered before capturing
-        await new Promise((resolve) => setTimeout(resolve, 500)); 
-  
-        const chartCanvas = await html2canvas(chartRef.current, { scale: 2 });
-  
-        const imgWidth = 190; 
-        const imgHeight = (chartCanvas.height * imgWidth) / chartCanvas.width;
-  
-        doc.addPage();
-        doc.text('Charts', 14, 20);
-        doc.addImage(chartCanvas.toDataURL('image/png'), 'PNG', 10, 30, imgWidth, imgHeight);
-      } catch (error) {
-        console.error('Error capturing charts:', error);
-      }
-    }
-      // Capture Bar Chart
-  const barChartCanvas = await html2canvas(document.querySelector("#barChart"));
-  const barChartImg = barChartCanvas.toDataURL("image/png");
-
-  // Capture Line Chart
-  const lineChartCanvas = await html2canvas(document.querySelector("#lineChart"));
-  const lineChartImg = lineChartCanvas.toDataURL("image/png");
-
-  doc.addImage(barChartImg, "PNG", 10, 30, 180, 100);
-  doc.addImage(lineChartImg, "PNG", 10, 140, 180, 100);
-  
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.height - 10);
-    doc.save('Dashboard_Report.pdf');
-  };
-  
-
-
   const statsData = [
     { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
     { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
@@ -295,7 +233,7 @@ const Dashboard = () => {
           </div>
 
           {/** ---------------------- Different charts ------------------------- */}
-          <div ref={chartRef} className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
+          <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
             <LineChart />
             <BarChart />
           </div>
@@ -311,13 +249,6 @@ const Dashboard = () => {
             <UserChannels />
             <DoughnutChart />
           </div> */}
-        <button
-          onClick={generatePDF}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
-        >
-          Download PDF Report
-        </button>
-
         </main>
       </div>
       <LeftSidebar />
@@ -328,4 +259,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
