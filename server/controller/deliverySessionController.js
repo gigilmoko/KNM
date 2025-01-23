@@ -246,6 +246,80 @@ exports.startDeliverySession = async (req, res) => {
     }
 }
 
+exports.getGroupedDeliverySessions = async (req, res) => {
+  try {
+    const { status } = req.query; // Get the status from the query parameter
+
+    const groupedSessions = await DeliverySession.aggregate([
+      {
+        $match: {
+          status: status || { $exists: true },
+        },
+      },
+      {
+        $lookup: {
+          from: "riders", // Replace with your actual Rider collection name
+          localField: "rider",
+          foreignField: "_id",
+          as: "riderDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "trucks", // Replace with your actual Truck collection name
+          localField: "truck",
+          foreignField: "_id",
+          as: "truckDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "orders", // Replace with your actual Order collection name
+          localField: "orders",
+          foreignField: "_id",
+          as: "orderDetails",
+        },
+      },
+      {
+        $unwind: "$orderDetails",
+      },
+      {
+        $lookup: {
+          from: "products", // Replace with your actual Product collection name
+          localField: "orderDetails.orderProducts.product",
+          foreignField: "_id",
+          as: "orderDetails.productDetails",
+        },
+      },
+      {
+        $group: {
+          _id: "$status",
+          sessions: { $push: "$$ROOT" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+      {
+        $project: {
+          "sessions.riderDetails.password": 0, // Exclude sensitive fields if needed
+          "sessions.truckDetails.sensitiveField": 0, // Adjust as necessary
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      groupedSessions,
+    });
+  } catch (error) {
+    console.error("Error fetching grouped delivery sessions:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+
 
 
 

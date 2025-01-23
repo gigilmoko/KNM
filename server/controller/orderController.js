@@ -707,7 +707,7 @@ exports.getPreparingOrders = async (req, res) => {
     // Find all orders where status is "Preparing", insideTruck is false, and assignedAlready is false
     const preparingOrders = await Order.find({ 
       status: "Preparing",
-      insideTruck: false,
+      
       assignedAlready: false, // Include the condition for assignedAlready being false
     });
 
