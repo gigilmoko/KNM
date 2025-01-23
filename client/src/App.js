@@ -51,13 +51,9 @@ import TruckList from './Admin/Truck/TruckList';
 import NewTruck from './Admin/Truck/NewTruck';
 import UpdateTruck from './Admin/Truck/UpdateTruck';
 import TruckOrder from './Admin/Truck/TruckOrder';
-<<<<<<< Updated upstream
-import ForecastList from './Admin/Forecast/ForecastList';
-=======
 import DeliveryList from './Admin/Delivery/DeliveryList';
 import NewDelivery from './Admin/Delivery/NewDelivery';
 import UpdateDelivery from './Admin/Delivery/UpdateDelivery';
->>>>>>> Stashed changes
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
