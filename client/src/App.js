@@ -54,7 +54,10 @@ import TruckOrder from './Admin/Truck/TruckOrder';
 import DeliveryList from './Admin/Delivery/DeliveryList';
 import NewDelivery from './Admin/Delivery/NewDelivery';
 import UpdateDelivery from './Admin/Delivery/UpdateDelivery';
-// import Reports from './Admin/Report/Reports';
+import RevenueReport from './Admin/Reports/RevenueReport';
+import OrderReports from './Admin/Reports/OrderReports';
+import UserReports from './Admin/Reports/UserReports';
+import MemberReports from './Admin/Reports/MemberReports';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -139,6 +142,13 @@ function App() {
           <Route path="/admin/category" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
           <Route path="/admin/category/update/:id" element={<ProtectedRoute><UpdateCategory /></ProtectedRoute>} />
           <Route path="/admin/category/new" element={<ProtectedRoute><NewCategory /></ProtectedRoute>} />
+
+          {/* Reports */}
+          <Route path="/admin/reports/revenue" element={<ProtectedRoute><RevenueReport /></ProtectedRoute>} />
+          <Route path="/admin/reports/orders" element={<ProtectedRoute><OrderReports /></ProtectedRoute>} />
+          <Route path="/admin/reports/users" element={<ProtectedRoute><UserReports /></ProtectedRoute>} />
+          {/* <Route path="/admin/reports/members" element={<ProtectedRoute><MemberReports /></ProtectedRoute>} /> */}
+
           {/* User */}
           <Route path="/admin/users/list" element={<ProtectedRoute><UsersList /></ProtectedRoute>} />
           {/* Orders */}

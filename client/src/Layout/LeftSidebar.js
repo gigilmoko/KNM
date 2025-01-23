@@ -17,10 +17,9 @@ function LeftSidebar() {
     useEffect(() => {
         const handleThemeChange = () => {
             const theme = localStorage.getItem('theme');
-            setCurrentTheme(theme || 'light');  // Default to light theme
+            setCurrentTheme(theme || 'light');
         };
 
-        // Listen for theme changes
         window.addEventListener('themeChange', handleThemeChange);
 
         return () => {

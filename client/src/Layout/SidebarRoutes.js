@@ -20,7 +20,6 @@ import DocumentDuplicateIcon from '@heroicons/react/24/outline/DocumentDuplicate
 import ShoppingBagIcon from '@heroicons/react/24/outline/ShoppingBagIcon';
 import TagIcon from '@heroicons/react/24/outline/TagIcon';
 import CalendarIcon from '@heroicons/react/24/outline/CalendarIcon';
-
 const iconClasses = `h-6 w-6`;
 const submenuIconClasses = `h-5 w-5`;
 
@@ -189,10 +188,32 @@ const routes = [
     name: 'Analytics',
   },
   {
-    path: '/admin/reports',
-    icon: <ChartBarIcon className={iconClasses} />,
-    name: 'Analytical Reports',
-  },
+    path: '', 
+    icon: <ChartBarIcon className={`${iconClasses} inline`}/>, 
+    name: 'Analytical Report',
+    submenu: [
+      {
+        path: '/admin/reports/revenue',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'Revenue Report',
+      },
+      {
+        path: '/admin/reports/orders',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'Order Reports',
+      },
+      {
+        path: '/admin/reports/users',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'User Reports',
+      },
+      // {
+      //   path: '/admin/reports/members',
+      //   icon: <ChartBarIcon className={submenuIconClasses}/>, 
+      //   name: 'Member Reports',
+      // },
+    ]
+  }
 ];
 
 export default routes;

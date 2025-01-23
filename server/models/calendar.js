@@ -30,7 +30,7 @@ const calendarEventSchema = new mongoose.Schema({
   },
   audience: {
     type: String,
-    enum: ['all', 'member'], // Options for the audience
+    enum: ['all', 'member'], 
     required: true,
   },
   user: {

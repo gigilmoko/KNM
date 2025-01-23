@@ -20,6 +20,7 @@ const feedbackevent = require('./routes/eventfeedback');
 const rider = require('./routes/rider');
 const truckRoute = require('./routes/truck');
 const deliverySession = require('./routes/deliverysession')
+const report = require('./routes/report');
 
 const app = express();
 const PORT = process.env.PORT || 4002;
@@ -58,6 +59,7 @@ app.use('/api', feedbackevent);
 app.use('/api', rider);
 app.use('/api', truckRoute);
 app.use('/api', deliverySession);
+app.use('/api/reports', report)
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, '❌ MongoDB connection error:'));
