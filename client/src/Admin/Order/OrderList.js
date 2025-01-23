@@ -16,6 +16,7 @@ function OrdersList() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('Preparing'); // State to manage active tab
 
   useEffect(() => {
     mainContentRef.current.scroll({
@@ -39,9 +40,10 @@ function OrdersList() {
         },
       });
       if (response.data && Array.isArray(response.data.orders)) {
-        setOrders(response.data.orders);
-        setFilteredOrders(response.data.orders);
-        console.log(response.data.orders);
+        const sortedOrders = response.data.orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setOrders(sortedOrders);
+        setFilteredOrders(sortedOrders);
+        console.log(sortedOrders);
       } else {
         setOrders([]);
         setFilteredOrders([]);
@@ -104,10 +106,16 @@ function OrdersList() {
     const filtered = orders.filter(
       (order) =>
         getUserNameById(order.user).toLowerCase().includes(lowercasedValue) ||
-        order.orderStatus.toLowerCase().includes(lowercasedValue)
+        order.status.toLowerCase().includes(lowercasedValue)
     );
     setFilteredOrders(filtered);
   };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const filteredOrdersByStatus = filteredOrders.filter(order => order.status === activeTab);
 
   return (
     <>
@@ -130,6 +138,11 @@ function OrdersList() {
                 />
               }
             >
+              <div className="tabs">
+                <button className={`tab ${activeTab === 'Preparing' ? 'tab-active bg-yellow-500' : ''}`} onClick={() => handleTabChange('Preparing')}>Preparing</button>
+                <button className={`tab ${activeTab === 'Shipped' ? 'tab-active bg-blue-500' : ''}`} onClick={() => handleTabChange('Shipped')}>Shipped</button>
+                <button className={`tab ${activeTab === 'Delivered' ? 'tab-active bg-green-500' : ''}`} onClick={() => handleTabChange('Delivered')}>Delivered</button>
+              </div>
               <div className="overflow-x-auto w-full">
                 <table className="table w-full">
                   <thead>
@@ -143,8 +156,8 @@ function OrdersList() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOrders.length > 0 ? (
-                      filteredOrders.map((order, index) => (
+                    {filteredOrdersByStatus.length > 0 ? (
+                      filteredOrdersByStatus.map((order, index) => (
                         <tr key={order._id}>
                           <td>{order._id}</td>
                           <td>{getUserNameById(order.user)}</td>

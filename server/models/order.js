@@ -25,29 +25,6 @@ const orderSchema = new mongoose.Schema({
         },
     ],
 
-    deliveryAddress: {
-        houseNo: {
-            type: String,
-        },
-        streetName: {
-            type: String,
-        },
-        barangay: {
-            type: String,
-        },
-        city: {
-            type: String,
-        },
-        latitude: {
-            type: Number,
-            default: 0,
-        },
-        longitude: {
-            type: Number,
-            default: 0,
-        },
-    },
-    
     paymentInfo: {
         type: String,
         required: true,
@@ -71,9 +48,9 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    assignedAlready: { // Replaced insideTruck with assignedAlready
+    assignedAlready: {
         type: Boolean,
-        default: false, // Initially, orders are not assigned
+        default: false,
     },
 });
 

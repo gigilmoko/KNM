@@ -27,6 +27,7 @@ function ProductsList() {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [lowStockProducts, setLowStockProducts] = useState([]); // State to manage low stock products
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -91,6 +92,8 @@ function ProductsList() {
             if (response.data && Array.isArray(response.data.products)) {
                 setProducts(response.data.products);
                 setFilteredProducts(response.data.products);
+                const lowStock = response.data.products.filter(product => product.stock < 10);
+                setLowStockProducts(lowStock); // Set low stock products
             } else {
                 console.error('Data fetched is not an array:', response.data);
                 setProducts([]);
@@ -206,6 +209,18 @@ function ProductsList() {
             <RightSidebar />
             <NotificationContainer />
             <ModalLayout />
+
+            {/* Low Stock Banner */}
+            {lowStockProducts.length > 0 && (
+                <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded shadow-lg">
+                    <h3 className="font-bold">Low Stock Warning</h3>
+                    <ul>
+                        {lowStockProducts.map(product => (
+                            <li key={product._id}>{product.name} - {product.stock} left</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </>
     );
 }
