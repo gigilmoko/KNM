@@ -158,30 +158,24 @@ exports.loginUser = async (req, res, next) => {
   console.log("Received password:", password);
 
   if (!email || !password) {
-      return res.status(400).json({ error: 'Please enter email & password' });
+    return res.status(400).json({ error: 'Please enter email & password' });
   }
 
   try {
-      const user = await User.findOne({ email }).select('+password');
-      // console.log("User found:", user);
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid Email or Password' });
+    }
 
-      if (!user) {
-          return res.status(401).json({ message: 'Invalid Email or Password' });
-      }
+    const isPasswordMatched = await user.comparePassword(password);
+    if (!isPasswordMatched) {
+      return res.status(401).json({ message: 'Invalid Email or Password' });
+    }
 
-      const isPasswordMatched = await user.comparePassword(password);
-      console.log("Password match result:", isPasswordMatched);
-
-      if (!isPasswordMatched) {
-          return res.status(401).json({ message: 'Invalid Email or Password' });
-      }
-
-      // Send the JWT token or any other response here
-      sendToken(user, 200, res);
-
+    sendToken(user, 200, res);
   } catch (error) {
-      console.error("Error during login:", error);
-      res.status(500).json({ message: 'Server error' });
+    console.error("Error during login:", error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

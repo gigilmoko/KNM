@@ -64,7 +64,6 @@ const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink)
 exports.createOrder = async (req, res, next) => {
   const {
     orderProducts,
-    deliveryAddress,
     paymentInfo,
     itemsPrice,
     shippingCharges,
@@ -77,6 +76,15 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: "User information is missing",
+      });
+    }
+
+    // Fetch the user's address
+    const user = await User.findById(req.user._id);
+    if (!user || !user.address || user.address.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "User address is missing",
       });
     }
 
@@ -99,9 +107,8 @@ exports.createOrder = async (req, res, next) => {
 
     // Create order in the database
     const order = await Order.create({
-      user: req.user._id, 
+      user: req.user._id,
       orderProducts,
-      deliveryAddress,
       paymentInfo,
       itemsPrice,
       shippingCharges,
@@ -147,8 +154,8 @@ exports.createOrder = async (req, res, next) => {
     console.log(order);
     console.log(paymongoToken);
 
-    // // Send order confirmation email
-    // await sendOrderConfirmationEmail(order);
+    // Send order confirmation email
+    await sendOrderConfirmationEmail(order);
 
     res.status(200).json({
       success: true,
@@ -225,23 +232,28 @@ exports.getMyOrders = async (req, res, next) => {
 };
 
 exports.getOrderDetails = async (req, res, next) => {
-  console.log("Fetching order details for ID:", req.params.id);
-
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id)
+      .populate('user', 'fname lname email address')
+      .populate('orderProducts.product', 'name price');
+
     if (!order) {
       return res.status(404).json({
         success: false,
-        message: "Order Not Found",
+        message: "Order not found",
       });
     }
+
     res.status(200).json({
       success: true,
       order,
     });
   } catch (error) {
-    console.error("Error fetching order with ID:", req.params.id, error);
-    next(error);
+    console.error("Error fetching order details:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 };
 

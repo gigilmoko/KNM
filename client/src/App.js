@@ -54,6 +54,7 @@ import TruckOrder from './Admin/Truck/TruckOrder';
 import DeliveryList from './Admin/Delivery/DeliveryList';
 import NewDelivery from './Admin/Delivery/NewDelivery';
 import UpdateDelivery from './Admin/Delivery/UpdateDelivery';
+import Reports from './Admin/Report/Reports';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -98,7 +99,8 @@ function App() {
           {/* Admin */}
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path="/admin/forecast" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} />
+          {/* <Route path="/admin/forecast" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} /> */}
+          <Route path="/admin/reports" component={Reports} />
           {/* Rider */}
           <Route path="/admin/rider/list" element={<ProtectedRoute><RiderList /></ProtectedRoute>} />
           <Route path="/admin/rider/new" element={<ProtectedRoute><NewRider /></ProtectedRoute>} />
