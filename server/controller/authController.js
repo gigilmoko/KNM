@@ -196,12 +196,13 @@ exports.loginUser = async (req, res, next) => {
 
         user.deviceToken = deviceToken;
         await user.save();
-        console.log('Updated player tags and device token:', { deviceToken, role: user.roles[0] });
+        console.log('Updated player tags and device token:', { deviceToken, role: user.role[0] });
       } catch (oneSignalError) {
         console.error('OneSignal update error:', oneSignalError);
         // Continue with login even if OneSignal update fails
       }
     }
+    console.log(user.role)
 
     sendToken(user, 200, res);
   } catch (error) {

@@ -1,5 +1,78 @@
 const CalendarEvent = require('../models/calendar');
 const { createNotification } = require('./notificationController');
+const User = require('../models/user');
+const Notification = require('../models/notification');
+const axios = require('axios');
+
+// FOR TESTING ONLY
+exports.testNotifyMembers = async (req, res) => {
+    try {
+        const members = await User.find({ 
+            deviceToken: { $exists: true, $ne: null },
+            role: 'member'  // Changed from applyMember to role
+        });
+
+        const playerIds = members.map(member => member.deviceToken).filter(Boolean);
+        console.log('Found members with device tokens:', playerIds.length);
+
+        if (playerIds.length > 0) {
+            const response = await axios.post('https://onesignal.com/api/v1/notifications', {
+                app_id: process.env.ONESIGNAL_APP_ID,
+                include_player_ids: playerIds,
+                contents: { en: "Test notification for members!" },
+                headings: { en: "Member Notification" }
+            }, {
+                headers: {
+                    'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('OneSignal Response:', response.data);
+        }
+
+        res.status(200).json({
+            success: true,
+            membersNotified: playerIds.length,
+            members: members.map(m => ({ id: m._id, name: m.fname + ' ' + m.lname, role: m.role }))
+        });
+    } catch (error) {
+        console.error('Notification Error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+exports.testNotifyAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({ 
+            deviceToken: { $exists: true, $ne: null }
+        });
+
+        const playerIds = users.map(user => user.deviceToken).filter(Boolean);
+        console.log('Found users with device tokens:', playerIds.length);
+
+        if (playerIds.length > 0) {
+            const response = await axios.post('https://onesignal.com/api/v1/notifications', {
+                app_id: process.env.ONESIGNAL_APP_ID,
+                include_player_ids: playerIds,
+                contents: { en: "Test notification for all users!" }
+            }, {
+                headers: {
+                    'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('OneSignal Response:', response.data);
+        }
+
+        res.status(200).json({
+            success: true,
+            usersNotified: playerIds.length
+        });
+    } catch (error) {
+        console.error('Notification Error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
 
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
@@ -23,10 +96,66 @@ exports.createEvent = async (req, res) => {
 
         await newEvent.save();
 
+        // Get users to notify based on audience
+        let users;
+        if (audience === 'all') {
+            users = await User.find({ deviceToken: { $exists: true, $ne: null } });
+        } else {
+            users = await User.find({ 
+                deviceToken: { $exists: true, $ne: null },
+                role: 'member'
+            });
+        }
+
+        // Get device tokens
+        const playerIds = users.map(user => user.deviceToken).filter(Boolean);
+        console.log('Found users with device tokens:', playerIds.length);
+
+        // Send push notification if there are users with device tokens
+        if (playerIds.length > 0) {
+            const notification = {
+                app_id: process.env.ONESIGNAL_APP_ID,
+                include_player_ids: playerIds,
+                contents: { 
+                    en: `New event "${title}" scheduled from ${new Date(startDate).toLocaleString()} to ${new Date(endDate).toLocaleString()} at ${location}.`
+                },
+                headings: { en: "New Event Created" },
+                data: { eventId: newEvent._id }
+            };
+
+            try {
+                const response = await axios.post(
+                    'https://onesignal.com/api/v1/notifications',
+                    notification,
+                    {
+                        headers: {
+                            'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+                console.log('OneSignal Response:', response.data);
+            } catch (notificationError) {
+                console.error('Error sending push notification:', notificationError);
+            }
+        }
+
+        // Create in-app notifications for users
+        const notificationPromises = users.map(user => {
+            return new Notification({
+                user: user._id,
+                event: newEvent._id,
+                read: false
+            }).save();
+        });
+
+        await Promise.all(notificationPromises);
+
         res.status(201).json({
             success: true,
             message: 'Event created successfully',
-            data: newEvent
+            data: newEvent,
+            notifiedUsers: playerIds.length
         });
     } catch (error) {
         console.error('Error creating event:', error);
@@ -37,8 +166,6 @@ exports.createEvent = async (req, res) => {
         });
     }
 };
-
-
 
 exports.updateEvent = async (req, res) => {
     const eventId = req.params.id;
