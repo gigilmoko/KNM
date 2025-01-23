@@ -71,9 +71,9 @@ const orderSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
-    insideTruck: {
+    assignedAlready: { // Replaced insideTruck with assignedAlready
         type: Boolean,
-        default: false,
+        default: false, // Initially, orders are not assigned
     },
 });
 

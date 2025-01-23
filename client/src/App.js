@@ -51,7 +51,13 @@ import TruckList from './Admin/Truck/TruckList';
 import NewTruck from './Admin/Truck/NewTruck';
 import UpdateTruck from './Admin/Truck/UpdateTruck';
 import TruckOrder from './Admin/Truck/TruckOrder';
+<<<<<<< Updated upstream
 import ForecastList from './Admin/Forecast/ForecastList';
+=======
+import DeliveryList from './Admin/Delivery/DeliveryList';
+import NewDelivery from './Admin/Delivery/NewDelivery';
+import UpdateDelivery from './Admin/Delivery/UpdateDelivery';
+>>>>>>> Stashed changes
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -106,7 +112,11 @@ function App() {
           <Route path="/admin/truck/list" element={<ProtectedRoute><TruckList /></ProtectedRoute>} />
           <Route path="/admin/truck/new" element={<ProtectedRoute><NewTruck /></ProtectedRoute>} />
           <Route path="/admin/truck/edit/:truckId" element={<ProtectedRoute><UpdateTruck /></ProtectedRoute>} />
-          <Route path="/admin/truck/order/:truckId" element={<ProtectedRoute><TruckOrder /></ProtectedRoute>} />
+          {/* <Route path="/admin/truck/order/:truckId" element={<ProtectedRoute><TruckOrder /></ProtectedRoute>} /> */}
+          {/* Delivery */}
+          <Route path="/admin/delivery/list" element={<ProtectedRoute><DeliveryList /></ProtectedRoute>} />
+          <Route path="/admin/delivery/new" element={<ProtectedRoute><NewDelivery /></ProtectedRoute>} />
+          <Route path="/admin/delivery/edit/:deliveryId" element={<ProtectedRoute><UpdateDelivery /></ProtectedRoute>} />
           {/* Feedback */}
           <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
           <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />

@@ -2,6 +2,7 @@ const Rider = require('../models/rider')
 const bcrypt = require('bcryptjs'); 
 const sendToken = require('../utils/jwtToken')
 const Truck = require('../models/truck');
+
 exports.getRider = async (req, res, next) => {
     try {
         const riders = await Rider.find();
@@ -34,21 +35,6 @@ exports.newRider = async (req, res, next) => {
         rider
     });
 };      
-
-exports.getSingleRider = async (req, res, next) => {
-    console.log('Get Single Rider route hit');
-    const rider = await Rider.findById(req.params.id);
-    if (!rider) {
-        return res.status(404).json({
-            success: false,
-            message: 'Rider not found'
-        })
-    }
-    res.status(200).json({
-        success: true,
-        rider
-    })
-}
 
 exports.updateRider = async (req, res, next) => {
     try {
@@ -91,6 +77,21 @@ exports.deleteRider = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
+}
+
+exports.getSingleRider = async (req, res, next) => {
+    console.log('Get Single Rider route hit');
+    const rider = await Rider.findById(req.params.id);
+    if (!rider) {
+        return res.status(404).json({
+            success: false,
+            message: 'Rider not found'
+        })
+    }
+    res.status(200).json({
+        success: true,
+        rider
+    })
 }
 
 exports.riderLogin = async (req, res, next) => {
@@ -265,3 +266,43 @@ exports.getPendingTruck = async (req, res, next) => {
       });
     }
   };
+
+  exports.riderAvailable = async (req, res) => {
+    console.log('Available');
+    try {
+        const inUseValue = req.query.inUse === 'true'; // Convert query string to boolean
+        const riders = await Rider.find({ inUse: inUseValue });
+
+        res.status(200).json({
+            success: true,
+            count: riders.length,
+            data: riders,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching riders',
+            error: error.message,
+        });
+    }
+};
+
+exports.riderUnavilable = async (req, res) => {
+    console.log('Unavailable');
+    try {
+        const inUseValue = req.query.inUse === 'false'; // Convert query string to boolean
+        const riders = await Rider.find({ inUse: !inUseValue }); // Use opposite boolean value
+
+        res.status(200).json({
+            success: true,
+            count: riders.length,
+            data: riders,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching riders',
+            error: error.message,
+        });
+    }
+};

@@ -24,15 +24,13 @@ function TruckList() {
     const mainContentRef = useRef(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [riders, setRiders] = useState({}); // Store riders as an object where key is riderId and value is rider info
-  
+
     useEffect(() => {
         mainContentRef.current.scroll({
             top: 0,
             behavior: "smooth"
         });
         fetchTrucks();
-        fetchRiders();
     }, []);
 
     useEffect(() => {
@@ -61,85 +59,6 @@ function TruckList() {
             setTrucks(response.data.trucks || []);
         } catch (error) {
             console.error('Error fetching trucks:', error);
-        }
-    };
-      
-    const fetchRiders = async () => {
-        try {
-            const token = sessionStorage.getItem("token");
-            const response = await axios.get(`${process.env.REACT_APP_API}/api/riders`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            if (response.data.success) {
-                const ridersData = response.data.riders.reduce((acc, rider) => {
-                    acc[rider._id] = rider; // Map rider data by riderId
-                    return acc;
-                }, {});
-                setRiders(ridersData);
-            } else {
-                console.error('Failed to fetch riders');
-            }
-        } catch (error) {
-            console.error('Error fetching riders:', error);
-        }
-    };
-
-    const handleAssignRider = async (truckId, riderId) => {
-        try {
-            const token = sessionStorage.getItem("token");
-            const url = `${process.env.REACT_APP_API}/api/truck/assign/${truckId}`;
-    
-            const payload = { riderId };  // Updated key to match expected JSON format
-    
-            console.log('Assigning rider with payload:', JSON.stringify(payload));
-    
-            const response = await axios.put(
-                url,
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
-    
-            console.log('Response from assignment:', response.data);
-    
-            if (response.data.success) {
-                console.log(`Assignment success: Truck ID ${truckId} assigned to Rider ID ${riderId}`);
-                window.location.reload();
-            } else {
-                console.error(`Assignment failed: ${response.data.message}`);
-            }
-        } catch (error) {
-            console.error('Error assigning rider:', error);
-        }
-    };
-    
-    
-    const handleUnassignRider = async (truckId) => {
-        try {
-            const token = sessionStorage.getItem("token");
-            const response = await axios.put(`${process.env.REACT_APP_API}/api/truck/unassign/${truckId}`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-            if (response.data.success) {
-                setTrucks(trucks.map((truck) => 
-                    truck._id === truckId ? { ...truck, assigned: false, rider: null } : truck
-                ));
-                setFilteredTrucks(filteredTrucks.map((truck) => 
-                    truck._id === truckId ? { ...truck, assigned: false, rider: null } : truck
-                ));
-                toast.success('Truck unassigned successfully!');
-            }
-        } catch (error) {
-            console.error('Failed to unassign rider', error);
-            toast.error('Failed to unassign rider');
         }
     };
 
@@ -186,64 +105,19 @@ function TruckList() {
                             <div className="overflow-x-auto w-full">
                                 <table className="table w-full">
                                 <thead>
-    <tr>
-        <th>Model</th>
-        <th>Plate Number</th>
-        <th>Assigned Rider</th>
-        <th>Assign/Unassign</th>
-        <th>Orders</th>
-        <th>Edit</th>
-        <th>Delete</th>
-        
-    </tr>
-</thead>
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>Plate Number</th>
+                                        <th>Edit</th>
+                                        <th>Delete</th>
+                                    </tr>
+                                </thead>
 <tbody>
     {filteredTrucks.length > 0 ? (
         filteredTrucks.map((truck) => (
             <tr key={truck._id}>
                 <td>{truck.model}</td>
                 <td>{truck.plateNo}</td>
-                <td>
-                    {truck.rider && riders[truck.rider]
-                        ? `${riders[truck.rider].fname} ${riders[truck.rider].lname}`
-                        : "Not Assigned"}
-                </td>
-                <td>
-                    {truck.rider ? (
-                        <button
-                            className="btn btn-xs btn-danger"
-                            onClick={() => handleUnassignRider(truck._id)}
-                        >
-                            Unassign
-                        </button>
-                    ) : (
-                        <select
-    value=""
-    onChange={(e) => {
-        const selectedRiderId = e.target.value;
-        console.log('Selected Rider ID:', selectedRiderId);
-        handleAssignRider(truck._id, selectedRiderId);
-    }}
-    className="select select-bordered w-full max-w-xs"
->
-    <option value="" disabled>Select Rider</option>
-    {Object.values(riders).map((rider) => (
-        <option key={rider._id} value={rider._id}>
-            {rider.fname} {rider.lname}
-        </option>
-    ))}
-</select>
-
-                    )}
-                </td>
-                <td>
-                    <button
-                        className="btn btn-xs btn-info"
-                        onClick={() => navigate(`/admin/truck/order/${truck._id}`)}
-                    >
-                        Add Orders
-                    </button>
-                </td>
                 <td>
                     <button
                         className="btn btn-xs btn-primary"
@@ -260,12 +134,11 @@ function TruckList() {
                         <TrashIcon className="w-5" />
                     </button>
                 </td>
-                
             </tr>
         ))
     ) : (
         <tr>
-            <td colSpan="7" className="text-center">No trucks found</td>
+            <td colSpan="4" className="text-center">No trucks found</td>
         </tr>
     )}
 </tbody>

@@ -1,11 +1,8 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 
 require('dotenv').config({ path: './config/config.env' });
-
-
 
 const riderSchema = new mongoose.Schema(
   {
@@ -37,6 +34,10 @@ const riderSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: true,
+    },
+    inUse: {
+      type: Boolean,
+      default: false,  // False initially, true when assigned to a session
     },
   },
   { timestamps: true }

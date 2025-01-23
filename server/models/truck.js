@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const Order = require('./order');
-require('dotenv').config({ path: './config/config.env' });
 
 const truckSchema = new mongoose.Schema(
   {
@@ -13,6 +11,7 @@ const truckSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+<<<<<<< Updated upstream
     rider: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Rider',
@@ -28,6 +27,11 @@ const truckSchema = new mongoose.Schema(
       type: String,
       enum: ['accepted', 'rejected', 'pending'],
       default: 'pending',
+=======
+    inUse: {
+      type: Boolean,
+      default: false,  
+>>>>>>> Stashed changes
     },
   },
   { timestamps: true }
