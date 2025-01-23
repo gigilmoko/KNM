@@ -25,6 +25,12 @@ exports.createDeliverySession = async (req, res) => {
       return res.status(400).json({ message: 'One or more orders are not in Preparing status' });
     }
 
+    // Update orders to set assignedAlready to true
+    await Order.updateMany(
+      { _id: { $in: orderIds } },
+      { $set: { assignedAlready: true } }
+    );
+
     // Create the delivery session
     const newSession = new DeliverySession({
       rider: riderId,
@@ -128,28 +134,34 @@ exports.getSessionById = async (req, res) => {
 };
   
 exports.declineWork = async (req, res) => {
-    try {
-      const { riderId, truckId } = req.body;
-      const { id } = req.params;  // Get the session ID from the URL parameter
-  
-      // Find the delivery session by its ID
-      const session = await DeliverySession.findById(id);
-  
-      if (!session || session.status !== 'Undecided') {
-        return res.status(404).json({ message: 'Delivery session not found or already declined/accepted' });
-      }
-  
-      // Update the session
-      session.status = 'Cancelled';
-      session.riderAccepted = 'Rejected';
-  
-      await session.save();
-  
-      res.status(200).json({ message: 'Delivery session declined', session });
-    } catch (error) {
-      res.status(500).json({ message: 'Error declining delivery session', error: error.message });
+  try {
+    const { riderId, truckId } = req.body;
+    const { id } = req.params;  // Get the session ID from the URL parameter
+
+    // Find the delivery session by its ID
+    const session = await DeliverySession.findById(id);
+
+    if (!session || session.status !== 'Undecided') {
+      return res.status(404).json({ message: 'Delivery session not found or already declined/accepted' });
     }
-  };
+
+    // Update the session status to 'Cancelled' and riderAccepted to 'Rejected'
+    session.status = 'Cancelled';
+    session.riderAccepted = 'Rejected';
+
+    // Update the orders to set assignedAlready to false (unassigning the orders)
+    await Order.updateMany(
+      { _id: { $in: session.orders } },
+      { $set: { assignedAlready: false } }
+    );
+
+    await session.save();
+
+    res.status(200).json({ message: 'Delivery session declined', session });
+  } catch (error) {
+    res.status(500).json({ message: 'Error declining delivery session', error: error.message });
+  }
+};
   
 exports.deleteDeliverySession = async (req, res) => {
     try {

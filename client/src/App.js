@@ -98,7 +98,7 @@ function App() {
           {/* Admin */}
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          <Route path="/admin/forecast" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} />
+          {/* <Route path="/admin/forecast" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} /> */}
           {/* Rider */}
           <Route path="/admin/rider/list" element={<ProtectedRoute><RiderList /></ProtectedRoute>} />
           <Route path="/admin/rider/new" element={<ProtectedRoute><NewRider /></ProtectedRoute>} />
