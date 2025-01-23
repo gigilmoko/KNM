@@ -54,7 +54,7 @@ import TruckOrder from './Admin/Truck/TruckOrder';
 import DeliveryList from './Admin/Delivery/DeliveryList';
 import NewDelivery from './Admin/Delivery/NewDelivery';
 import UpdateDelivery from './Admin/Delivery/UpdateDelivery';
-import Reports from './Admin/Report/Reports';
+// import Reports from './Admin/Report/Reports';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
