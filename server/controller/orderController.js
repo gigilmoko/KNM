@@ -113,6 +113,7 @@ exports.createOrder = async (req, res, next) => {
       itemsPrice,
       shippingCharges,
       totalPrice,
+      address: user.address,  
       createdAt: Date.now(),
     });
 
