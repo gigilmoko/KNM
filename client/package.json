@@ -12,7 +12,7 @@
     "@testing-library/user-event": "^13.5.0",
     "ajv": "^8.17.1",
     "aos": "^2.3.4",
-    "axios": "^1.7.7",
+    "axios": "^1.7.9",
     "capitalize-the-first-letter": "^1.0.8",
     "chart.js": "^4.4.7",
     "cloudinary": "^2.5.0",
@@ -23,6 +23,7 @@
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
     "ldrs": "^1.0.2",
+    "papaparse": "^5.5.1",
     "photo-sphere-viewer": "^4.8.1",
     "react": "^17.0.2",
     "react-big-calendar": "^1.13.4",
@@ -69,6 +70,7 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "autoprefixer": "^10.4.20",
     "daisyui": "^4.12.10",
     "postcss": "^8.4.44",

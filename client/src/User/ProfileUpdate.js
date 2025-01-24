@@ -6,7 +6,7 @@ import { showNotification } from '../Layout/common/headerSlice';
 import TitleCard from "../Layout/components/Cards/TitleCard"; 
 import Subtitle from '../Layout/components/Typography/Subtitle';
 import { useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from "react-toastify"; // Import toast from react-toastify
+import { toast, ToastContainer } from "react-toastify"; 
 
 function ProfileUpdate() {
     const dispatch = useDispatch();
@@ -64,11 +64,11 @@ function ProfileUpdate() {
         if (file) {
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
+            formData.append('upload_preset', 'ml_default'); 
     
             try {
                 const response = await axios.post(
-                    'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+                    'https://api.cloudinary.com/v1_1/dglawxazg/image/upload',
                     formData,
                     {
                         headers: {
@@ -77,11 +77,11 @@ function ProfileUpdate() {
                     }
                 );
                 const imageUrl = response.data.secure_url;
-                setUser((prevUser) => ({ ...prevUser, avatar: imageUrl })); // Update avatar image preview
-                toast.success("Avatar uploaded successfully!"); // Success notification
+                setUser((prevUser) => ({ ...prevUser, avatar: imageUrl })); 
+                toast.success("Avatar uploaded successfully!"); 
             } catch (error) {
                 console.error('Failed to upload avatar', error);
-                toast.error('Failed to upload avatar. Please try again.'); // Error notification
+                toast.error('Failed to upload avatar. Please try again.'); 
             }
         }
     };
@@ -89,37 +89,32 @@ function ProfileUpdate() {
     const validateForm = () => {
         const errors = {};
     
-        // Validate first name
         if (!user.fname.trim()) {
-            errors.fname = "First name is required."; // Check if empty
+            errors.fname = "First name is required.";
         } else if (!nameRegex.test(user.fname)) {
             errors.fname = "First name must contain only letters and spaces.";
         }
     
-        // Validate last name
         if (!user.lname.trim()) {
-            errors.lname = "Last name is required."; // Check if empty
+            errors.lname = "Last name is required."; 
         } else if (!nameRegex.test(user.lname)) {
             errors.lname = "Last name must contain only letters and spaces.";
         }
     
-        // Validate middle initial (if provided)
         if (user.middlei && !user.middlei.trim()) {
-            errors.middlei = "Middle initial is required."; // Check if empty
+            errors.middlei = "Middle initial is required."; 
         } else if (user.middlei && !middleInitialRegex.test(user.middlei)) {
             errors.middlei = "Middle initial must be a single uppercase letter.";
         }
     
-        // Validate email
         if (!user.email.trim()) {
-            errors.email = "Email is required."; // Check if empty
+            errors.email = "Email is required."; 
         } else if (!emailRegex.test(user.email)) {
             errors.email = "Please enter a valid email address.";
         }
-    
-        // Validate phone number
+
         if (!user.phone.trim()) {
-            errors.phone = "Phone number is required."; // Check if empty
+            errors.phone = "Phone number is required.";
         } else if (!phoneRegex.test(user.phone)) {
             errors.phone = "Phone number must be an 11-digit number.";
         }
@@ -135,11 +130,10 @@ function ProfileUpdate() {
         if (Object.keys(errors).length > 0) {
             setValidationErrors(errors);
             
-            // Display toast for each validation error
             Object.values(errors).forEach((error) => {
-                toast.error(error); // Show toast for each error
+                toast.error(error); 
             });
-            return; // Stop execution if there are validation errors
+            return; 
         }
     
         const profileData = { 
@@ -154,18 +148,17 @@ function ProfileUpdate() {
         };
     
         try {
-            // Make API request to update profile
             await axios.put(`${process.env.REACT_APP_API}/api/me/update`, profileData, {
                 headers: {
                     'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                 }
             });
-            toast.success("Profile updated successfully!"); // Toast for successful update
-            dispatch(showNotification({ message: "Profile Updated", status: 1 })); // Optional: show notification in your app
-            navigate('/profile'); // Navigate to profile page
+            toast.success("Profile updated successfully!"); 
+            dispatch(showNotification({ message: "Profile Updated", status: 1 })); 
+            navigate('/profile'); 
         } catch (error) {
             console.error('Error updating profile:', error);
-            toast.error("An error occurred while updating the profile."); // Toast for error
+            toast.error("An error occurred while updating the profile.");
         }
     };
     
