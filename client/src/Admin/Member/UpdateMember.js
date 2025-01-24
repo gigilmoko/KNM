@@ -28,9 +28,6 @@ function UpdateMember() {
         lname: '',
         memberId: ''
     });
-    const [user, setUser] = useState(null); // Define user state
-    const [loading, setLoading] = useState(true); // Define loading state
-    const [error, setError] = useState(null); // Define error state
 
     useEffect(() => {
         getProfile();
@@ -53,11 +50,9 @@ function UpdateMember() {
         };
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user);
-            setLoading(false);
+            console.log('Profile loaded:', data.user);
         } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
+            console.error('Failed to load profile.');
         }
     };
 
