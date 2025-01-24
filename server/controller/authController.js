@@ -938,6 +938,7 @@ exports.updateAddressAndDetails = async (req, res, next) => {
     console.log('Request Body:', req.body);  // Log the incoming request body
 
     const { userId, deliveryAddress } = req.body;  // Accept userId from the request body
+
     if (!userId) {
       return res.status(400).json({
         success: false,
@@ -945,23 +946,28 @@ exports.updateAddressAndDetails = async (req, res, next) => {
       });
     }
 
-    // Validate if deliveryAddress is provided
-    if (!deliveryAddress) {
-      console.log('No delivery address provided');
+    // Validate if deliveryAddress is provided and is an array
+    if (!deliveryAddress || !Array.isArray(deliveryAddress) || deliveryAddress.length === 0) {
+      console.log('No valid delivery address provided');
       return res.status(400).json({
         success: false,
-        message: 'Delivery address is required',
+        message: 'Delivery address is required and must be an array',
+      });
+    }
+
+    // Extract the first address from the array
+    const newAddress = deliveryAddress[0];
+
+    if (!newAddress.houseNo || !newAddress.streetName || !newAddress.barangay || !newAddress.city) {
+      return res.status(400).json({
+        success: false,
+        message: 'All address fields are required',
       });
     }
 
     const updateData = {
-      deliveryAddress: {
-        houseNo: deliveryAddress.houseNo,
-        streetName: deliveryAddress.streetName,
-        barangay: deliveryAddress.barangay,
-        city: deliveryAddress.city,
-        latitude: deliveryAddress.latitude,
-        longitude: deliveryAddress.longitude,
+      $set: {
+        deliveryAddress: [newAddress],  // Replace the whole array with the new address
       },
     };
 
@@ -969,11 +975,24 @@ exports.updateAddressAndDetails = async (req, res, next) => {
 
     // Fetch the current user data before updating
     const originalUser = await User.findById(userId);
-    console.log('Original Address:', originalUser.deliveryAddress);
+    
+    // Ensure `address` field exists, defaulting to an empty array if undefined
+    const existingAddresses = originalUser.address || [];
 
-    const isAddressChanged = JSON.stringify(originalUser.deliveryAddress) !== JSON.stringify(updateData.deliveryAddress);
+    console.log('Original Address:', existingAddresses);
 
-    if (!isAddressChanged) {
+    // Check if the address already exists to avoid duplicates
+    const isAddressDuplicate = existingAddresses.some(
+      (addr) =>
+        addr.houseNo === newAddress.houseNo &&
+        addr.streetName === newAddress.streetName &&
+        addr.barangay === newAddress.barangay &&
+        addr.city === newAddress.city &&
+        addr.latitude === newAddress.latitude &&
+        addr.longitude === newAddress.longitude
+    );
+
+    if (isAddressDuplicate) {
       console.log('No actual change in address data, skipping update.');
       return res.status(200).json({
         success: true,
@@ -981,7 +1000,7 @@ exports.updateAddressAndDetails = async (req, res, next) => {
       });
     }
 
-    // Perform the update
+    // Perform the update (push the new address to the array)
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
       runValidators: true,
@@ -1005,6 +1024,9 @@ exports.updateAddressAndDetails = async (req, res, next) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+
+
 
 
 

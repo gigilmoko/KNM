@@ -62,37 +62,53 @@ const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink)
 };
 
 exports.createOrder = async (req, res, next) => {
-  const {
-    orderProducts,
-    paymentInfo,
-    itemsPrice,
-    shippingCharges,
-    totalPrice,
-  } = req.body;
+  console.log("createOrder touched");
+  console.log("Request Body:", JSON.stringify(req.body, null, 2));
+
+  const { orderProducts, paymentInfo, itemsPrice, shippingCharges, totalPrice } = req.body;
 
   try {
-    // Ensure user information is available
     if (!req.user || !req.user._id) {
+      console.error("Error: User information is missing");
       return res.status(400).json({
         success: false,
         message: "User information is missing",
       });
     }
 
-    // Fetch the user's address
+    console.log("User ID:", req.user._id);
+
     const user = await User.findById(req.user._id);
-    if (!user || !user.address || user.address.length === 0) {
+    if (!user || !user.deliveryAddress || user.deliveryAddress.length === 0) {
+      console.error("Error: User address is missing");
       return res.status(400).json({
         success: false,
         message: "User address is missing",
       });
     }
 
-    // Check stock for each item
+    console.log("User address found:", user.deliveryAddress[0]);
+
+    if (typeof paymentInfo !== "string") {
+      console.error("Error: Invalid paymentInfo format, received:", typeof paymentInfo);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid paymentInfo format. Expected a string.",
+      });
+    }
+
     for (const item of orderProducts) {
+      console.log(`Checking stock for product ID: ${item.product}`);
       const product = await Product.findById(item.product);
-      if (!product || product.stock < item.quantity) {
-        console.log(`Insufficient stock for product ID: ${item.product}`);
+      if (!product) {
+        console.error(`Error: Product not found with ID: ${item.product}`);
+        return res.status(400).json({
+          success: false,
+          message: `Product with ID ${item.product} not found`,
+        });
+      }
+      if (product.stock < item.quantity) {
+        console.error(`Error: Insufficient stock for product ID: ${item.product}`);
         return res.status(400).json({
           success: false,
           message: "Insufficient stock for one or more items",
@@ -100,12 +116,10 @@ exports.createOrder = async (req, res, next) => {
       }
     }
 
-    // Log the amounts being saved
     console.log("Items Price:", itemsPrice);
     console.log("Shipping Charges:", shippingCharges);
     console.log("Total Amount:", totalPrice);
 
-    // Create order in the database
     const order = await Order.create({
       user: req.user._id,
       orderProducts,
@@ -113,13 +127,12 @@ exports.createOrder = async (req, res, next) => {
       itemsPrice,
       shippingCharges,
       totalPrice,
-      address: user.address,  
+      address: user.deliveryAddress[0],
       createdAt: Date.now(),
     });
 
     console.log("Created Order:", order);
 
-    // Update stock for each item
     for (const item of orderProducts) {
       const product = await Product.findById(item.product);
       product.stock -= item.quantity;
@@ -134,29 +147,30 @@ exports.createOrder = async (req, res, next) => {
 
     if (paymentInfo === "GCash") {
       if (!process.env.BASE_URL) {
+        console.error("Error: BASE_URL environment variable is missing");
         return res.status(500).json({
           success: false,
           message: "BASE_URL environment variable is not set",
         });
       }
+
       const temporaryLink = `${process.env.BASE_URL}/paymongo-gcash/${paymongoToken.token}/${order._id}`;
-      console.log(temporaryLink, "temporaryLink");
+      console.log("Temporary Payment Link:", temporaryLink);
 
       try {
         const checkoutUrl = await handlePayMongo(order.orderProducts, shippingCharges, temporaryLink);
-        console.log(checkoutUrl, "checkout");
+        console.log("Generated Checkout URL:", checkoutUrl);
         return res.json({ checkoutUrl });
       } catch (error) {
         console.error("Error generating checkout URL:", error);
-        return res.status(500).json({ message: "Internal Server Error", error: error });
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
       }
     }
 
-    console.log(order);
-    console.log(paymongoToken);
+    console.log("Final Order:", order);
+    console.log("Generated Token:", paymongoToken);
 
-    // Send order confirmation email
-    await sendOrderConfirmationEmail(order);
+    // await sendOrderConfirmationEmail(order);
 
     res.status(200).json({
       success: true,
@@ -171,6 +185,8 @@ exports.createOrder = async (req, res, next) => {
     });
   }
 };
+
+
 
 exports.gcashPayment = async (req, res, next) => {
   try {
@@ -222,14 +238,21 @@ exports.getAdminOrders = async (req, res, next) => {
 };
 
 exports.getMyOrders = async (req, res, next) => {
+  try {
+      // Fetch orders for the user and populate the user details, including the delivery address
+      const orders = await Order.find({ user: req.user._id })
+          .populate('user', 'fname lname middlei email phone deliveryAddress'); // Populate the necessary user fields
 
-    
-    const orders = await Order.find({ user: req.user._id });
-    
-    res.status(200).json({
-        success: true,
-        orders,
-    });
+      res.status(200).json({
+          success: true,
+          orders,
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: error.message,
+      });
+  }
 };
 
 exports.getOrderDetails = async (req, res, next) => {
