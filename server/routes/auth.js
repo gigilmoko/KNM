@@ -22,7 +22,7 @@ router.post('/password/forgot', forgotPassword);
 router.put('/password/reset/:token', resetPassword);
 router.get('/me', isAuthenticatedUser, getUserProfile);
 router.get('/get-user/:id', isAuthenticatedUser, getUserProfileById);
-router.get('/all-users', isAuthenticatedUser, isAdmin, allUsers);
+router.get('/all-users', allUsers);
 router.put('/password/update', isAuthenticatedUser, updatePassword)
 router.put('/password/update/mobile', updatePasswordMobile);
 router.put('/me/update', isAuthenticatedUser, upload.single("avatar"), updateProfile);

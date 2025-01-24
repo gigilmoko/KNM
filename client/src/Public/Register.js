@@ -6,6 +6,7 @@ import ErrorText from '../Layout/components/Typography/ErrorText';
 import googlelogo from '../assets/img/googlelogo.png';
 import axios from 'axios';
 import { toast, ToastContainer } from "react-toastify";
+
 import "react-toastify/dist/ReactToastify.css";
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
@@ -19,7 +20,7 @@ function Register() {
     password: '',
     dateOfBirth: '',
     phone: '',
-    address: '',
+   
     googleLogin: false,
     avatar: '',
   };
@@ -28,6 +29,9 @@ function Register() {
   const [errorMessage, setErrorMessage] = useState('');
   const [registerObj, setRegisterObj] = useState(INITIAL_REGISTER_OBJ);
   const [avatarImage, setAvatarImage] = useState('');
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [isMember, setIsMember] = useState(null);
+  const [memberId, setMemberId] = useState('');
   const navigate = useNavigate(); // useNavigate hook for navigation
 
   const submitForm = async (e) => {
@@ -67,24 +71,47 @@ function Register() {
     if (registerObj.phone.trim() === '') return toast.error('Phone number is required!');
     if (!phoneRegex.test(registerObj.phone.trim())) return toast.error('Phone number must be exactly 11 digits!');
     
-    if (registerObj.address.trim() === '') return toast.error('Address is required!');
-    registerObj.address = capitalizeFirstLetter(registerObj.address.trim());
 
-  
+    // Open the member modal
+    setIsMemberModalOpen(true);
+  };
+
+  const handleMemberChoice = async (choice) => {
+    setIsMember(choice);
+    setIsMemberModalOpen(false);
+
+    if (choice) {
+      // Open the member ID modal
+      setIsMemberModalOpen(true);
+    } else {
+      // Proceed with normal registration
+      await registerUser();
+    }
+  };
+
+  const handleMemberIdSubmit = async () => {
+    if (memberId.trim() === '') {
+      return toast.error('Member ID is required!');
+    }
+
+    // Proceed with member registration
+    await registerUserMember();
+  };
+
+  const registerUser = async () => {
     setLoading(true);
   
     try {
-      // Remove the role logic since memberId is no longer part of the form
       const updatedRegisterObj = {
         ...registerObj,
-        role: 'user', // Default role is 'user' if no specific role logic is applied
+        role: 'user', // Default role is 'user'
       };
     
       console.log("Form values:", updatedRegisterObj);
     
       // Send form data to server
       const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/register`,
+        `${process.env.REACT_APP_API}api/register`,
         updatedRegisterObj,
         {
           headers: {
@@ -118,8 +145,54 @@ function Register() {
       setLoading(false);
     }
   };
+
+  const registerUserMember = async () => {
+    setLoading(true);
   
+    try {
+      const updatedRegisterObj = {
+        ...registerObj,
+        memberId, // Include memberId for member registration
+      };
+    
+      console.log("Form values:", updatedRegisterObj);
+    
+      // Send form data to server
+      const response = await axios.post(
+        `${process.env.REACT_APP_API}api/register-member`,
+        updatedRegisterObj,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    
+      console.log("User registered successfully", response.data);
+      
+      // Display success toast notification
+      toast.success("User registered successfully!");
   
+      // Add a delay before navigating to the login page
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000); // 3 seconds delay
+    } catch (error) {
+      console.error("Registration failed", error);
+    
+      // Handle different error types
+      if (error.response) {
+        const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
+        toast.error(errorMsg); // Display error toast notification
+      } else if (error.request) {
+        toast.error('Network error. Please try again later.');
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updateFormValue = (e) => {
     const { name, value } = e.target;
@@ -278,18 +351,6 @@ function Register() {
                   />
                 </div>
 
-                {/* Address */}
-                <div className="grid grid-cols-1 mt-4">
-                  <input
-                    type="text"
-                    name="address"
-                    value={registerObj.address}
-                    onChange={updateFormValue}
-                    placeholder="Address"
-                    className="input input-bordered w-full"
-                  />
-                </div>
-
                 <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
 
                 <button type="submit" className="btn mt-2 w-full btn-primary">
@@ -333,6 +394,39 @@ function Register() {
           </div>
         </div>
       </div>
+
+      {/* Member Modal */}
+      {isMemberModalOpen && (
+        <div className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="text-lg font-semibold">Are you a member of KNM?</h3>
+            <div className="modal-action">
+              <button className="btn btn-primary" onClick={() => handleMemberChoice(true)}>Yes</button>
+              <button className="btn" onClick={() => handleMemberChoice(false)}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Member ID Modal */}
+      {isMember && (
+        <div className="modal modal-open">
+          <div className="modal-box">
+            <h3 className="text-lg font-semibold">Enter your Member ID</h3>
+            <input
+              type="text"
+              value={memberId}
+              onChange={(e) => setMemberId(e.target.value)}
+              className="input input-bordered w-full mt-4"
+              placeholder="Member ID"
+            />
+            <div className="modal-action">
+              <button className="btn btn-primary" onClick={handleMemberIdSubmit}>Submit</button>
+              <button className="btn" onClick={() => setIsMember(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

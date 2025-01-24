@@ -240,11 +240,9 @@ exports.registerUserMember = async (req, res, next) => {
       avatar: avatarUrl,
       dateOfBirth,
       phone,
-      address,
       memberId: memberId || null, // If memberId is not provided, set it to null
       googleLogin: googleLogin || false, // Default to false if not provided
       role, // Assign the role as 'user'
-      imageMember: imageMemberUrl,
       applyMember // Set applyMember to true
     });
 
