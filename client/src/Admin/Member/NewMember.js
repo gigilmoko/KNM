@@ -1,29 +1,22 @@
-import { useState, useEffect, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
-import { removeNotificationMessage } from '../../Layout/common/headerSlice';
-import { NotificationContainer, NotificationManager } from 'react-notifications';
+import { NotificationContainer } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
-import { toast, ToastContainer } from 'react-toastify'
+import { toast, ToastContainer } from 'react-toastify';
 
 // Regular expressions for validation
 const nameRegex = /^[A-Za-z\s]{2,50}$/;  // Letters and spaces, 2-50 characters
 const memberIdRegex = /^[A-Za-z0-9]{1,20}$/; // Letters and numbers, 5-20 characters
 
 function NewMember() {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { newNotificationMessage, newNotificationStatus } = useSelector(state => state.header);
     const mainContentRef = useRef(null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     const [memberData, setMemberData] = useState({
         fname: '',
@@ -31,31 +24,11 @@ function NewMember() {
         memberId: ''
     });
 
- useEffect(() => {
-        getProfile();
-    }, []);
-
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setMemberData({ ...memberData, [name]: value });
     };
 
-    const getProfile = async () => {
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user);
-            setLoading(false);
-        } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
-        }
-    };
-    
     const validateForm = () => {
         // Validate first name
         if (!nameRegex.test(memberData.fname.trim())) {
@@ -102,7 +75,6 @@ function NewMember() {
             toast.error('Failed to create member');
         }
     };
-    
 
     return (
         <>

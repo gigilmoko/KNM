@@ -22,8 +22,6 @@ function TruckList() {
     const [filteredTrucks, setFilteredTrucks] = useState([]);
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -104,44 +102,44 @@ function TruckList() {
                         >
                             <div className="overflow-x-auto w-full">
                                 <table className="table w-full">
-                                <thead>
-                                    <tr>
-                                        <th>Model</th>
-                                        <th>Plate Number</th>
-                                        <th>Edit</th>
-                                        <th>Delete</th>
-                                    </tr>
-                                </thead>
-<tbody>
-    {filteredTrucks.length > 0 ? (
-        filteredTrucks.map((truck) => (
-            <tr key={truck._id}>
-                <td>{truck.model}</td>
-                <td>{truck.plateNo}</td>
-                <td>
-                    <button
-                        className="btn btn-xs btn-primary"
-                        onClick={() => navigate(`/admin/truck/edit/${truck._id}`)}
-                    >
-                        Edit
-                    </button>
-                </td>
-                <td>
-                    <button
-                        className="btn btn-square btn-ghost"
-                        onClick={() => deleteCurrentTruck(truck._id)}
-                    >
-                        <TrashIcon className="w-5" />
-                    </button>
-                </td>
-            </tr>
-        ))
-    ) : (
-        <tr>
-            <td colSpan="4" className="text-center">No trucks found</td>
-        </tr>
-    )}
-</tbody>
+                                    <thead>
+                                        <tr>
+                                            <th>Model</th>
+                                            <th>Plate Number</th>
+                                            <th>Edit</th>
+                                            <th>Delete</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredTrucks.length > 0 ? (
+                                            filteredTrucks.map((truck) => (
+                                                <tr key={truck._id}>
+                                                    <td>{truck.model}</td>
+                                                    <td>{truck.plateNo}</td>
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-xs btn-primary"
+                                                            onClick={() => navigate(`/admin/truck/edit/${truck._id}`)}
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-square btn-ghost"
+                                                            onClick={() => deleteCurrentTruck(truck._id)}
+                                                        >
+                                                            <TrashIcon className="w-5" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="4" className="text-center">No trucks found</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
                                 </table>
                             </div>
                         </TitleCard>

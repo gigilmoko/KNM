@@ -23,22 +23,20 @@ function CategoryList() {
     const [filteredCategories, setFilteredCategories] = useState([]);
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     const [sortOrder, setSortOrder] = useState("asc");
 
-const toggleSortOrder = () => {
-    const sortedCategories = [...filteredCategories].sort((a, b) => {
-        return sortOrder === "asc" 
-            ? a.name.localeCompare(b.name)
-            : b.name.localeCompare(a.name);
-    });
+    const toggleSortOrder = () => {
+        const sortedCategories = [...filteredCategories].sort((a, b) => {
+            return sortOrder === "asc" 
+                ? a.name.localeCompare(b.name)
+                : b.name.localeCompare(a.name);
+        });
 
-    setFilteredCategories(sortedCategories);
-    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-};
+        setFilteredCategories(sortedCategories);
+        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    };
+
     useEffect(() => {
         mainContentRef.current.scroll({
             top: 0,
@@ -48,7 +46,6 @@ const toggleSortOrder = () => {
     }, []);
 
     useEffect(() => {
-        getProfile();
         applySearch(searchText);
     }, [searchText, categories]);
 
@@ -59,22 +56,6 @@ const toggleSortOrder = () => {
             dispatch(removeNotificationMessage());
         }
     }, [newNotificationMessage]);
-
-    const getProfile = async () => {
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user);
-            setLoading(false);
-        } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
-        }
-    };
 
     const fetchCategories = async () => {
         try {
@@ -96,9 +77,8 @@ const toggleSortOrder = () => {
 
     const deleteCurrentCategory = async (id, index) => {
         try {
-
             const token = sessionStorage.getItem("token");
-            await axios.delete(`${process.env.REACT_APP_API}/api/category/delete/${id}`,{
+            await axios.delete(`${process.env.REACT_APP_API}/api/category/delete/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -116,7 +96,6 @@ const toggleSortOrder = () => {
             toast.error('Failed to delete category');
         }
     };
-    
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();

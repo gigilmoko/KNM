@@ -38,9 +38,6 @@ function LineChart() {
     }],
   });
   const [activeTab, setActiveTab] = useState('monthly');
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   const options = {
     responsive: true,
@@ -59,11 +56,9 @@ function LineChart() {
     };
     try {
         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-        setUser(data.user);
-        setLoading(false);
+        console.log(data.user); // Log user data if needed
     } catch (error) {
-        setError('Failed to load profile.');
-        setLoading(false);
+        console.error('Failed to load profile.');
     }
 };
 

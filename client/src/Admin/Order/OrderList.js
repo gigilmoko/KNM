@@ -13,9 +13,6 @@ function OrdersList() {
   const [searchText, setSearchText] = useState("");
   const [users, setUsers] = useState([]);
   const mainContentRef = useRef(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('Preparing'); // State to manage active tab
 
   useEffect(() => {
@@ -66,7 +63,6 @@ function OrdersList() {
       if (response.data && Array.isArray(response.data.users)) {
         setUsers(response.data.users);
       } else {
-        console.error("Data fetched is not an array:", response.data);
         setUsers([]);
       }
     } catch (error) {
@@ -93,7 +89,6 @@ function OrdersList() {
       updatedOrders[index].status = newStatus;
       setOrders(updatedOrders);
       setFilteredOrders(updatedOrders);
-
       toast.success("Order status updated successfully!");
     } catch (error) {
       console.error("Failed to update order status", error);

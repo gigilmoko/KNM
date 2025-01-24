@@ -3,7 +3,6 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import moment from "moment";
 import { showNotification } from '../Layout/common/headerSlice';
-import TitleCard from "../Layout/components/Cards/TitleCard"; 
 import Subtitle from '../Layout/components/Typography/Subtitle';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from "react-toastify"; 
@@ -22,9 +21,6 @@ function ProfileUpdate() {
         avatar: '',
         googleLogin: false,
     });
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [validationErrors, setValidationErrors] = useState({});
 
     const nameRegex = /^[A-Za-z\s]+$/;
     const middleInitialRegex = /^[A-Z]$/;
@@ -43,11 +39,9 @@ function ProfileUpdate() {
         };
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user || {});
-            setLoading(false);
+            setUser(data.user || {}); // Ensure user state is updated
         } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
+            console.log(error);
         }
     };
 
@@ -128,8 +122,6 @@ function ProfileUpdate() {
     
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
-            setValidationErrors(errors);
-            
             Object.values(errors).forEach((error) => {
                 toast.error(error); 
             });
@@ -161,10 +153,6 @@ function ProfileUpdate() {
             toast.error("An error occurred while updating the profile.");
         }
     };
-    
-
-   
-    
 
     return (
         <div className="flex items-center justify-center h-screen">
@@ -211,7 +199,6 @@ function ProfileUpdate() {
                                     onChange={updateFormValue}
                                     className="input input-bordered w-full"
                                 />
-                               
                             </div>
 
                             <div>
@@ -223,7 +210,6 @@ function ProfileUpdate() {
                                     onChange={updateFormValue}
                                     className="input input-bordered w-full"
                                 />
-                               
                             </div>
 
                             <div>
@@ -235,7 +221,6 @@ function ProfileUpdate() {
                                     onChange={updateFormValue}
                                     className="input input-bordered w-full"
                                 />
-                              
                             </div>
 
                             <div>
@@ -248,7 +233,6 @@ function ProfileUpdate() {
                                     className="input input-bordered w-full"
                                     readOnly={user.googleLogin}
                                 />
-                               
                             </div>
 
                             <div>
@@ -260,7 +244,6 @@ function ProfileUpdate() {
                                     onChange={updateFormValue}
                                     className="input input-bordered w-full"
                                 />
-                                
                             </div>
 
                             <div>
@@ -286,10 +269,6 @@ function ProfileUpdate() {
                         </div>
 
                         <div className="divider mt-4"></div>
-
-                       
-                           
-
 
                         <div className="flex justify-end gap-4">
                             <button type="submit" className="btn btn-primary">

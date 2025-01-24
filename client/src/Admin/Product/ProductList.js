@@ -26,11 +26,9 @@ function ProductsList() {
     const [categories, setCategories] = useState({});
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [lowStockProducts, setLowStockProducts] = useState([]); // State to manage low stock products
     const [showLowStockWarning, setShowLowStockWarning] = useState(true); // State to manage visibility of low stock warning
+    const [user, setUser] = useState(null); // Define user state
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -82,10 +80,8 @@ function ProductsList() {
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
             setUser(data.user);
-            setLoading(false);
         } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
+            console.error('Failed to load profile.');
         }
     };
 

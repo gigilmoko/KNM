@@ -6,7 +6,7 @@ import MoonIcon from '@heroicons/react/24/outline/MoonIcon';
 import SunIcon from '@heroicons/react/24/outline/SunIcon';
 import { openRightDrawer } from './common/rightDrawerSlice';
 import { RIGHT_DRAWER_TYPES } from '../utils/globalConstantUtil';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { themeChange } from 'theme-change';
 
@@ -16,8 +16,6 @@ function Header() {
     const { pageTitle } = useSelector(state => state.header);
     const [currentTheme, setCurrentTheme] = useState(localStorage.getItem("theme"));
     const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
     const [unreadNotifications, setUnreadNotifications] = useState(0); // Unread notifications state
 
     useEffect(() => {
@@ -36,25 +34,22 @@ function Header() {
     const getProfile = async () => {
         const config = {
             headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-            }
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
         };
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
             setUser(data.user);
-            setLoading(false);
         } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
+            console.error('Failed to load profile.');
         }
     };
 
-    // Fetch unread notifications count
     const getUnreadNotifications = async () => {
         const config = {
             headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-            }
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
         };
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications/unread-count`, config);
@@ -94,21 +89,18 @@ function Header() {
                 </label>
                 <h1 className="text-2xl font-semibold ml-2">{pageTitle}</h1>
             </div>
-
             <div className="flex-none flex items-center space-x-4 ml-auto">
                 <label className="swap">
                     <input type="checkbox" onClick={handleThemeToggle} />
                     <SunIcon data-set-theme="light" className={"fill-current w-6 h-6 " + (currentTheme === "dark" ? "swap-on" : "swap-off")} />
                     <MoonIcon data-set-theme="dark" className={"fill-current w-6 h-6 " + (currentTheme === "light" ? "swap-on" : "swap-off")} />
                 </label>
-
                 <button className="btn btn-ghost btn-circle" onClick={() => openNotification()}>
                     <div className="indicator">
                         <BellIcon className="h-6 w-6" />
                         {unreadNotifications > 0 ? <span className="indicator-item badge badge-secondary badge-sm">{unreadNotifications}</span> : null}
                     </div>
                 </button>
-
                 <div>
                     <div className="dropdown dropdown-end">
                         <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">

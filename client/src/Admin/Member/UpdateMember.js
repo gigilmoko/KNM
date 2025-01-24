@@ -22,9 +22,29 @@ function UpdateMember() {
     const { memberId } = useParams();  // Get the member ID from the URL
     const { newNotificationMessage, newNotificationStatus } = useSelector(state => state.header);
     const mainContentRef = useRef(null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+
+    const [memberData, setMemberData] = useState({
+        fname: '',
+        lname: '',
+        memberId: ''
+    });
+    const [user, setUser] = useState(null); // Define user state
+    const [loading, setLoading] = useState(true); // Define loading state
+    const [error, setError] = useState(null); // Define error state
+
+    useEffect(() => {
+        getProfile();
+        fetchMemberData();
+    }, []);
+
+    useEffect(() => {
+        if (newNotificationMessage !== "") {
+            if (newNotificationStatus === 1) NotificationManager.success(newNotificationMessage, 'Success');
+            if (newNotificationStatus === 0) NotificationManager.error(newNotificationMessage, 'Error');
+            dispatch(removeNotificationMessage());
+        }
+    }, [newNotificationMessage]);
+
     const getProfile = async () => {
         const config = {
             headers: {
@@ -40,24 +60,6 @@ function UpdateMember() {
             setLoading(false);
         }
     };
-    const [memberData, setMemberData] = useState({
-        fname: '',
-        lname: '',
-        memberId: ''
-    });
-
-    useEffect(() => {
-        getProfile();
-        fetchMemberData();
-    }, []);
-
-    useEffect(() => {
-        if (newNotificationMessage !== "") {
-            if (newNotificationStatus === 1) NotificationManager.success(newNotificationMessage, 'Success');
-            if (newNotificationStatus === 0) NotificationManager.error(newNotificationMessage, 'Error');
-            dispatch(removeNotificationMessage());
-        }
-    }, [newNotificationMessage]);
 
     const fetchMemberData = async () => {
         try {
@@ -131,12 +133,11 @@ function UpdateMember() {
             toast.success('Member updated successfully');
             setTimeout(() => {
                 navigate('/admin/members/list');
-              }, 3000); 
+            }, 3000); 
         } catch (error) {
             toast.error('Failed to update member');
         }
     };
-    
 
     return (
         <>

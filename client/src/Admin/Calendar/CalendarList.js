@@ -17,9 +17,6 @@ function CalendarList() {
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [searchText, setSearchText] = useState("");
     const navigate = useNavigate(); // Initialize useNavigate
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [sortOrder, setSortOrder] = useState("asc");
 
     const toggleSortOrder = () => {
@@ -55,24 +52,7 @@ function CalendarList() {
         fetchEvents();
     }, []);
 
-    const getProfile = async () => {
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user);
-            setLoading(false);
-        } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        getProfile();
         applySearch(searchText);
     }, [searchText, events]);
 
@@ -148,50 +128,49 @@ function CalendarList() {
                                         </tr>
                                     </thead>
                                     <tbody>
-    {filteredEvents.length > 0 ? (
-        filteredEvents.map((event) => (
-            <tr key={event._id}>
-                <td>
-                    <img
-                        src={event.image || placeholderImage}
-                        alt={event.title || "Event Image"}
-                        className="w-12 h-12 object-cover"
-                        onError={(e) => {
-                            e.target.onerror = null; // Prevent infinite loop if the placeholder image fails
-                            e.target.src = placeholderImage;
-                        }}
-                    />
-                </td>
-                <td>
-                    <button 
-                        className="text-blue-500 hover:underline" 
-                        onClick={() => navigate(`/admin/calendar/info/${event._id}`)}
-                    >
-                        {event.title}
-                    </button>
-                </td>
-                <td>{event.description}</td>
-                <td>{moment(event.startDate).format("DD MMM YY HH:mm")}</td>
-                <td>{moment(event.endDate).format("DD MMM YY HH:mm")}</td>
-                <td>
-                    <button className="btn btn-square btn-ghost" onClick={() => handleEdit(event._id)}>
-                        <EditIcon className="w-5" />
-                    </button>
-                </td>
-                <td>
-                    <button className="btn btn-square btn-ghost" onClick={() => handleDelete(event._id)}>
-                        <TrashIcon className="w-5" />
-                    </button>
-                </td>
-            </tr>
-        ))
-    ) : (
-        <tr>
-            <td colSpan="7" className="text-center">No events found</td>
-        </tr>
-    )}
-</tbody>
-
+                                        {filteredEvents.length > 0 ? (
+                                            filteredEvents.map((event) => (
+                                                <tr key={event._id}>
+                                                    <td>
+                                                        <img
+                                                            src={event.image || placeholderImage}
+                                                            alt={event.title || "Event Image"}
+                                                            className="w-12 h-12 object-cover"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null; // Prevent infinite loop if the placeholder image fails
+                                                                e.target.src = placeholderImage;
+                                                            }}
+                                                        />
+                                                    </td>
+                                                    <td>
+                                                        <button 
+                                                            className="text-blue-500 hover:underline" 
+                                                            onClick={() => navigate(`/admin/calendar/info/${event._id}`)}
+                                                        >
+                                                            {event.title}
+                                                        </button>
+                                                    </td>
+                                                    <td>{event.description}</td>
+                                                    <td>{moment(event.startDate).format("DD MMM YY HH:mm")}</td>
+                                                    <td>{moment(event.endDate).format("DD MMM YY HH:mm")}</td>
+                                                    <td>
+                                                        <button className="btn btn-square btn-ghost" onClick={() => handleEdit(event._id)}>
+                                                            <EditIcon className="w-5" />
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button className="btn btn-square btn-ghost" onClick={() => handleDelete(event._id)}>
+                                                            <TrashIcon className="w-5" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="7" className="text-center">No events found</td>
+                                            </tr>
+                                        )}
+                                    </tbody>
                                 </table>
                             </div>
                         </TitleCard>

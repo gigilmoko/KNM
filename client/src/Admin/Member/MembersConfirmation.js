@@ -12,35 +12,15 @@ import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import { toast, ToastContainer } from 'react-toastify'; // Importing toast
 
-
 function MembersConfirmation() {
     const dispatch = useDispatch();
     const { newNotificationMessage, newNotificationStatus, pageTitle } = useSelector(state => state.header);
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchText, setSearchText] = useState("");
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [user, setUser] = useState(null); // Define user state
 
     const mainContentRef = useRef(null);
-
-    const getProfile = async () => {
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user);
-            setLoading(false);
-        } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
-        }
-    };
-
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -64,6 +44,20 @@ function MembersConfirmation() {
         }
     }, [newNotificationMessage]);
 
+    const getProfile = async () => {
+        const config = {
+            headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+            setUser(data.user);
+        } catch (error) {
+            console.error('Failed to load profile.');
+        }
+    };
+
     const fetchUsers = async () => {
         try {
             const token = sessionStorage.getItem("token");
@@ -86,7 +80,7 @@ function MembersConfirmation() {
             setFilteredUsers([]);
         }
     };
-    
+
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
         const filtered = users.filter(user =>
@@ -147,9 +141,6 @@ function MembersConfirmation() {
             toast.error('Failed to deny member status');
         }
     };
-    
-    
-    
 
     return (
         <>

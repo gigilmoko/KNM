@@ -15,11 +15,9 @@ function Header() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
-    const { pageTitle } = useSelector((state) => state.header);
     const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme'));
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
     const [unreadNotifications, setUnreadNotifications] = useState(0);
 
     useEffect(() => {
@@ -46,7 +44,7 @@ function Header() {
             setUser(data.user);
             setLoading(false);
         } catch (error) {
-            setError('Failed to load profile.');
+            console.error('Failed to load profile.');
             setLoading(false);
         }
     };
@@ -106,7 +104,6 @@ function Header() {
             }, 500); // Delay to allow the page transition
         }
     };
-    
 
     return (
         <div className="navbar sticky top-0 bg-base-100 z-10 shadow-md">
@@ -122,34 +119,31 @@ function Header() {
             </div>
 
             <div className="flex-none flex items-center space-x-6 ml-auto">
-            <button
-    className="btn btn-ghost text-sm font-medium"
-    onClick={() => handleNavigation('/about', 'about-section')}
->
-    About Us
-</button>
-<button
-    className="btn btn-ghost text-sm font-medium"
-    onClick={() => handleNavigation('/gallery', 'products-section')}
->
-    Our Products
-</button>
-<button
-    className="btn btn-ghost text-sm font-medium"
-    onClick={() => handleNavigation('/blog', 'blogs-section')}
->
-    Blogs
-</button>
-<button
-    className="btn btn-ghost text-sm font-medium"
-    onClick={() => handleNavigation('/contact', 'contact-section')}
->
-    Contact Us
-</button>
+                <button
+                    className="btn btn-ghost text-sm font-medium"
+                    onClick={() => handleNavigation('/about', 'about-section')}
+                >
+                    About Us
+                </button>
+                <button
+                    className="btn btn-ghost text-sm font-medium"
+                    onClick={() => handleNavigation('/gallery', 'products-section')}
+                >
+                    Our Products
+                </button>
+                <button
+                    className="btn btn-ghost text-sm font-medium"
+                    onClick={() => handleNavigation('/blog', 'blogs-section')}
+                >
+                    Blogs
+                </button>
+                <button
+                    className="btn btn-ghost text-sm font-medium"
+                    onClick={() => handleNavigation('/contact', 'contact-section')}
+                >
+                    Contact Us
+                </button>
 
-            </div>
-
-            <div className="flex-none flex items-center space-x-4 ml-auto">
                 <label className="swap">
                     <input type="checkbox" onClick={handleThemeToggle} />
                     <SunIcon
@@ -167,7 +161,6 @@ function Header() {
                         }
                     />
                 </label>
-
                 {loading ? (
                     <span>Loading...</span>
                 ) : user ? (

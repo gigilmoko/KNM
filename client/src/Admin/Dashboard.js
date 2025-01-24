@@ -9,13 +9,9 @@ import RightSidebar from '../Layout/RightSidebar';
 import ModalLayout from '../Layout/ModalLayout';
 
 import DashboardStats from './components/DashboardStats';
-import AmountStats from './components/AmountStats';
-import PageStats from './components/PageStats';
-import UserChannels from './components/UserChannels';
 import LineChart from './components/LineChart';
 import BarChart from './components/BarChart';
 import DashboardTopBar from './components/DashboardTopBar';
-import DoughnutChart from './components/DoughnutChart';
 
 import UserGroupIcon from '@heroicons/react/24/outline/UserGroupIcon';
 import UsersIcon from '@heroicons/react/24/outline/UsersIcon';
@@ -32,9 +28,7 @@ const Dashboard = () => {
   const [pendingOrders, setPendingOrders] = useState("0");
   const [deliveredOrders, setDeliveredOrders] = useState("0");
   const [applyingMembers, setApplyingMembers] = useState("0");
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [user, setUser] = useState(null); // Define user state
 
   const getProfile = async () => {
     const config = {
@@ -45,10 +39,8 @@ const Dashboard = () => {
     try {
       const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
       setUser(data.user);
-      setLoading(false);
     } catch (error) {
-      setError('Failed to load profile.');
-      setLoading(false);
+      console.error('Failed to load profile.');
     }
   };
 
@@ -70,7 +62,6 @@ const Dashboard = () => {
       setApplyingMembers("0");
     }
   };
-  
 
   const fetchOrderStatusCounts = async () => {
     try {
@@ -237,18 +228,6 @@ const Dashboard = () => {
             <LineChart />
             <BarChart />
           </div>
-
-          {/** ---------------------- Different stats content 2 ------------------------- */}
-          {/* <div className="grid lg:grid-cols-2 mt-10 grid-cols-1 gap-6">
-            <AmountStats />
-            <PageStats />
-          </div> */}
-
-          {/** ---------------------- User source channels table  ------------------------- */}
-          {/* <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
-            <UserChannels />
-            <DoughnutChart />
-          </div> */}
         </main>
       </div>
       <LeftSidebar />

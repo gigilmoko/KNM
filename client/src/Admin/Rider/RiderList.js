@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import moment from "moment";
 import LeftSidebar from "../../Layout/LeftSidebar";
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from "../../Layout/ModalLayout";
@@ -23,8 +22,6 @@ function RidersList() {
     const [filteredRiders, setFilteredRiders] = useState([]);
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         mainContentRef.current.scroll({

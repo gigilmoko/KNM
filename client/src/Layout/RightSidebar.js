@@ -11,7 +11,6 @@ import CalendarEventsBodyRightDrawer from '../Admin/Calendar/CalendarEventsBodyR
 function RightSidebar() {
   const { isOpen, bodyType, extraObject, header } = useSelector(state => state.rightDrawer);
   const [loading, setLoading] = useState(false); // For delete action
-  const [error, setError] = useState(null);
   const dispatch = useDispatch();
 
   // Function to close the drawer
@@ -33,33 +32,31 @@ function RightSidebar() {
       setLoading(false); // Stop loading after the request
       
     } catch (error) {
-      setError('Failed to delete notifications.');
+      console.error('Failed to delete notifications:', error);
       setLoading(false); // Stop loading even in case of an error
-      console.error(error);
     }
   };
 
   // Fetch profile data to authenticate user (getProfile method)
-// Fetch profile data to authenticate user (getProfile method)
-const getProfile = async () => {
-  const config = {
-    headers: {
-      'Authorization': `Bearer ${sessionStorage.getItem('token')}`, // Using sessionStorage for token
-    },
-  };
+  const getProfile = async () => {
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`, // Using sessionStorage for token
+      },
+    };
 
-  try {
-    const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config); // Assuming `/api/me` returns user data
-    if (data && data.user) {
-      console.log('Fetched User ID:', data.user._id); // Log user ID to check if it's null or valid
-      // Handle profile data (e.g., set user state or do something with the returned data)
-    } else {
-      console.log('User data is missing:', data);
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config); // Assuming `/api/me` returns user data
+      if (data && data.user) {
+        console.log('Fetched User ID:', data.user._id); // Log user ID to check if it's null or valid
+        // Handle profile data (e.g., set user state or do something with the returned data)
+      } else {
+        console.log('User data is missing:', data);
+      }
+    } catch (error) {
+      console.error('Failed to load profile:', error);
     }
-  } catch (error) {
-    console.error('Failed to load profile:', error);
-  }
-};
+  };
 
   // Use effect to load profile on component mount
   useEffect(() => {

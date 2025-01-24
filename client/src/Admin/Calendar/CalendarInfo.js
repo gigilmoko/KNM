@@ -11,8 +11,6 @@ const CalendarInfo = () => {
   const [eventData, setEventData] = useState(null);
   const [user, setUser] = useState(null);
   const [isInterested, setIsInterested] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const navigate = useNavigate(); // Initialize useNavigate
 
   const currentTheme = localStorage.getItem("theme") || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
@@ -47,7 +45,6 @@ const CalendarInfo = () => {
         console.log('Fetched User Profile:', data);
         
         setUser(data.user);
-        setLoading(false);
       
         const interestResponse = await axios.get(`${process.env.REACT_APP_API}/api/interested/${data.user._id}/${id}`, config);
         
@@ -61,8 +58,6 @@ const CalendarInfo = () => {
           console.log('Interest data is missing or user not found');
         }
       } catch (error) {
-        setError('Failed to load profile.');
-        setLoading(false);
         console.error('Error fetching profile or interest status:', error);
       }
     };

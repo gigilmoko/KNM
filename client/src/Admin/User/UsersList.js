@@ -21,9 +21,6 @@ function UsersList() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -34,7 +31,6 @@ function UsersList() {
     }, []);
 
     useEffect(() => {
-        getProfile();   
         applySearch(searchText);
     }, [searchText, users]);
 
@@ -70,22 +66,6 @@ function UsersList() {
         }
     };
 
-    const getProfile = async () => {
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user);
-            setLoading(false);
-        } catch (error) {
-            setError('Failed to load profile.');
-            setLoading(false);
-        }
-    };
-
     const deleteCurrentUser = async (id, index) => {
         try {
             const token = sessionStorage.getItem("token");
@@ -104,7 +84,7 @@ function UsersList() {
                 },
             });
             console.log('User deletion response:', deleteUserResponse.data);
-            
+
             // Update state to remove the deleted user
             setUsers(users.filter((_, i) => i !== index));
             setFilteredUsers(filteredUsers.filter((_, i) => i !== index));

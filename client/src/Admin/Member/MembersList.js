@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import axios from 'axios';
-import moment from "moment";
 import { useSelector, useDispatch } from 'react-redux';
 import LeftSidebar from "../../Layout/LeftSidebar";
 import RightSidebar from '../../Layout/RightSidebar';
@@ -26,9 +25,6 @@ function MembersList() {
   const [sortOrder, setSortOrder] = useState('asc'); // Ascending or Descending
   const [sortBy, setSortBy] = useState('fname'); // Default sorting by first name
   const mainContentRef = useRef(null);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   useEffect(() => {
     mainContentRef.current.scroll({
@@ -39,7 +35,6 @@ function MembersList() {
   }, []);
 
   useEffect(() => {
-    getProfile();
     applySearch(searchText);
   }, [searchText, members]);
 
@@ -50,22 +45,6 @@ function MembersList() {
         dispatch(removeNotificationMessage());
     }
   }, [newNotificationMessage]);
-
-  const getProfile = async () => {
-    const config = {
-        headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
-    };
-    try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-        setUser(data.user);
-        setLoading(false);
-    } catch (error) {
-        setError('Failed to load profile.');
-        setLoading(false);
-    }
-  };
 
   const fetchMembers = async () => {
     try {
