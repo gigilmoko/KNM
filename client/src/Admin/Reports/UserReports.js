@@ -39,7 +39,9 @@ const UserReports = () => {
 
     users.forEach(user => {
       const name = `${user.fname} ${user.lname}`;
-      const address = user.address.map(addr => `${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`).join(', ');
+      const address = Array.isArray(user.address)
+        ? user.address.map(addr => `${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`).join(', ')
+        : user.address;
       tableRows.push([user._id, name, user.email, user.phone, address]);
     });
 
@@ -82,7 +84,7 @@ const UserReports = () => {
                         <td>{`${user.fname} ${user.lname}`}</td>
                         <td>{user.email}</td>
                         <td>{user.phone}</td>
-                        <td>{user.address.map(addr => `${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`).join(', ')}</td>
+                        <td>{Array.isArray(user.address) ? user.address.map(addr => `${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`).join(', ') : user.address}</td>
                       </tr>
                     ))}
                   </tbody>

@@ -96,6 +96,23 @@ function OrdersList() {
     }
   };
 
+  const deleteOrder = async (id, index) => {
+    try {
+      const token = sessionStorage.getItem("token");
+      await axios.delete(`${process.env.REACT_APP_API}/api/orders/delete/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setOrders(orders.filter((_, i) => i !== index));
+      setFilteredOrders(filteredOrders.filter((_, i) => i !== index));
+      toast.success("Order deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete order", error);
+      toast.error("Failed to delete order");
+    }
+  };
+
   const applySearch = (value) => {
     const lowercasedValue = value.toLowerCase();
     const filtered = orders.filter(
@@ -147,7 +164,7 @@ function OrdersList() {
                       <th>Items</th>
                       <th>Total Amount</th>
                       <th>Status</th>
-                      <th>Actions</th>
+                      {/* <th>Actions</th> */}
                     </tr>
                   </thead>
                   <tbody>
@@ -175,14 +192,14 @@ function OrdersList() {
                               <option value="Delivered">Delivered</option>
                             </select>
                           </td>
-                          <td>
+                          {/* <td>
                             <button
-                              className="btn btn-primary btn-sm"
-                              onClick={() => alert("View details")}
+                              className="btn btn-danger btn-sm ml-2"
+                              onClick={() => deleteOrder(order._id, index)}
                             >
-                              View
+                              Delete
                             </button>
-                          </td>
+                          </td> */}
                         </tr>
                       ))
                     ) : (

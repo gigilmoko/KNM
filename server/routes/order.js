@@ -4,6 +4,7 @@ const { isAuthenticatedUser, isAdmin } = require('../middlewares/auth');
 
 const { 
     createOrder, 
+    deleteOrder,
     getAdminOrders, 
     getMyOrders, 
     getOrderDetails, 
@@ -27,7 +28,7 @@ const {
 
 router.post('/neworder', isAuthenticatedUser, createOrder);
 router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
-// router.post('/grabpay-payment/:token/:id', isAuthenticatedUser, grabpayPayment);
+router.delete('/orders/delete/:id',isAuthenticatedUser, isAdmin, deleteOrder);
 
 router.get("/my", isAuthenticatedUser, getMyOrders);
 router.get("/orders/list",  getAdminOrders);

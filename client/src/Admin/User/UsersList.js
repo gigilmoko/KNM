@@ -191,11 +191,21 @@ function UsersList() {
                                                     </td>
                                                     <td>{user.phone || 'N/A'}</td>
                                                     <td>
-                                                        {user.address.map((addr, index) => (
-                                                            <div key={index}>
-                                                                {`${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`}
+                                                        {Array.isArray(user.deliveryAddress) && user.deliveryAddress.length > 0 ? (
+                                                            user.deliveryAddress.map((addr, index) => (
+                                                                <div key={index}>
+                                                                    {`${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`}
+                                                                </div>
+                                                            ))
+                                                        ) : (
+                                                            <div>
+                                                                {user.address && typeof user.address === 'object' ? (
+                                                                    `${user.address.houseNo}, ${user.address.streetName}, ${user.address.barangay}, ${user.address.city}`
+                                                                ) : (
+                                                                    user.address
+                                                                )}
                                                             </div>
-                                                        ))}
+                                                        )}
                                                     </td>
                                                     <td>{user.memberId || 'N/A'}</td>
                                                     <td>
