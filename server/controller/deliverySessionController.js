@@ -403,6 +403,36 @@ exports.getOngoingSessionsByRider = async (req, res) => {
   }
 };
 
+exports.getSessionsByRiderId = async (req, res, next) => {
+  try {
+    const { riderId } = req.params;
+
+    // Fetch all delivery sessions linked to the riderId
+    const sessions = await DeliverySession.find({ rider: riderId })
+      .populate('rider', 'name') // Populate rider details if needed
+      .populate('truck', 'plateNo') // Populate truck details if needed
+      .populate('orders'); // Populate orders if needed
+
+    if (!sessions || sessions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No delivery sessions found for this rider',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      sessions,
+    });
+  } catch (error) {
+    console.error("Error fetching delivery sessions:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
+
 
 
 

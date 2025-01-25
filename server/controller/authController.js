@@ -213,7 +213,7 @@ exports.loginUser = async (req, res, next) => {
 
 //old
 exports.registerUserMember = async (req, res, next) => {
-  const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, address, memberId, googleLogin, imageMember } = req.body;
+  const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, memberId, googleLogin, imageMember } = req.body;
 
   try {
     // Check if the user already exists
@@ -224,7 +224,7 @@ exports.registerUserMember = async (req, res, next) => {
 
     // Use avatar and imageMember from JSON if provided, or set them to empty strings
     let avatarUrl = avatar || '';
-    let imageMemberUrl = imageMember || '';
+   
 
     // Set the role and applyMember to default values
     const role = 'user'; // role is 'user' by default

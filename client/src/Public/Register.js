@@ -111,7 +111,7 @@ function Register() {
     
       // Send form data to server
       const response = await axios.post(
-        `${process.env.REACT_APP_API}api/register`,
+        `${process.env.REACT_APP_API}/api/register`,
         updatedRegisterObj,
         {
           headers: {
@@ -159,7 +159,7 @@ function Register() {
     
       // Send form data to server
       const response = await axios.post(
-        `${process.env.REACT_APP_API}api/register-member`,
+        `${process.env.REACT_APP_API}/api/register-member`,
         updatedRegisterObj,
         {
           headers: {
