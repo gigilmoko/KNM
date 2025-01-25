@@ -4,16 +4,19 @@ const User = require('../models/user');
 const Notification = require('../models/notification');
 const axios = require('axios');
 
+
 // FOR TESTING ONLY
 exports.testNotifyMembers = async (req, res) => {
     try {
-        const members = await User.find({ 
+        const members = await User.find({
             deviceToken: { $exists: true, $ne: null },
             role: 'member'  // Changed from applyMember to role
         });
 
+
         const playerIds = members.map(member => member.deviceToken).filter(Boolean);
         console.log('Found members with device tokens:', playerIds.length);
+
 
         if (playerIds.length > 0) {
             const response = await axios.post('https://onesignal.com/api/v1/notifications', {
@@ -30,6 +33,7 @@ exports.testNotifyMembers = async (req, res) => {
             console.log('OneSignal Response:', response.data);
         }
 
+
         res.status(200).json({
             success: true,
             membersNotified: playerIds.length,
@@ -41,14 +45,17 @@ exports.testNotifyMembers = async (req, res) => {
     }
 };
 
+
 exports.testNotifyAllUsers = async (req, res) => {
     try {
-        const users = await User.find({ 
+        const users = await User.find({
             deviceToken: { $exists: true, $ne: null }
         });
 
+
         const playerIds = users.map(user => user.deviceToken).filter(Boolean);
         console.log('Found users with device tokens:', playerIds.length);
+
 
         if (playerIds.length > 0) {
             const response = await axios.post('https://onesignal.com/api/v1/notifications', {
@@ -64,6 +71,7 @@ exports.testNotifyAllUsers = async (req, res) => {
             console.log('OneSignal Response:', response.data);
         }
 
+
         res.status(200).json({
             success: true,
             usersNotified: playerIds.length
@@ -74,14 +82,20 @@ exports.testNotifyAllUsers = async (req, res) => {
     }
 };
 
+
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
-
+ console.log('req.body', req.body);
     if (!req.user || !req.user.id) {
         return res.status(401).json({ success: false, message: 'Unauthorized: User not authenticated' });
     }
 
+
     try {
+
+
+
+
         const newEvent = new CalendarEvent({
             date,
             title,
@@ -94,34 +108,43 @@ exports.createEvent = async (req, res) => {
             user: req.user.id
         });
 
+
         await newEvent.save();
+        console.log('Audience type:', audience);
+
 
         // Get users to notify based on audience
         let users;
         if (audience === 'all') {
             users = await User.find({ deviceToken: { $exists: true, $ne: null } });
+            console.log('All users with device tokens:', users.length);
         } else {
-            users = await User.find({ 
+            users = await User.find({
                 deviceToken: { $exists: true, $ne: null },
                 role: 'member'
             });
+            console.log('Member users with device tokens:', users.length);
         }
 
-        // Get device tokens
-        const playerIds = users.map(user => user.deviceToken).filter(Boolean);
-        console.log('Found users with device tokens:', playerIds.length);
 
+        // Log found users
+        console.log('Users found:', users.map(u => ({
+            id: u._id,
+            email: u.email,
+            hasToken: !!u.deviceToken
+        })));
         // Send push notification if there are users with device tokens
         if (playerIds.length > 0) {
             const notification = {
                 app_id: process.env.ONESIGNAL_APP_ID,
                 include_player_ids: playerIds,
-                contents: { 
+                contents: {
                     en: `New event "${title}" scheduled from ${new Date(startDate).toLocaleString()} to ${new Date(endDate).toLocaleString()} at ${location}.`
                 },
                 headings: { en: "New Event Created" },
                 data: { eventId: newEvent._id }
             };
+
 
             try {
                 const response = await axios.post(
@@ -140,6 +163,7 @@ exports.createEvent = async (req, res) => {
             }
         }
 
+
         // Create in-app notifications for users
         const notificationPromises = users.map(user => {
             return new Notification({
@@ -149,7 +173,9 @@ exports.createEvent = async (req, res) => {
             }).save();
         });
 
+
         await Promise.all(notificationPromises);
+
 
         res.status(201).json({
             success: true,
@@ -167,9 +193,11 @@ exports.createEvent = async (req, res) => {
     }
 };
 
+
 exports.updateEvent = async (req, res) => {
     const eventId = req.params.id;
     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
+
 
     try {
         const updatedEvent = await CalendarEvent.findByIdAndUpdate(
@@ -178,6 +206,7 @@ exports.updateEvent = async (req, res) => {
             { new: true, runValidators: true }
         );
 
+
         if (!updatedEvent) {
             return res.status(404).json({
                 success: false,
@@ -185,10 +214,12 @@ exports.updateEvent = async (req, res) => {
             });
         }
 
+
         // Notify the target audience if necessary
-        const users = audience === 'all' 
-            ? await User.find() 
+        const users = audience === 'all'
+            ? await User.find()
             : await User.find({ role: 'member' });
+
 
         const notificationPromises = users.map(async (user) => {
             return Notification.create({
@@ -201,7 +232,9 @@ exports.updateEvent = async (req, res) => {
             });
         });
 
+
         await Promise.all(notificationPromises);
+
 
         // Send push notification using OneSignal
         const oneSignalNotification = {
@@ -211,6 +244,7 @@ exports.updateEvent = async (req, res) => {
             contents: { en: `The event "${title}" has been updated. Check details: Location - ${location}, Schedule - ${startDate} to ${endDate}.` },
             data: { eventId: updatedEvent._id },
         };
+
 
         try {
             const response = await axios.post(
@@ -228,6 +262,7 @@ exports.updateEvent = async (req, res) => {
             console.error('Error sending push notification:', error.response ? error.response.data : error.message);
         }
 
+
         res.status(200).json({
             success: true,
             message: 'Event updated successfully',
@@ -242,6 +277,7 @@ exports.updateEvent = async (req, res) => {
         });
     }
 };
+
 
 exports.getEvent = async (req, res) => {
     const eventId = req.params.id;
