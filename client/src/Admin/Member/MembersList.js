@@ -24,6 +24,7 @@ function MembersList() {
   const [searchText, setSearchText] = useState("");
   const [sortOrder, setSortOrder] = useState('asc'); // Ascending or Descending
   const [sortBy, setSortBy] = useState('fname'); // Default sorting by first name
+  const [sortByDate, setSortByDate] = useState('desc'); // New state for date sorting
   const mainContentRef = useRef(null);
 
   useEffect(() => {
@@ -116,6 +117,16 @@ function MembersList() {
     setFilteredMembers(sortedMembers);
   };
 
+  const toggleSortByDate = () => {
+    const sortedMembers = [...filteredMembers].sort((a, b) =>
+        sortByDate === 'desc'
+            ? new Date(b.createdAt) - new Date(a.createdAt)
+            : new Date(a.createdAt) - new Date(b.createdAt)
+    );
+    setFilteredMembers(sortedMembers);
+    setSortByDate(sortByDate === 'desc' ? 'asc' : 'desc');
+  };
+
   return (
     <>
         <div className="drawer lg:drawer-open">
@@ -127,7 +138,17 @@ function MembersList() {
                     <TitleCard
                         title="All Members"
                         topMargin="mt-2"
-                        TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
+                        TopSideButtons={
+                            <div className="flex items-center space-x-2">
+                                <SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={toggleSortByDate}
+                                >
+                                    {sortByDate === 'desc' ? 'Sort by Date Ascending' : 'Sort by Date Descending'}
+                                </button>
+                            </div>
+                        }
                     >
                         <div className="overflow-x-auto w-full">
                             <table className="table w-full">

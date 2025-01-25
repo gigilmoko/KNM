@@ -29,6 +29,7 @@ function ProductsList() {
     const [lowStockProducts, setLowStockProducts] = useState([]); // State to manage low stock products
     const [showLowStockWarning, setShowLowStockWarning] = useState(true); // State to manage visibility of low stock warning
     const [user, setUser] = useState(null); // Define user state
+    const [sortByDate, setSortByDate] = useState('desc'); // New state for date sorting
 
     useEffect(() => {
         mainContentRef.current.scroll({
@@ -140,6 +141,16 @@ function ProductsList() {
         setShowLowStockWarning(!showLowStockWarning);
     };
 
+    const toggleSortByDate = () => {
+        const sortedProducts = [...filteredProducts].sort((a, b) =>
+            sortByDate === 'desc'
+                ? new Date(b.createdAt) - new Date(a.createdAt)
+                : new Date(a.createdAt) - new Date(b.createdAt)
+        );
+        setFilteredProducts(sortedProducts);
+        setSortByDate(sortByDate === 'desc' ? 'asc' : 'desc');
+    };
+
     return (
         <>
             <div className="drawer lg:drawer-open">
@@ -151,7 +162,17 @@ function ProductsList() {
                         <TitleCard
                             title="All Products"
                             topMargin="mt-2"
-                            TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
+                            TopSideButtons={
+                                <div className="flex items-center space-x-2">
+                                    {/* <SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} /> */}
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={toggleSortByDate}
+                                    >
+                                        {sortByDate === 'desc' ? 'Sort by Date Ascending' : 'Sort by Date Descending'}
+                                    </button>
+                                </div>
+                            }
                         >
                             <div className="overflow-x-auto w-full">
                                 <table className="table w-full">
