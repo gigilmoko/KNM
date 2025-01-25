@@ -5,94 +5,135 @@ const CalendarEvent = require('../models/calendar');
 const axios = require('axios');
 require('dotenv').config();
 
+
 const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID
 const ONESIGNAL_API_KEY = process.env.ONESIGNAL_API_KEY
 // console.log('ONESIGNAL_APP_ID:', ONESIGNAL_APP_ID);
 
+
 exports.createNotification = async (req, res) => {
   const { eventId } = req.body;
 
+
   try {
-      console.log('Received event ID:', eventId);
-
-      // Ensure eventId is a valid ObjectId
-      if (!mongoose.Types.ObjectId.isValid(eventId)) {
-          console.error('Invalid event ID:', eventId);
-          throw new Error('Invalid event ID');
-      }
-
-      // Fetch event details using the event ID
-      const event = await CalendarEvent.findById(eventId);
-      if (!event) {
-          console.error('Event not found for ID:', eventId);
-          throw new Error('Event not found');
-      }
-
-      console.log('Event details fetched for notification:', event);
-
-      // Determine the audience
-      let users;
-      if (event.audience === 'all') {
-          users = await User.find(); // Fetch all users
-          console.log(`Dispatching notifications to all users (${users.length})`);
-      } else {
-          users = await User.find({ role: { $in: ['member', 'admin'] } }); // Fetch only members and admins
-          console.log(`Dispatching notifications to members and admins (${users.length})`);
-      }
-
-      // Create notifications for each user
-      const notificationPromises = users.map(async (user) => {
-          return Notification.create({
-              user: user._id,
-              event: event._id,
-              read: false,
-          });
+    // Input validation
+    if (!eventId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Event ID is required'
       });
+    }
 
-      await Promise.all(notificationPromises);
 
-      console.log('In-app notifications created successfully');
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid event ID format'
+      });
+    }
 
-      // Prepare push notification data
-      const oneSignalNotification = {
-          app_id: ONESIGNAL_APP_ID,
-          included_segments: event.audience === 'all' ? ['All'] : undefined,
-          filters: event.audience === 'member'
-              ? [
-                  { field: 'tag', key: 'role', relation: '=', value: 'member' },
-                  { field: 'tag', key: 'role', relation: '=', value: 'admin' }
-              ]
-              : undefined,
-          headings: { en: `New Event: ${event.title}` },
-          contents: { en: `The event "${event.title}" is scheduled from ${new Date(event.startDate).toLocaleString()} to ${new Date(event.endDate).toLocaleString()} at ${event.location}.` },
-          data: { eventId: event._id },
-          big_picture: event.image || null, // For Android
-          ios_attachments: { id1: event.image || null }, // For iOS
-      };
 
-      console.log('OneSignal notification payload:', oneSignalNotification);
+    // Fetch event with error handling
+    const event = await CalendarEvent.findById(eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
 
-      // Send notification via OneSignal
-      const response = await axios.post(
-          'https://onesignal.com/api/v1/notifications',
-          oneSignalNotification,
-          {
-              headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${ONESIGNAL_API_KEY}`,
-              },
-          }
-      );
 
-      console.log('Push notifications sent successfully via OneSignal', response.data);
-      res.status(200).json({ success: true, message: 'Notifications sent successfully' });
+    // Get target users based on audience
+    const users = await User.find(
+      event.audience === 'all'
+        ? {}
+        : { role: { $in: ['member', 'admin'] }}
+    );
+
+
+    if (!users.length) {
+      return res.status(404).json({
+        success: false,
+        message: 'No users found to notify'
+      });
+    }
+
+
+    // Create in-app notifications
+    const notifications = await Promise.all(
+      users.map(user =>
+        Notification.create({
+          user: user._id,
+          event: event._id,
+          read: false,
+          title: event.title,
+          message: `Event scheduled from ${new Date(event.startDate).toLocaleString()} to ${new Date(event.endDate).toLocaleString()} at ${event.location}.`
+        })
+      )
+    );
+
+
+    // Prepare OneSignal notification
+    const oneSignalPayload = {
+      app_id: ONESIGNAL_APP_ID,
+      included_segments: event.audience === 'all' ? ['All'] : undefined,
+      filters: event.audience === 'member' ? [
+        { field: 'tag', key: 'role', relation: '=', value: 'member' },
+        { field: 'tag', key: 'role', relation: '=', value: 'admin' }
+      ] : undefined,
+      headings: {
+        en: `New Event: ${event.title}`
+      },
+      contents: {
+        en: `Event "${event.title}" scheduled at ${event.location}`
+      },
+      subtitle: {
+        en: `From ${new Date(event.startDate).toLocaleString()} to ${new Date(event.endDate).toLocaleString()}`
+      },
+      data: {
+        eventId: event._id,
+        type: 'event_notification'
+      },
+      big_picture: event.image || undefined,
+      ios_attachments: event.image ? { id1: event.image } : undefined,
+      priority: 10
+    };
+
+
+    // Send OneSignal notification
+    const oneSignalResponse = await axios.post(
+      'https://onesignal.com/api/v1/notifications',
+      oneSignalPayload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${ONESIGNAL_API_KEY}`
+        }
+      }
+    );
+
+
+    return res.status(200).json({
+      success: true,
+      message: 'Notifications sent successfully',
+      data: {
+        inAppNotifications: notifications.length,
+        pushNotification: oneSignalResponse.data,
+      }
+    });
+
+
   } catch (error) {
-      console.error('Error sending notifications:', error.response ? error.response.data : error.message);
-      res.status(500).json({ success: false, message: 'Failed to send notifications', error: error.message });
+    console.error('Notification Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to send notifications',
+      error: error.response?.data || error.message
+    });
   }
 };
 
-// Fetch all notifications for a user
 exports.getNotifications = async (req, res) => {
   const userId = req.user.id; 
   
@@ -107,23 +148,6 @@ exports.getNotifications = async (req, res) => {
   }
 };
 
-
-// Fetch all notifications for a user
-// exports.getNotifications = async (req, res) => {
-//   const userId = req.user.id; 
-  
-//   try {
-//     const notifications = await Notification.find({ user: userId })
-//       .populate('event', 'title startDate endDate') // Populate event details
-//       .sort({ createdAt: -1 });
-  
-//     res.status(200).json(notifications);
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: 'Server error', error });
-//   }
-// };
-
-// Toggle the 'read' status of a notification
 exports.toggleNotificationReadStatus = async (req, res) => {
   // console.log("toggleNotif Hit")
   const notifId = req.params.id;
@@ -144,7 +168,6 @@ exports.toggleNotificationReadStatus = async (req, res) => {
   }
 };
 
-// Get count of unread notifications
 exports.getUnreadNotificationsCount = async (req, res) => {
   const userId = req.user.id; // Assuming you're using authentication middleware
 
@@ -156,7 +179,6 @@ exports.getUnreadNotificationsCount = async (req, res) => {
   }
 };
 
-// Delete a notification
 exports.deleteNotification = async (req, res) => {
   const notifId = req.params.id;
 
