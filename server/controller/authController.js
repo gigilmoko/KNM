@@ -344,7 +344,7 @@ exports.forgotPassword = async (req, res, next) => {
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
   // Create reset password url
-  const resetUrl = `${req.protocol}://localhost:3000/password/reset/${resetToken}`;
+  const resetUrl = `knm-gltn.onrender.com/password/reset/${resetToken}`;
   const message = `Your password reset token is as follow:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`
   try {
     await sendEmail({
