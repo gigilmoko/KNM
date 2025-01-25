@@ -5,6 +5,6 @@ const { newFeedback, getAllFeedback } = require('../controller/feedbackControlle
 const { isAuthenticatedUser } = require('../middlewares/auth');
 
 router.post('/feedback/new', isAuthenticatedUser, newFeedback);
-router.get('/feedback/all', isAuthenticatedUser, getAllFeedback);
+router.get('/feedback/all', getAllFeedback);
 
 module.exports = router;

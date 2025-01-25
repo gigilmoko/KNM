@@ -243,11 +243,11 @@ function Login() {
                                     <span className="inline-block hover:text-primary hover:underline hover:cursor-pointer transition duration-200">Register</span>
                                 </Link>
                             </div>
-                            <div className='text-center '>
+                            {/* <div className='text-center '>
                                 Are you a member? <Link to="/register-member">
                                     <span className="inline-block hover:text-primary hover:underline hover:cursor-pointer transition duration-200">Register here instead!</span>
                                 </Link>
-                            </div>
+                            </div> */}
                         </form>
                     </div>
                 </div>

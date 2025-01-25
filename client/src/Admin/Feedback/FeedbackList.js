@@ -163,7 +163,11 @@ const FeedbackList = () => {
                       <tbody>
                         {feedbacks.map((feedback) => (
                           <tr key={feedback._id}>
-                            <td className="border px-4 py-2">{feedback.userId.email}</td>
+                         {feedback?.userId?.email ? (
+  <td className="border px-4 py-2">{feedback.userId.email}</td>
+) : (
+  <td className="border px-4 py-2">No Email</td>
+)}
                             <td className="border px-4 py-2">{feedback.feedback}</td>
                             <td className="border px-4 py-2">{feedback.rating}</td>
                             <td className="border px-4 py-2">

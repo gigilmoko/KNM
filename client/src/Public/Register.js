@@ -84,7 +84,7 @@ function Register() {
       // Open the member ID modal
       setIsMemberModalOpen(true);
     } else {
-      // Proceed with normal registration
+      // Proceed with normal registration immediately
       await registerUser();
     }
   };

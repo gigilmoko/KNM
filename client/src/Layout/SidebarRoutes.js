@@ -117,11 +117,7 @@ const routes = [
         icon: <TagIcon className={submenuIconClasses}/>, // Tag icon for 'Category List'
         name: 'Orders List',
       },
-      {
-        path: '/admin/category/new',
-        icon: <TagIcon className={submenuIconClasses}/>, // Tag icon for 'New Category'
-        name: 'New Category',
-      },
+      
     ]
   },
   {
