@@ -50,7 +50,13 @@ function DeliveryList() {
               headers: { Authorization: `Bearer ${token}` },
           });
 
-          setDeliveries(response.data.groupedSessions || []);
+          const sortedDeliveries = response.data.groupedSessions.sort((a, b) => {
+              const statusOrder = ['Undecided', 'Ongoing', 'Completed', 'Cancelled'];
+              return statusOrder.indexOf(a._id) - statusOrder.indexOf(b._id);
+          });
+
+          setDeliveries(sortedDeliveries || []);
+          setFilteredDeliveries(sortedDeliveries || []);
       } catch (error) {
           console.error('Error fetching deliveries:', error);
       }
@@ -90,7 +96,7 @@ function DeliveryList() {
       navigate(`/admin/delivery/edit/${id}`);
   };
 
- return (
+  return (
       <>
           <div className="drawer lg:drawer-open">
               <ToastContainer />
@@ -104,10 +110,10 @@ function DeliveryList() {
                           TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
                       >
                           <div className="tabs">
+                              <button className={`tab ${selectedStatus === 'Undecided' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Undecided')}>Undecided</button>
                               <button className={`tab ${selectedStatus === 'Ongoing' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Ongoing')}>Ongoing</button>
                               <button className={`tab ${selectedStatus === 'Completed' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Completed')}>Completed</button>
                               <button className={`tab ${selectedStatus === 'Cancelled' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Cancelled')}>Cancelled</button>
-                              <button className={`tab ${selectedStatus === 'Undecided' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Undecided')}>Undecided</button>
                           </div>
 
                           <div className="overflow-x-auto w-full">
@@ -171,4 +177,3 @@ function DeliveryList() {
 }
 
 export default DeliveryList;
-
