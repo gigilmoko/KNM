@@ -205,33 +205,33 @@ const routes = [
   //   icon: <ChartBarIcon className={iconClasses}/>, 
   //   name: 'Analytics',
   // },
-  // {
-  //   path: '', 
-  //   icon: <ChartBarIcon className={`${iconClasses} inline`}/>, 
-  //   name: 'Analytical Report',
-  //   submenu: [
-  //     {
-  //       path: '/admin/reports/revenue',
-  //       icon: <ChartBarIcon className={submenuIconClasses}/>, 
-  //       name: 'Revenue Report',
-  //     },
-  //     {
-  //       path: '/admin/reports/orders',
-  //       icon: <ChartBarIcon className={submenuIconClasses}/>, 
-  //       name: 'Order Reports',
-  //     },
-  //     {
-  //       path: '/admin/reports/users',
-  //       icon: <ChartBarIcon className={submenuIconClasses}/>, 
-  //       name: 'User Reports',
-  //     },
-  //     // {
-  //     //   path: '/admin/reports/members',
-  //     //   icon: <ChartBarIcon className={submenuIconClasses}/>, 
-  //     //   name: 'Member Reports',
-  //     // },
-  //   ]
-  // }
+  {
+    path: '', 
+    icon: <ChartBarIcon className={`${iconClasses} inline`}/>, 
+    name: 'Analytical Report',
+    submenu: [
+      {
+        path: '/admin/reports/revenue',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'Revenue Report',
+      },
+      {
+        path: '/admin/reports/orders',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'Order Reports',
+      },
+      {
+        path: '/admin/reports/users',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, 
+        name: 'User Reports',
+      },
+      // {
+      //   path: '/admin/reports/members',
+      //   icon: <ChartBarIcon className={submenuIconClasses}/>, 
+      //   name: 'Member Reports',
+      // },
+    ]
+  }
 ];
 
 export default routes;
