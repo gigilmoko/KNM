@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom'; // Import useParams to get route params
-import { ToastContainer, toast } from 'react-toastify'; // Importing toast
+import { useParams } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import TitleCard from "../../Layout/components/Cards/TitleCard"; // Import TitleCard
-import SearchBar from "../../Layout/components/Input/SearchBar"; // Import SearchBar
-import Header from "../../Layout/Header"; // Import Header
-import LeftSidebar from "../../Layout/LeftSidebar"; // Import LeftSidebar
-import RightSidebar from "../../Layout/RightSidebar"; // Import RightSidebar
+import TitleCard from "../../Layout/components/Cards/TitleCard";
+import SearchBar from "../../Layout/components/Input/SearchBar";
+import Header from "../../Layout/Header";
+import LeftSidebar from "../../Layout/LeftSidebar";
+import RightSidebar from "../../Layout/RightSidebar";
 
 const CalendarInterested = () => {
-  const { id } = useParams(); // Get id from the URL (instead of eventId)
-  const [users, setUsers] = useState([]); // State to hold all users
-  const [filteredUsers, setFilteredUsers] = useState([]); // State to hold filtered users
+  const { id } = useParams();
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
@@ -21,19 +21,10 @@ const CalendarInterested = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API}/api/all-users`);
-        if (response.data && Array.isArray(response.data.users)) {
-          setUsers(response.data.users);
-          setFilteredUsers(response.data.users); // Initially set filtered users to all users
-          console.log('Fetched users:', response.data.users); // Log the fetched users
-        } else {
-          console.error('Data fetched is not an array:', response.data);
-          setUsers([]);
-          setFilteredUsers([]);
-        }
+        setUsers(response.data.users || []);
+        setFilteredUsers(response.data.users || []);
       } catch (error) {
-        console.error('Failed to fetch users', error);
-        setUsers([]);
-        setFilteredUsers([]);
+        setError('Failed to fetch users');
       }
     };
 
@@ -43,33 +34,22 @@ const CalendarInterested = () => {
   useEffect(() => {
     const fetchInterestedUsers = async () => {
       try {
-        // Retrieve the token from session storage
         const token = sessionStorage.getItem('token');
+        if (!token) return setError('No authorization token found.');
 
-        // Check if the token exists
-        if (!token) {
-          setError('No authorization token found.');
-          setLoading(false);
-          return;
-        }
-
-        // Set token in request headers
         const response = await axios.get(`${process.env.REACT_APP_API}/api/interested/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}` // Include token in the Authorization header
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
 
         const interestedUsers = response.data.interestedUsers;
-
-        // Filter interested users based on all users data
-        const matchedUsers = users.filter(user =>
-          interestedUsers.some(interestedUser => interestedUser._id === user._id)
-        );
+        const matchedUsers = users.map(user => {
+          const interestedUser = interestedUsers.find(iu => iu.userId === user._id);
+          return interestedUser ? { ...user, isAttended: interestedUser.isAttended } : null;
+        }).filter(Boolean);
 
         setFilteredUsers(matchedUsers);
         setLoading(false);
-      } catch (err) {
+      } catch {
         setError('Failed to fetch interested users');
         setLoading(false);
       }
@@ -78,25 +58,28 @@ const CalendarInterested = () => {
     if (users.length > 0) {
       fetchInterestedUsers();
     }
-  }, [id, users]); // Run after users data is fetched
+  }, [id, users]);
 
-  const applySearch = (value) => {
-    const lowercasedValue = value.toLowerCase();
-    const filtered = filteredUsers.filter(user =>
-      user.fname.toLowerCase().includes(lowercasedValue) ||
-      user.lname.toLowerCase().includes(lowercasedValue) ||
-      user.email.toLowerCase().includes(lowercasedValue)
-    );
-    setFilteredUsers(filtered);
+  const changeAttendance = async (userId, isAttended) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      await axios.put(
+        `${process.env.REACT_APP_API}/api/event/change-attendance`,
+        { userId, eventId: id, isAttended: !isAttended },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setFilteredUsers(prevUsers =>
+        prevUsers.map(user => user._id === userId ? { ...user, isAttended: !isAttended } : user)
+      );
+      toast.success(`Attendance status changed successfully.`);
+    } catch {
+      toast.error('Failed to change attendance status.');
+    }
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="drawer lg:drawer-open">
@@ -120,8 +103,7 @@ const CalendarInterested = () => {
                         <th>Email</th>
                         <th>Role</th>
                         <th>Phone</th>
-                        <th>Address</th>
-                        
+                        <th>Attendance</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -143,9 +125,13 @@ const CalendarInterested = () => {
                           <td>{user.email}</td>
                           <td>{user.role}</td>
                           <td>{user.phone || 'N/A'}</td>
-                          <td>{user.address || 'N/A'}</td>
                           <td>
-                           
+                            <button
+                              className={`btn btn-sm ${user.isAttended ? 'btn-success' : 'btn-error'}`}
+                              onClick={() => changeAttendance(user._id, user.isAttended)}
+                            >
+                              {user.isAttended ? 'Attended' : 'Did Not Attend'}
+                            </button>
                           </td>
                         </tr>
                       ))}

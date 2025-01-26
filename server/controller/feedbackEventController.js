@@ -4,49 +4,51 @@ const CalendarEvent = require('../models/calendar');
 
 // Create Feedback Controller
 exports.createFeedback = async (req, res) => {
-    const { userId, eventId, rating, description } = req.body;
-  
-    try {
+  const { userId, eventId, rating, description } = req.body;
+
+  try {
       // Log the received data to console
       console.log('Received data:', req.body); // This will log the entire request body
-  
-      // Check if the user is interested in the event
+
+      // Check if the user is interested and has attended the event
       const userInterest = await UserInterest.findOne({
-        user: userId,
-        event: eventId,
-        interested: true,
+          user: userId,
+          event: eventId,
+          interested: true,
+          isAttended: true,  // Ensure the user has attended
       });
-  
+
       if (!userInterest) {
-        return res.status(400).json({
-          success: false,
-          message: 'User is not interested in this event or not found in the interest list.',
-        });
+          return res.status(400).json({
+              success: false,
+              message: 'User is not marked as attended for this event or is not interested.',
+          });
       }
-  
+
       // Create new feedback entry
       const newFeedback = new EventFeedback({
-        userId,
-        eventId,
-        rating,
-        description,
+          userId,
+          eventId,
+          rating,
+          description,
       });
-  
+
       await newFeedback.save();
-  
+
       return res.status(201).json({
-        success: true,
-        message: 'Feedback created successfully',
-        data: newFeedback,
+          success: true,
+          message: 'Feedback created successfully',
+          data: newFeedback,
       });
-    } catch (error) {
+  } catch (error) {
       console.error('Error creating feedback:', error);
       return res.status(500).json({
-        success: false,
-        message: 'Server error. Failed to create feedback.',
+          success: false,
+          message: 'Server error. Failed to create feedback.',
       });
-    }
-  };
+  }
+};
+
 
 // Fetch All Feedback Controller
 exports.getEventFeedback = async (req, res) => {
@@ -64,10 +66,10 @@ exports.getEventFeedback = async (req, res) => {
 
     // Check if there is no feedback
     if (feedbacks.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No feedback found.',
-      });
+      // return res.status(404).json({
+       
+      //   message: 'No feedback found.',
+      // });
     }
 
     // Return the feedbacks

@@ -3,7 +3,7 @@ const { createNotification } = require('./notificationController');
 const User = require('../models/user');
 const Notification = require('../models/notification');
 const axios = require('axios');
-
+const moment = require('moment-timezone');
 
 // FOR TESTING ONLY
 exports.testNotifyMembers = async (req, res) => {
@@ -85,33 +85,32 @@ exports.testNotifyAllUsers = async (req, res) => {
 
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
- console.log('req.body', req.body);
+    console.log('req.body', req.body);
+
     if (!req.user || !req.user.id) {
         return res.status(401).json({ success: false, message: 'Unauthorized: User not authenticated' });
     }
 
-
     try {
+        // Convert startDate and endDate to Philippines time
+        const startDateInPH = moment(startDate).tz('Asia/Manila').format();
+        const endDateInPH = moment(endDate).tz('Asia/Manila').format();
 
-
-
-
+        // Create the new event with converted dates
         const newEvent = new CalendarEvent({
             date,
             title,
             description,
-            startDate,
-            endDate,
+            startDate: startDateInPH,
+            endDate: endDateInPH,
             image,
             location,
             audience,
             user: req.user.id
         });
 
-
         await newEvent.save();
         console.log('Audience type:', audience);
-
 
         // Get users to notify based on audience
         let users;
@@ -126,25 +125,24 @@ exports.createEvent = async (req, res) => {
             console.log('Member users with device tokens:', users.length);
         }
 
-
         // Log found users
         console.log('Users found:', users.map(u => ({
             id: u._id,
             email: u.email,
             hasToken: !!u.deviceToken
         })));
+
         // Send push notification if there are users with device tokens
         if (playerIds.length > 0) {
             const notification = {
                 app_id: process.env.ONESIGNAL_APP_ID,
                 include_player_ids: playerIds,
                 contents: {
-                    en: `New event "${title}" scheduled from ${new Date(startDate).toLocaleString()} to ${new Date(endDate).toLocaleString()} at ${location}.`
+                    en: `New event "${title}" scheduled from ${new Date(startDateInPH).toLocaleString()} to ${new Date(endDateInPH).toLocaleString()} at ${location}.`
                 },
                 headings: { en: "New Event Created" },
                 data: { eventId: newEvent._id }
             };
-
 
             try {
                 const response = await axios.post(
@@ -163,7 +161,6 @@ exports.createEvent = async (req, res) => {
             }
         }
 
-
         // Create in-app notifications for users
         const notificationPromises = users.map(user => {
             return new Notification({
@@ -173,9 +170,7 @@ exports.createEvent = async (req, res) => {
             }).save();
         });
 
-
         await Promise.all(notificationPromises);
-
 
         res.status(201).json({
             success: true,

@@ -14,6 +14,10 @@ const userInterestSchema = new mongoose.Schema({
   interested: {
     type: Boolean,
     default: true,
+  },
+  isAttended: {
+    type: Boolean,
+    default: false,  // Default to false until confirmed attended
   }
 }, {
   timestamps: true, 
