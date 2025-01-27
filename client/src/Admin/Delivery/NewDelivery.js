@@ -29,7 +29,7 @@ function NewDelivery() {
             try {
                 const token = sessionStorage.getItem('token');
                 const riderResponse = await axios.get(
-                    'http://localhost:4002/api/delivery-session/riders/available',
+                    `${process.env.REACT_APP_API}/api/delivery-session/riders/available`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -37,7 +37,7 @@ function NewDelivery() {
                     }
                 );
                 const truckResponse = await axios.get(
-                    'http://localhost:4002/api/delivery-session/truck/available',
+                    `${process.env.REACT_APP_API}/api/delivery-session/truck/available`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
@@ -45,7 +45,7 @@ function NewDelivery() {
                     }
                 );
                 const orderResponse = await axios.get(
-                    'http://localhost:4002/api/truck/orders/preparing',
+                    `${process.env.REACT_APP_API}/api/truck/orders/preparing`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
