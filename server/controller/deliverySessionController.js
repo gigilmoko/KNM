@@ -368,25 +368,64 @@ exports.getOngoingSessionsByRider = async (req, res) => {
       rider: riderId,
       riderAccepted: 'Pending',
       status: 'Undecided'
-    }).populate('rider', 'fname lname email phone')
+    })
+      .populate('rider', 'fname lname email phone')
       .populate('truck', 'model plateNo')
-      .populate('orders', 'status');
+      .populate({
+        path: 'orders',
+        populate: [
+          {
+            path: 'orderProducts.product',
+            select: 'name description price'
+          },
+          {
+            path: 'user',
+            select: 'fname lname email deliveryAddress'
+          }
+        ]
+      });
 
     const ongoingSessions = await DeliverySession.find({
       rider: riderId,
       riderAccepted: 'Accepted',
       status: 'Ongoing'
-    }).populate('rider', 'fname lname email phone')
+    })
+      .populate('rider', 'fname lname email phone')
       .populate('truck', 'model plateNo')
-      .populate('orders', 'status');
+      .populate({
+        path: 'orders',
+        populate: [
+          {
+            path: 'orderProducts.product',
+            select: 'name description price'
+          },
+          {
+            path: 'user',
+            select: 'fname lname email deliveryAddress'
+          }
+        ]
+      });
 
     const rejectedSessions = await DeliverySession.find({
       rider: riderId,
       riderAccepted: 'Rejected',
       status: 'Cancelled'
-    }).populate('rider', 'fname lname email phone')
+    })
+      .populate('rider', 'fname lname email phone')
       .populate('truck', 'model plateNo')
-      .populate('orders', 'status');
+      .populate({
+        path: 'orders',
+        populate: [
+          {
+            path: 'orderProducts.product',
+            select: 'name description price'
+          },
+          {
+            path: 'user',
+            select: 'fname lname email deliveryAddress'
+          }
+        ]
+      });
 
     res.status(200).json({
       success: true,
@@ -402,6 +441,7 @@ exports.getOngoingSessionsByRider = async (req, res) => {
     });
   }
 };
+
 
 exports.getSessionsByRiderId = async (req, res, next) => {
   try {
