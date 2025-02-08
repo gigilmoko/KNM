@@ -2,6 +2,25 @@ const DeliverySession = require('../models/deliverysession');
 const Rider = require('../models/rider');
 const Truck = require('../models/truck');
 const Order = require('../models/order');
+const schedule = require('node-schedule');
+
+const markPendingOrdersAsDelivered = async () => {
+  try {
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+    const result = await Order.updateMany(
+      { status: 'Delivered Pending', createdAt: { $lte: threeDaysAgo } },
+      { status: 'Delivered' }
+    );
+
+    console.log(`Updated ${result.modifiedCount} orders to Delivered`);
+  } catch (error) {
+    console.error('Error updating pending orders:', error);
+  }
+};
+
+schedule.scheduleJob('0 0 * * *', markPendingOrdersAsDelivered);
 
 exports.createDeliverySession = async (req, res) => {
   try {
@@ -163,47 +182,32 @@ exports.declineWork = async (req, res) => {
   }
 };
   
-
-
 exports.completeDeliverySession = async (req, res) => {
   try {
-      const { id } = req.params;
+    const { id } = req.params;
 
-      const session = await DeliverySession.findById(id).populate('rider truck orders');
+    const session = await DeliverySession.findById(id).populate('rider truck orders');
 
-      if (!session || session.status !== 'Ongoing') {
-          return res.status(404).json({ message: 'Delivery session not found or not in Ongoing status' });
-      }
+    if (!session || session.status !== 'Ongoing') {
+      return res.status(404).json({ message: 'Delivery session not found or not in Ongoing status' });
+    }
 
-      session.status = 'Completed';
-      session.endTime = new Date();
-      await session.save();
+    session.status = 'Completed';
+    session.endTime = new Date();
+    await session.save();
 
-      // Update all orders to 'Delivered'
-      const orderUpdate = await Order.updateMany(
-          { _id: { $in: session.orders.map(order => order._id) } },
-          { status: 'Delivered' }
-      );
+    // Set rider and truck inUse to false
+    const riderUpdate = await Rider.findByIdAndUpdate(session.rider._id, { inUse: false }, { new: true }).exec();
+    const truckUpdate = await Truck.findByIdAndUpdate(session.truck._id, { inUse: false }, { new: true }).exec();
 
-      if (orderUpdate.modifiedCount === 0) {
-          console.log('No orders were updated to Delivered');
-          return res.status(400).json({ message: 'Failed to update order status to Delivered' });
-      }
+    if (!riderUpdate || !truckUpdate) {
+      return res.status(400).json({ message: 'Failed to update rider or truck inUse status' });
+    }
 
-      console.log('Orders updated to Delivered:', session.orders.map(order => order._id));
-
-      // Set rider and truck inUse to false
-      const riderUpdate = await Rider.findByIdAndUpdate(session.rider._id, { inUse: false }, { new: true }).exec();
-      const truckUpdate = await Truck.findByIdAndUpdate(session.truck._id, { inUse: false }, { new: true }).exec();
-
-      if (!riderUpdate || !truckUpdate) {
-          return res.status(400).json({ message: 'Failed to update rider or truck inUse status' });
-      }
-
-      res.status(200).json({ message: 'Delivery session completed successfully and orders marked as Delivered', session });
+    res.status(200).json({ message: 'Delivery session completed successfully', session });
   } catch (error) {
-      console.error('Error completing delivery session:', error);
-      res.status(500).json({ message: 'Error completing delivery session', error: error.message });
+    console.error('Error completing delivery session:', error);
+    res.status(500).json({ message: 'Error completing delivery session', error: error.message });
   }
 };
 
@@ -442,7 +446,6 @@ exports.getOngoingSessionsByRider = async (req, res) => {
   }
 };
 
-
 exports.getSessionsByRiderId = async (req, res, next) => {
   try {
     const { riderId } = req.params;
@@ -473,6 +476,44 @@ exports.getSessionsByRiderId = async (req, res, next) => {
   }
 };
 
+exports.submitProofDeliverySession = async (req, res) => {
+  try {
+    const { id, orderId } = req.params;
+    const { proofOfDelivery } = req.body;
+
+    if (!proofOfDelivery) {
+      return res.status(400).json({ message: "Proof of delivery URL is required." });
+    }
+
+    const session = await DeliverySession.findById(id).populate('orders');
+
+    if (!session) {
+      return res.status(404).json({ message: 'Delivery session not found' });
+    }
+
+    const order = session.orders.find(order => order._id.toString() === orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found in this delivery session' });
+    }
+
+    // Update the proof of delivery and status for the specific order
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { proofOfDelivery: proofOfDelivery, status: 'Delivered Pending' },
+      { new: true }
+    );
+
+    if (!updatedOrder) {
+      return res.status(400).json({ message: 'Failed to update order with proof of delivery' });
+    }
+
+    res.status(200).json({ message: 'Proof of delivery submitted and order marked as Delivered Pending', order: updatedOrder });
+  } catch (error) {
+    console.error('Error submitting proof of delivery:', error);
+    res.status(500).json({ message: 'Error submitting proof of delivery', error: error.message });
+  }
+};
 
 
 

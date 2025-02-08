@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["Preparing", "Shipped", "Delivered"],
+        enum: ["Preparing", "Shipped", "Delivered", "Delivered Pending"],
         default: "Preparing",
     },
     createdAt: {
@@ -51,6 +51,10 @@ const orderSchema = new mongoose.Schema({
     assignedAlready: {
         type: Boolean,
         default: false,
+    },
+    proofOfDelivery: {
+        type: String,
+        default: null, // Use null for cases where proof is not yet available
     },
 });
 
