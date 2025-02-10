@@ -17,7 +17,7 @@ router.put('/delivery-session/:id/accept', acceptWork);
 router.put('/delivery-session/:id/decline', declineWork); 
 router.put('/delivery-session/:id/completed-work', completeDeliverySession); 
 router.put('/delivery-session/:id/started-work', startDeliverySession); 
-router.put('/delivery-session/:id/:orderId/proof', submitProofDeliverySession);
+router.put('/delivery-session/:id/proof', submitProofDeliverySession);
 router.delete('/delivery-session/:id', deleteDeliverySession);  
 router.get('/delivery-session/pending/:riderId', getPendingSessionsByRider);
 router.get('/delivery-session/on-going/:riderId', getOngoingSessionsByRider);

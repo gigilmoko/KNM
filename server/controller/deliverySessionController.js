@@ -193,7 +193,14 @@ exports.completeDeliverySession = async (req, res) => {
     }
 
     session.status = 'Completed';
-    session.endTime = new Date();
+
+    // Set endTime in PH Time
+    session.endTime = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Manila',
+      dateStyle: 'short',
+      timeStyle: 'long'
+    }).format(new Date());
+
     await session.save();
 
     // Set rider and truck inUse to false
@@ -211,45 +218,51 @@ exports.completeDeliverySession = async (req, res) => {
   }
 };
 
+
 exports.startDeliverySession = async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        // Find the session with status 'Ongoing'
-        const session = await DeliverySession.findOne({ _id: id, status: 'Ongoing' }).populate('rider truck orders');
+    const session = await DeliverySession.findOne({ _id: id, status: 'Ongoing' }).populate('rider truck orders');
 
-        if (!session) {
-            return res.status(404).json({ message: 'Delivery session not found or not in Ongoing status' });
-        }
-
-        // Set startTime to the current time if it's not already set
-        if (!session.startTime) {
-            session.startTime = new Date();
-            await session.save();
-            console.log('Session startTime set:', session.startTime);
-        } else {
-            console.log('Session already has a startTime:', session.startTime);
-        }
-
-        // Update all orders to 'Shipped'
-        const orderUpdate = await Order.updateMany(
-            { _id: { $in: session.orders.map(order => order._id) } },
-            { status: 'Shipped' }
-        );
-
-        if (orderUpdate.modifiedCount === 0) {
-            console.log('No orders were updated to Shipped');
-            return res.status(400).json({ message: 'Failed to update order status to Shipped' });
-        }
-
-        console.log('Orders updated to Shipped:', session.orders.map(order => order._id));
-
-        res.status(200).json({ message: 'Delivery session started successfully', session });
-    } catch (error) {
-        console.error('Error starting delivery session:', error);
-        res.status(500).json({ message: 'Error starting delivery session', error: error.message });
+    if (!session) {
+      return res.status(404).json({ message: 'Delivery session not found or not in Ongoing status' });
     }
-}
+
+    // Set startTime in PH Time if it's not already set
+    if (!session.startTime) {
+      session.startTime = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Manila',
+        dateStyle: 'short',
+        timeStyle: 'long'
+      }).format(new Date());
+
+      await session.save();
+      console.log('Session startTime set:', session.startTime);
+    } else {
+      console.log('Session already has a startTime:', session.startTime);
+    }
+
+    // Update all orders to 'Shipped'
+    const orderUpdate = await Order.updateMany(
+      { _id: { $in: session.orders.map(order => order._id) } },
+      { status: 'Shipped' }
+    );
+
+    if (orderUpdate.modifiedCount === 0) {
+      console.log('No orders were updated to Shipped');
+      return res.status(400).json({ message: 'Failed to update order status to Shipped' });
+    }
+
+    console.log('Orders updated to Shipped:', session.orders.map(order => order._id));
+
+    res.status(200).json({ message: 'Delivery session started successfully', session });
+  } catch (error) {
+    console.error('Error starting delivery session:', error);
+    res.status(500).json({ message: 'Error starting delivery session', error: error.message });
+  }
+};
+
 
 exports.deleteDeliverySession = async (req, res) => {
   try {
@@ -478,42 +491,50 @@ exports.getSessionsByRiderId = async (req, res, next) => {
 
 exports.submitProofDeliverySession = async (req, res) => {
   try {
-    const { id, orderId } = req.params;
-    const { proofOfDelivery } = req.body;
+    const { id } = req.params;
+    const { orderId, proofOfDelivery } = req.body;
 
-    if (!proofOfDelivery) {
-      return res.status(400).json({ message: "Proof of delivery URL is required." });
+    console.log("Request Params (id):", id);
+    console.log("Order IDs:", orderId);
+    console.log("Proof of Delivery:", proofOfDelivery);
+
+    if (!orderId || !proofOfDelivery) {
+      return res.status(400).json({ message: "Order IDs and proof of delivery are required." });
     }
 
+    if (!Array.isArray(orderId)) {
+      return res.status(400).json({ message: "Order IDs must be an array." });
+    }
+
+    // Find the delivery session
     const session = await DeliverySession.findById(id).populate('orders');
+    console.log("Delivery Session Found:", session);
 
     if (!session) {
-      return res.status(404).json({ message: 'Delivery session not found' });
+      return res.status(404).json({ message: "Delivery session not found" });
     }
 
-    const order = session.orders.find(order => order._id.toString() === orderId);
-
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found in this delivery session' });
-    }
-
-    // Update the proof of delivery and status for the specific order
-    const updatedOrder = await Order.findByIdAndUpdate(
-      orderId,
-      { proofOfDelivery: proofOfDelivery, status: 'Delivered Pending' },
-      { new: true }
+    // Update all orders with the same proof of delivery and status
+    const updatedOrders = await Promise.all(
+      orderId.map(async (order) => {
+        return await Order.findByIdAndUpdate(
+          order,
+          { proofOfDelivery, status: 'Delivered Pending' },
+          { new: true }
+        );
+      })
     );
 
-    if (!updatedOrder) {
-      return res.status(400).json({ message: 'Failed to update order with proof of delivery' });
-    }
+    console.log("Updated Orders:", updatedOrders);
 
-    res.status(200).json({ message: 'Proof of delivery submitted and order marked as Delivered Pending', order: updatedOrder });
+    res.status(200).json({ message: "Proof of delivery submitted", orders: updatedOrders });
   } catch (error) {
-    console.error('Error submitting proof of delivery:', error);
-    res.status(500).json({ message: 'Error submitting proof of delivery', error: error.message });
+    console.error("Error submitting proof of delivery:", error);
+    res.status(500).json({ message: "Error submitting proof of delivery", error: error.message });
   }
 };
+
+
 
 
 
