@@ -4,10 +4,10 @@ const { createFeedback, getEventFeedback, getAllEventFeedback,  getAllReviews, g
 
 const router = express.Router();
 
-
+router.get('/event/feedback/all', getAllFeedbackEvents);
 router.post('/event/feedback/new', createFeedback);
 router.get('/event/feedback/:eventId', getEventFeedback);
-router.get('/event/feedback/all', getAllFeedbackEvents);
+
 
 
 module.exports = router;

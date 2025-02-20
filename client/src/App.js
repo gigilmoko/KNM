@@ -58,6 +58,7 @@ import RevenueReport from './Admin/Reports/RevenueReport';
 import OrderReports from './Admin/Reports/OrderReports';
 import UserReports from './Admin/Reports/UserReports';
 import MemberReports from './Admin/Reports/MemberReports';
+import SingleEvent from './Admin/Feedback/SingleEvent';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -122,6 +123,7 @@ function App() {
           <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />
           <Route path="/admin/product/feedback/list" element={<ProtectedRoute><ProductFeedbackList /></ProtectedRoute>} />
           <Route path="/admin/product/feedback/list/:productId" element={<ProtectedRoute><SingleProduct/></ProtectedRoute>} />
+          <Route path="/admin/event/feedback/list/:eventId" element={<ProtectedRoute><SingleEvent/></ProtectedRoute>} />
           {/* Member */}
           <Route path="/admin/members/new" element={<ProtectedRoute><NewMember /></ProtectedRoute>} />
           <Route path="/admin/members/edit/:memberId" element={<ProtectedRoute><UpdateMember /></ProtectedRoute>} />

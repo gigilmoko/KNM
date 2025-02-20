@@ -245,7 +245,6 @@ exports.updatePassword = async (req, res, next) => {
     }
 };
 
-
 exports.getPendingTruck = async (req, res, next) => {
     try {
       // Get the rider ID from the URL parameter
@@ -361,5 +360,41 @@ exports.avatarUpdate = async (req, res) => {
     } catch (error) {
         console.error('Error updating avatar:', error);
         res.status(500).json({ message: "Server Error" });
+    }
+};
+
+exports.updateRiderLocation = async (req, res, next) => {   
+    // console.log('Update Rider Location route hit');
+
+    const { riderId, latitude, longitude } = req.body;
+
+    // Validate the Rider ID format
+    if (!mongoose.Types.ObjectId.isValid(riderId)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Invalid Rider ID format',
+        });
+    }
+
+    try {
+        const rider = await Rider.findByIdAndUpdate(
+            riderId,
+            { location: { latitude, longitude } },
+            { new: true }
+        );
+
+        if (!rider) {
+            return res.status(404).json({
+                success: false,
+                message: 'Rider not found',
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            location: rider.location,
+        });
+    } catch (error) {
+        next(error);
     }
 };

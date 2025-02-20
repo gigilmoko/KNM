@@ -151,7 +151,7 @@ function MembersConfirmation() {
                     <Header />
                     <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200" ref={mainContentRef}>
                         <TitleCard
-                            title="All Users"
+                            title="Members for Approval"
                             topMargin="mt-2"
                             TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
                         >

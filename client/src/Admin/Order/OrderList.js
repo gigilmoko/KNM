@@ -163,7 +163,7 @@ function OrdersList() {
                       <th>Customer</th>
                       <th>Items</th>
                       <th>Total Amount</th>
-                      <th>Status</th>
+                      {/* <th>Status</th> */}
                       {/* <th>Actions</th> */}
                     </tr>
                   </thead>
@@ -174,14 +174,14 @@ function OrdersList() {
                           <td>{order._id}</td>
                           <td>{getUserNameById(order.user)}</td>
                           <td>
-                            {order.orderProducts.map((item, i) => (
-                              <div key={i} className="text-sm">
-                                Product ID: {item.product} x {item.quantity}
-                              </div>
-                            ))}
-                          </td>
+  {order.orderProducts.map((item, i) => (
+    <div key={i} className="text-sm">
+      {item.product?.name ? item.product.name : "Unknown Product"} x {item.quantity}
+    </div>
+  ))}
+</td>
                           <td>${order.totalPrice?.toFixed(2) || "0.00"}</td>
-                          <td>
+                          {/* <td>
                             <select
                               value={order.status}
                               onChange={(e) => updateOrderStatus(order._id, index, e.target.value)}
@@ -191,7 +191,7 @@ function OrdersList() {
                               <option value="Shipped">Shipped</option>
                               <option value="Delivered">Delivered</option>
                             </select>
-                          </td>
+                          </td> */}
                           {/* <td>
                             <button
                               className="btn btn-danger btn-sm ml-2"

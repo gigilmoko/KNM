@@ -39,9 +39,14 @@ const riderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,  // False initially, true when assigned to a session
     },
+    location: {
+      latitude: { type: Number, default: 0 },
+      longitude: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );
+
 
 // Middleware for hashing passwords before saving
 riderSchema.pre('save', async function (next) {

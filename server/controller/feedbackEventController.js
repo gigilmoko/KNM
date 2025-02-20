@@ -89,6 +89,7 @@ exports.getEventFeedback = async (req, res) => {
 
 // Fetch All Feedback Events Controller
 exports.getAllFeedbackEvents = async (req, res) => {
+  console.log("getAllFeedbackEvents");
   try {
     // Use MongoDB aggregation to group feedback by eventId and calculate average rating
     const feedbackEvents = await EventFeedback.aggregate([
@@ -115,11 +116,29 @@ exports.getAllFeedbackEvents = async (req, res) => {
       });
     }
 
-    // Return grouped feedback events
+    // Fetch event details for each eventId
+    const enrichedFeedbackEvents = await Promise.all(
+      feedbackEvents.map(async (event) => {
+        const calendarEvent = await CalendarEvent.findOne({ _id: event.eventId })
+          .select('date title description startDate endDate image');
+
+        return {
+          ...event,
+          date: calendarEvent?.date || null,
+          title: calendarEvent?.title || null,
+          description: calendarEvent?.description || null,
+          startDate: calendarEvent?.startDate || null,
+          endDate: calendarEvent?.endDate || null,
+          image: calendarEvent?.image || null,
+        };
+      })
+    );
+
+    // Return grouped feedback events with event details
     return res.status(200).json({
       success: true,
       message: 'Feedback events grouped and fetched successfully.',
-      data: feedbackEvents,
+      data: enrichedFeedbackEvents,
     });
   } catch (error) {
     console.error('Error fetching feedback events:', error);

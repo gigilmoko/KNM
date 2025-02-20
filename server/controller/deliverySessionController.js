@@ -218,7 +218,6 @@ exports.completeDeliverySession = async (req, res) => {
   }
 };
 
-
 exports.startDeliverySession = async (req, res) => {
   try {
     const { id } = req.params;
@@ -262,7 +261,6 @@ exports.startDeliverySession = async (req, res) => {
     res.status(500).json({ message: 'Error starting delivery session', error: error.message });
   }
 };
-
 
 exports.deleteDeliverySession = async (req, res) => {
   try {

@@ -123,7 +123,7 @@ function DeliveryList() {
                                           <th>Rider</th>
                                           <th>Truck</th>
                                           <th>Orders</th>
-                                          <th>Status</th>
+                                          {/* <th>Status</th> */}
                                           <th>Actions</th>
                                       </tr>
                                   </thead>
@@ -137,7 +137,7 @@ function DeliveryList() {
                                                           <td>{session.riderDetails[0]?.fname} {session.riderDetails[0]?.middlei} {session.riderDetails[0]?.lname}</td>
                                                           <td>{session.truckDetails[0]?.model} ({session.truckDetails[0]?.plateNo})</td>
                                                           <td>{session.orders.join(', ')}</td>
-                                                          <td>{session.status}</td>
+                                                          {/* <td>{session.status}</td> */}
                                                           <td>
                                                               <button 
                                                                   className="btn btn-primary btn-sm mr-2" 

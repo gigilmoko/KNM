@@ -31,7 +31,7 @@ router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
 router.delete('/orders/delete/:id',isAuthenticatedUser, isAdmin, deleteOrder);
 
 router.get("/my", isAuthenticatedUser, getMyOrders);
-router.get("/orders/list",  getAdminOrders);
+router.get("/orders/list",  isAuthenticatedUser, getAdminOrders);
 router.route("/orders/single/:id")
     .get(getOrderDetails)
     

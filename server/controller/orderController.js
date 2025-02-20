@@ -226,15 +226,20 @@ exports.gcashPayment = async (req, res, next) => {
 };
 
 exports.getAdminOrders = async (req, res, next) => {
-    try {
-        const orders = await Order.find({});
-        res.status(200).json({
-            success: true,
-            orders,
-        });
-    } catch (error) {
-        next(error); 
-    }
+  try {
+      const orders = await Order.find({})
+          .populate({
+              path: "orderProducts.product",
+              select: "name price", // Include the fields you need
+          });
+
+      res.status(200).json({
+          success: true,
+          orders,
+      });
+  } catch (error) {
+      next(error);
+  }
 };
 
 exports.getMyOrders = async (req, res, next) => {

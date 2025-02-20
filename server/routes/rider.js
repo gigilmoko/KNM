@@ -4,7 +4,7 @@ const { isAuthenticatedUser, isAuthenticatedRider, authorizeRoles, isAdmin } = r
 
 const { getRider, newRider, getSingleRider, deleteRider, updateRider, 
     riderLogin, riderProfile, riderLogout, updatePassword, getPendingTruck,
-    riderAvailable, riderUnavilable, avatarUpdate } = require('../controller/riderController');
+    riderAvailable, riderUnavilable, avatarUpdate, updateRiderLocation } = require('../controller/riderController');
 
 
     // Place the route for logging in a rider before the routes that expect an ObjectId
@@ -20,7 +20,7 @@ router.get('/rider/:id', getSingleRider);
 router.delete('/rider/delete/:id', isAuthenticatedUser, isAdmin, deleteRider);
 router.put('/rider/update/:id', isAuthenticatedUser, isAdmin, updateRider);
 
-
+router.put('/rider/update-location', updateRiderLocation);
 router.put('/rider/update/password/:riderId', updatePassword);
 router.put('/rider/avatar-update/:id', avatarUpdate);
 
