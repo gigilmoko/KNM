@@ -6,7 +6,7 @@ const { createDeliverySession, getSessions, getSessionById,
     acceptWork, deleteDeliverySession, declineWork, completeDeliverySession,
     startDeliverySession, getGroupedDeliverySessions, getPendingSessionsByRider,
     getOngoingSessionsByRider, getSessionsByRiderId, submitProofDeliverySession,
-    cancelOrder,
+    cancelOrder, getSessionByOrderId
     
   
  } = require('../controller/deliverySessionController'); 
@@ -23,6 +23,7 @@ router.put('/delivery-session/:id/proof', submitProofDeliverySession);
 router.put('/delivery-session/:id/cancel-order/:orderId', cancelOrder);
 router.delete('/delivery-session/:id', deleteDeliverySession);  
 router.get('/delivery-session/pending/:riderId', getPendingSessionsByRider);
+router.get('/delivery-session/order/:orderId/', getSessionByOrderId);
 router.get('/delivery-session/on-going/:riderId', getOngoingSessionsByRider);
 router.get('/delivery-session/history/:riderId', getSessionsByRiderId);
 

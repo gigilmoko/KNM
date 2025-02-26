@@ -561,6 +561,45 @@ exports.cancelOrder = async (req, res) => {
   }
 };
 
+exports.getSessionByOrderId = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    // Find the session that includes the given orderId
+    const session = await DeliverySession.findOne({ orders: orderId })
+      .populate('rider', 'fname lname email phone location') // Added location field
+      .populate('truck', 'model plateNo')
+     
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: 'No delivery session found for this order'
+      });
+    }
+
+    // Extract the single order that matches orderId
+    const matchedOrder = session.orders.length > 0 ? session.orders[0] : null;
+
+    res.status(200).json({
+      success: true,
+      session: {
+        _id: session._id,
+        rider: session.rider,
+        truck: session.truck,
+        order: matchedOrder // Send only the matched order
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching session by order ID:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error'
+    });
+  }
+};
+
+
 
 
 
