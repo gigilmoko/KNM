@@ -186,8 +186,6 @@ exports.createOrder = async (req, res, next) => {
   }
 };
 
-
-
 exports.gcashPayment = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -808,22 +806,21 @@ exports.getOrderStatusCounts = async (req, res) => {
   }
 };
 
-exports.getPreparingOrders = async (req, res) => {
+exports.getPreparingAndCancelledOrders = async (req, res) => {
   try {
-    // Find all orders where status is "Preparing", insideTruck is false, and assignedAlready is false
-    const preparingOrders = await Order.find({ 
-      status: "Preparing",
-      
-      assignedAlready: false, // Include the condition for assignedAlready being false
+    // Find all orders where status is either "Preparing" or "Cancelled", and assignedAlready is false
+    const orders = await Order.find({ 
+      status: { $in: ["Preparing", "Cancelled"] }, 
+      assignedAlready: false 
     });
 
     res.status(200).json({
       success: true,
-      count: preparingOrders.length,
-      orders: preparingOrders,
+      count: orders.length,
+      orders,
     });
   } catch (error) {
-    console.error("Error fetching preparing orders:", error);
+    console.error("Error fetching orders:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
@@ -846,6 +843,96 @@ exports.deleteOrder = async (req, res, next) => {
       res.status(500).json({
           success: false,
           message: 'Server error'
+      });
+  }
+};
+
+exports.proofOfDeliveryConfirmed = async (req, res) => {
+  try {
+      const { orderId } = req.params;
+
+      let order = await Order.findById(orderId);
+      if (!order) {
+          return res.status(404).json({
+              success: false,
+              message: 'Order not found',
+          });
+      }
+
+      // First, mark as "Delivered Pending"
+      order.status = "Delivered Pending";
+      await order.save();
+
+      // After confirmation, mark as "Delivered"
+      order.status = "Delivered";
+      await order.save();
+
+      res.status(200).json({
+          success: true,
+          message: "Proof of Delivery confirmed. Order marked as Delivered.",
+          order,
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: "Server error",
+      });
+  }
+};
+
+exports.proofOfDeliveryNotConfirmed = async (req, res) => {
+  try {
+      const { orderId } = req.params;
+
+      let order = await Order.findById(orderId);
+      if (!order) {
+          return res.status(404).json({
+              success: false,
+              message: 'Order not found',
+          });
+      }
+
+      // First, mark as "Delivered Pending"
+      order.status = "Delivered Pending";
+      await order.save();
+
+      // If not confirmed, mark as "Cancelled"
+      order.status = "Cancelled";
+      await order.save();
+
+      res.status(200).json({
+          success: true,
+          message: "Proof of Delivery not confirmed. Order marked as Cancelled.",
+          order,
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: "Server error",
+      });
+  }
+};
+
+exports.getPendingDeliveries = async (req, res) => {
+  try {
+      const pendingOrders = await Order.find({ status: "Delivered Pending" });
+
+      if (pendingOrders.length === 0) {
+          return res.status(404).json({
+              success: false,
+              message: "No orders with status 'Delivered Pending' found.",
+          });
+      }
+
+      res.status(200).json({
+          success: true,
+          message: "Pending delivery orders retrieved successfully.",
+          orders: pendingOrders,
+      });
+  } catch (error) {
+      res.status(500).json({
+          success: false,
+          message: "Server error",
       });
   }
 };

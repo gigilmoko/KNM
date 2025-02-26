@@ -22,7 +22,10 @@ const {
     getDailyOrderTotalByInterval,
     getTotalCustomer,
     getOrderStatusCounts,
-    getPreparingOrders
+    getPreparingAndCancelledOrders,
+    proofOfDeliveryConfirmed,
+    proofOfDeliveryNotConfirmed,
+    getPendingDeliveries
 
 } = require("../controller/orderController");
 
@@ -48,6 +51,10 @@ router.get('/analytics/orders/weekly',isAuthenticatedUser, isAdmin,getLast7DaysO
 router.get('/analytics/orders/daily',isAuthenticatedUser, isAdmin, getDailyOrderTotalByInterval)
 router.get('/analytics/orders/totalcustomers', isAuthenticatedUser, isAdmin, getTotalCustomer)
 router.get('/orders/status/count',  isAuthenticatedUser, isAdmin, getOrderStatusCounts)
-router.get('/truck/orders/preparing',   getPreparingOrders)
+router.get('/truck/orders/preparing',   getPreparingAndCancelledOrders)
+router.get('/orders/delivery-pending',   getPendingDeliveries)
+router.put('/order/proof/:orderId/confirmed',proofOfDeliveryConfirmed)
+router.put('/order/proof/:orderId/notconfirmed',proofOfDeliveryNotConfirmed)
+
 
 module.exports = router;

@@ -5,7 +5,9 @@ const { isAuthenticatedUser, authorizeRoles, isAdmin } = require('../middlewares
 const { createDeliverySession, getSessions, getSessionById,
     acceptWork, deleteDeliverySession, declineWork, completeDeliverySession,
     startDeliverySession, getGroupedDeliverySessions, getPendingSessionsByRider,
-    getOngoingSessionsByRider, getSessionsByRiderId, submitProofDeliverySession
+    getOngoingSessionsByRider, getSessionsByRiderId, submitProofDeliverySession,
+    cancelOrder,
+    
   
  } = require('../controller/deliverySessionController'); 
 
@@ -18,6 +20,7 @@ router.put('/delivery-session/:id/decline', declineWork);
 router.put('/delivery-session/:id/completed-work', completeDeliverySession); 
 router.put('/delivery-session/:id/started-work', startDeliverySession); 
 router.put('/delivery-session/:id/proof', submitProofDeliverySession);
+router.put('/delivery-session/:id/cancel-order/:orderId', cancelOrder);
 router.delete('/delivery-session/:id', deleteDeliverySession);  
 router.get('/delivery-session/pending/:riderId', getPendingSessionsByRider);
 router.get('/delivery-session/on-going/:riderId', getOngoingSessionsByRider);

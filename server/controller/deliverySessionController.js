@@ -532,6 +532,36 @@ exports.submitProofDeliverySession = async (req, res) => {
   }
 };
 
+exports.cancelOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    console.log("Order ID to cancel:", orderId);
+
+    // Find the order by ID
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Check if the order is already delivered
+    if (order.status === "Delivered" || order.status === "Delivered Pending") {
+      return res.status(400).json({ message: "Cannot cancel an order that has already been delivered." });
+    }
+
+    // Update order status to "Cancelled"
+    order.status = "Cancelled";
+    await order.save();
+
+    console.log("Order Cancelled:", order);
+    res.status(200).json({ message: "Order has been cancelled successfully", order });
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    res.status(500).json({ message: "Error cancelling order", error: error.message });
+  }
+};
+
+
 
 
 
