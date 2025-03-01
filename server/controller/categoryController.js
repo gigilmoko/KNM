@@ -1,5 +1,5 @@
 const Category = require('../models/category')
-
+const Product = require('../models/product')
 exports.getCategory = async (req, res, next) => {
 	try {
 		const categories = await Category.find();
@@ -92,6 +92,34 @@ exports.deleteCategory = async (req, res, next) => {
 		message: 'Category deleted'
 	})
 };
+
+// exports.getCategoryWithProducts = async (req, res, next) => {
+//     try {
+//         const { categoryId } = req.params;
+
+//         // Find category
+//         const category = await Category.findById(categoryId);
+//         if (!category) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Category not found'
+//             });
+//         }
+
+//         // Find products in this category
+//         const products = await Product.find({ category: categoryId });
+
+//         res.status(200).json({
+//             success: true,
+//             category,
+//             products,
+//             count: products.length
+//         });
+//     } catch (error) {
+//         next(error);
+//     }
+// };
+
 
 // exports.getAdminCategories = async (req, res, next) => {
 // 	const categories = await Category.find();
