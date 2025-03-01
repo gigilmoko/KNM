@@ -38,10 +38,14 @@ exports.createDeliverySession = async (req, res) => {
       return res.status(400).json({ message: 'Rider or Truck is already in use' });
     }
 
-    // Ensure all orders have status 'Preparing'
-    const orders = await Order.find({ _id: { $in: orderIds }, status: 'Preparing' });
+    // Ensure all orders have status 'Preparing' or 'Cancelled'
+    const orders = await Order.find({
+      _id: { $in: orderIds },
+      status: { $in: ['Preparing', 'Cancelled'] }
+    });
+
     if (orders.length !== orderIds.length) {
-      return res.status(400).json({ message: 'One or more orders are not in Preparing status' });
+      return res.status(400).json({ message: 'One or more orders are not in Preparing or Cancelled status' });
     }
 
     // Update orders to set assignedAlready to true
@@ -206,7 +210,7 @@ exports.completeDeliverySession = async (req, res) => {
     // Set rider and truck inUse to false
     const riderUpdate = await Rider.findByIdAndUpdate(session.rider._id, { inUse: false }, { new: true }).exec();
     const truckUpdate = await Truck.findByIdAndUpdate(session.truck._id, { inUse: false }, { new: true }).exec();
-
+    
     if (!riderUpdate || !truckUpdate) {
       return res.status(400).json({ message: 'Failed to update rider or truck inUse status' });
     }

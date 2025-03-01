@@ -5,9 +5,9 @@
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "@photo-sphere-viewer/core": "^5.10.1",
-    "@react-three/drei": "^10.0.3",
-    "@react-three/fiber": "^9.0.4",
-    "@react-three/postprocessing": "^3.0.4",
+    "@react-three/drei": "^7.5.1",
+    "@react-three/fiber": "^7.0.6",
+    "@react-three/postprocessing": "^2.3.2",
     "@reduxjs/toolkit": "^2.2.7",
     "@tailwindcss/typography": "^0.5.15",
     "@tailwindcss/vite": "^4.0.9",
