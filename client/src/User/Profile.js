@@ -7,8 +7,28 @@ import HeaderPublic from '../Layout/HeaderPublic';
 import FooterPublic from '../Layout/FooterPublic';
 import { quantum } from 'ldrs';
 import InputText from "../Layout/components/Input/InputText";
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import { OpenStreetMapProvider } from 'leaflet-geosearch';
+import "leaflet/dist/leaflet.css";
+import L from 'leaflet';
 
 quantum.register();
+
+const markerIcon = new L.Icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+});
+
+const LocationMarker = ({ position }) => {
+    return position ? <Marker position={position} icon={markerIcon} /> : null;
+  };
+
+const ChangeView = ({ center }) => {
+  const map = useMap();
+  map.setView(center, map.getZoom());
+  return null;
+};
 
 function Profile() {
     const [user, setUser] = useState({
@@ -24,6 +44,7 @@ function Profile() {
         googleLogin: false,
         role: '' // Add role to user state
     });
+    const [position, setPosition] = useState({ lat: 14.50956367111596, lng: 121.03467166995625 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -49,6 +70,9 @@ function Profile() {
             console.log('Profile:', data);
             setUser(data.user || {}); // Ensure user state is updated
             setLoading(false);
+            const userLat = data.user?.deliveryAddress?.[0]?.latitude || 14.50956367111596; // default if not available
+            const userLng = data.user?.deliveryAddress?.[0]?.longitude || 121.03467166995625; // default if not available
+            setPosition({ lat: userLat, lng: userLng });
         } catch (error) {
             console.log(error);
             setError('Failed to load profile.');
@@ -183,6 +207,20 @@ function Profile() {
                                 disabled
                             />
                         </div>
+
+ <div className="w-full max-w-4xl mt-4">
+                                          <MapContainer
+                                            center={position}
+                                            zoom={15}
+                                            style={{ height: "400px", width: "100%" }}
+                                            className="shadow-md rounded-lg"
+                                          >
+                                            <ChangeView center={position} />
+                                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                            <LocationMarker position={position} setPosition={setPosition} />
+                                          </MapContainer>
+                                         
+                                        </div>
 
                        
                         <div className="flex justify-end gap-4 mt-4">
