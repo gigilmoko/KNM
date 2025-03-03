@@ -470,7 +470,16 @@ exports.getTopProducts = async (req, res) => {
 
     const productSales = {};
     orders.forEach((order) => {
-      order.orderItems.forEach((item) => {
+      if (!order.orderProducts || !Array.isArray(order.orderProducts)) {
+        console.warn(`Skipping order ${order._id} due to missing or invalid orderProducts`);
+        return;
+      }
+
+      order.orderProducts.forEach((item) => {
+        if (!item.product) {
+          console.warn(`Skipping item in order ${order._id} due to missing product`);
+          return;
+        }
         const productId = item.product.toString();
         productSales[productId] = (productSales[productId] || 0) + item.quantity;
       });
@@ -479,20 +488,37 @@ exports.getTopProducts = async (req, res) => {
     const sortedProducts = Object.entries(productSales).sort(([, a], [, b]) => b - a);
     const topProducts = await Promise.all(
       sortedProducts.slice(0, 5).map(async ([productId, quantity]) => {
-        const product = await Product.findById(productId);
-        return { product, quantity };
+        const product = await Product.findById(productId).populate("category", "name");
+        if (!product) return null; // Handle missing products
+        return { 
+          product: {
+            _id: product._id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            category: {
+              _id: product.category._id, 
+              name: product.category.name 
+            },
+            stock: product.stock,
+            images: product.images,
+            createdAt: product.createdAt
+          },
+          quantity
+        };
       })
     );
 
     res.status(200).json({
       success: true,
-      topProducts,
+      topProducts: topProducts.filter(p => p !== null), // Remove null products
     });
   } catch (error) {
     console.error("Error in product popularity analysis:", error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
+
 
 exports.getSeasonalityAnalysis = async (req, res) => {
   try {

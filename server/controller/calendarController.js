@@ -45,7 +45,6 @@ exports.testNotifyMembers = async (req, res) => {
     }
 };
 
-
 exports.testNotifyAllUsers = async (req, res) => {
     try {
         const users = await User.find({
@@ -82,6 +81,110 @@ exports.testNotifyAllUsers = async (req, res) => {
     }
 };
 
+// exports.createEvent = async (req, res) => {
+//     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
+//     console.log('req.body', req.body);
+
+//     if (!req.user || !req.user.id) {
+//         return res.status(401).json({ success: false, message: 'Unauthorized: User not authenticated' });
+//     }
+
+//     try {
+//         // Convert startDate and endDate to Philippines time
+//         const startDateInPH = moment(startDate).tz('Asia/Manila').format();
+//         const endDateInPH = moment(endDate).tz('Asia/Manila').format();
+
+//         // Create the new event with converted dates
+//         const newEvent = new CalendarEvent({
+//             date,
+//             title,
+//             description,
+//             startDate: startDateInPH,
+//             endDate: endDateInPH,
+//             image,
+//             location,
+//             audience,
+//             user: req.user.id
+//         });
+
+//         await newEvent.save();
+//         console.log('Audience type:', audience);
+
+//         // Get users to notify based on audience
+//         let users;
+//         if (audience === 'all') {
+//             users = await User.find({ deviceToken: { $exists: true, $ne: null } });
+//             console.log('All users with device tokens:', users.length);
+//         } else {
+//             users = await User.find({
+//                 deviceToken: { $exists: true, $ne: null },
+//                 role: 'member'
+//             });
+//             console.log('Member users with device tokens:', users.length);
+//         }
+
+//         // Log found users
+//         console.log('Users found:', users.map(u => ({
+//             id: u._id,
+//             email: u.email,
+//             hasToken: !!u.deviceToken
+//         })));
+
+//         // Send push notification if there are users with device tokens
+//         if (playerIds.length > 0) {
+//             const notification = {
+//                 app_id: process.env.ONESIGNAL_APP_ID,
+//                 include_player_ids: playerIds,
+//                 contents: {
+//                     en: `New event "${title}" scheduled from ${new Date(startDateInPH).toLocaleString()} to ${new Date(endDateInPH).toLocaleString()} at ${location}.`
+//                 },
+//                 headings: { en: "New Event Created" },
+//                 data: { eventId: newEvent._id }
+//             };
+
+//             try {
+//                 const response = await axios.post(
+//                     'https://onesignal.com/api/v1/notifications',
+//                     notification,
+//                     {
+//                         headers: {
+//                             'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+//                             'Content-Type': 'application/json'
+//                         }
+//                     }
+//                 );
+//                 console.log('OneSignal Response:', response.data);
+//             } catch (notificationError) {
+//                 console.error('Error sending push notification:', notificationError);
+//             }
+//         }
+
+//         // Create in-app notifications for users
+//         const notificationPromises = users.map(user => {
+//             return new Notification({
+//                 user: user._id,
+//                 event: newEvent._id,
+//                 read: false
+//             }).save();
+//         });
+
+//         await Promise.all(notificationPromises);
+
+//         res.status(201).json({
+//             success: true,
+//             message: 'Event created successfully',
+//             data: newEvent,
+//             notifiedUsers: playerIds.length
+//         });
+//     } catch (error) {
+//         console.error('Error creating event:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Failed to create event',
+//             error: error.message
+//         });
+//     }
+// };
 
 exports.createEvent = async (req, res) => {
     const { date, title, description, startDate, endDate, image, location, audience } = req.body;
@@ -116,21 +219,16 @@ exports.createEvent = async (req, res) => {
         let users;
         if (audience === 'all') {
             users = await User.find({ deviceToken: { $exists: true, $ne: null } });
-            console.log('All users with device tokens:', users.length);
         } else {
             users = await User.find({
                 deviceToken: { $exists: true, $ne: null },
                 role: 'member'
             });
-            console.log('Member users with device tokens:', users.length);
         }
+        console.log(`Users to notify: ${users.length}`);
 
-        // Log found users
-        console.log('Users found:', users.map(u => ({
-            id: u._id,
-            email: u.email,
-            hasToken: !!u.deviceToken
-        })));
+        // Extract player IDs (device tokens) from users
+        const playerIds = users.map(user => user.deviceToken).filter(Boolean); // Removes null values
 
         // Send push notification if there are users with device tokens
         if (playerIds.length > 0) {
@@ -187,7 +285,6 @@ exports.createEvent = async (req, res) => {
         });
     }
 };
-
 
 exports.updateEvent = async (req, res) => {
     const eventId = req.params.id;
@@ -272,7 +369,6 @@ exports.updateEvent = async (req, res) => {
         });
     }
 };
-
 
 exports.getEvent = async (req, res) => {
     const eventId = req.params.id;
@@ -433,3 +529,23 @@ exports.searchEvents = async (req, res) => {
     }
 };
 
+exports.getNextThreeEvents = async (req, res) => {
+    try {
+        const currentDate = new Date();
+
+        const events = await CalendarEvent.find({ startDate: { $gte: currentDate } })
+            .sort({ startDate: 1 }) // Sort by startDate in ascending order
+            .limit(3); // Limit to the next 3 events
+
+        res.status(200).json({
+            success: true,
+            data: events
+        });
+    } catch (error) {
+        console.error('Error fetching next events:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch upcoming events'
+        });
+    }
+};

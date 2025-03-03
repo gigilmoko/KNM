@@ -6,6 +6,9 @@ import { showNotification } from '../Layout/common/headerSlice';
 import Subtitle from '../Layout/components/Typography/Subtitle';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from "react-toastify"; 
+import HeaderPublic from '../Layout/HeaderPublic';
+import FooterPublic from '../Layout/FooterPublic';
+import InputText from "../Layout/components/Input/InputText";
 
 function ProfileUpdate() {
     const dispatch = useDispatch();
@@ -17,10 +20,10 @@ function ProfileUpdate() {
         email: '',
         phone: '',
         dateOfBirth: '',
-        address: '',
         avatar: '',
         googleLogin: false,
     });
+    const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
     const nameRegex = /^[A-Za-z\s]+$/;
     const middleInitialRegex = /^[A-Z]$/;
@@ -45,11 +48,10 @@ function ProfileUpdate() {
         }
     };
 
-    const updateFormValue = (e) => {
-        const { name, value } = e.target;
+    const updateFormValue = (updateType, value) => {
         setUser((prevUser) => ({
             ...prevUser,
-            [name]: value
+            [updateType]: value
         }));
     };
 
@@ -106,7 +108,6 @@ function ProfileUpdate() {
         } else if (!emailRegex.test(user.email)) {
             errors.email = "Please enter a valid email address.";
         }
-
         if (!user.phone.trim()) {
             errors.phone = "Phone number is required.";
         } else if (!phoneRegex.test(user.phone)) {
@@ -115,7 +116,6 @@ function ProfileUpdate() {
     
         return errors;
     };
-    
     
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -135,7 +135,6 @@ function ProfileUpdate() {
             dateOfBirth: user.dateOfBirth, 
             email: user.email, 
             phone: user.phone, 
-            address: user.address, 
             avatar: user.avatar
         };
     
@@ -155,129 +154,142 @@ function ProfileUpdate() {
     };
 
     return (
-        <div className="flex items-center justify-center h-screen">
-            <ToastContainer/>
-            <div className="card w-3/4 md:w-1/2 p-4 bg-base-100 shadow-md rounded-lg">
-                <Subtitle>
-                    Profile Information
-                </Subtitle>
+        <div className={`min-h-screen bg-base-200 flex flex-col`}>
+            <HeaderPublic />
+            <div className="flex items-center justify-center flex-grow">
+                <ToastContainer/>
+                <div className={`mx-auto w-full max-w-2xl shadow-xl p-6 my-12 bg-base-100 rounded-xl border border-gray-300`}>
+                    <h2 className="text-3xl font-bold mb-2 text-center text-[#df1f47]">Update Profile</h2>
+                    <p className={`text-center mb-6 text-gray-600`}>Edit your personal information</p>
 
-                <div className="divider mt-2"></div>
-
-                <div className='h-full w-full pb-4 bg-base-100'>
-                    <div className="flex items-center justify-center mb-4">
-                        <label htmlFor="avatar-upload" className="cursor-pointer">
-                            {user.avatar ? (
+                    <div className='h-full w-full pb-4'>
+                        <div className="flex items-center justify-center mb-4">
+                            <label htmlFor="avatar-upload" className="cursor-pointer">
                                 <img
-                                    src={user.avatar}
+                                    src={user.avatar && user.avatar.trim() ? user.avatar : "https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"}
                                     alt="User Avatar"
                                     className="rounded-full h-24 w-24 object-cover"
                                 />
-                            ) : (
-                                <div className="rounded-full h-24 w-24 bg-gray-200 flex items-center justify-center">
-                                    <span>No Image</span>
-                                </div>
-                            )}
-                        </label>
-                        <input
-                            id="avatar-upload"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleAvatarChange}
-                            className="hidden"
-                        />
-                    </div>
-
-                    <form onSubmit={handleSubmit}>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="font-semibold">First Name:</label>
                                 <input
+                                    id="avatar-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleAvatarChange}
+                                    className="hidden"
+                                />
+                            </label>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <InputText
                                     type="text"
-                                    name="fname"
-                                    value={user.fname}
-                                    onChange={updateFormValue}
-                                    className="input input-bordered w-full"
+                                    defaultValue={user.fname}
+                                    containerStyle="mt-1"
+                                    labelTitle="First Name"
+                                    updateFormValue={({ value }) => updateFormValue('fname', value)}
+                                />
+                                <InputText
+                                    type="text"
+                                    defaultValue={user.lname}
+                                    containerStyle="mt-1"
+                                    labelTitle="Last Name"
+                                    updateFormValue={({ value }) => updateFormValue('lname', value)}
+                                />
+                                <InputText
+                                    type="text"
+                                    defaultValue={user.middlei}
+                                    containerStyle="mt-1"
+                                    labelTitle="Middle Initial"
+                                    updateFormValue={({ value }) => updateFormValue('middlei', value)}
                                 />
                             </div>
 
-                            <div>
-                                <label className="font-semibold">Last Name:</label>
-                                <input
-                                    type="text"
-                                    name="lname"
-                                    value={user.lname}
-                                    onChange={updateFormValue}
-                                    className="input input-bordered w-full"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="font-semibold">Middle Initial:</label>
-                                <input
-                                    type="text"
-                                    name="middlei"
-                                    value={user.middlei}
-                                    onChange={updateFormValue}
-                                    className="input input-bordered w-full"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="font-semibold">Email:</label>
-                                <input
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                                <InputText
                                     type="email"
-                                    name="email"
-                                    value={user.email}
-                                    onChange={updateFormValue}
-                                    className="input input-bordered w-full"
-                                    readOnly={user.googleLogin}
+                                    defaultValue={user.email}
+                                    containerStyle="mt-1"
+                                    labelTitle="Email"
+                                    updateFormValue={({ value }) => updateFormValue('email', value)}
                                 />
-                            </div>
-
-                            <div>
-                                <label className="font-semibold">Phone:</label>
-                                <input
+                                <InputText
                                     type="text"
-                                    name="phone"
-                                    value={user.phone}
-                                    onChange={updateFormValue}
-                                    className="input input-bordered w-full"
+                                    defaultValue={user.phone}
+                                    containerStyle="mt-1"
+                                    labelTitle="Phone"
+                                    updateFormValue={({ value }) => updateFormValue('phone', value)}
                                 />
                             </div>
 
-                            <div>
-                                <label className="font-semibold">Date of Birth:</label>
-                                <input
-                                    type="date"
-                                    name="dateOfBirth"
-                                    value={user.dateOfBirth ? moment(user.dateOfBirth).format('YYYY-MM-DD') : ''}
-                                    onChange={updateFormValue}
-                                    className="input input-bordered w-full"
+                            <div className="md:col-span-2">
+                                <InputText
+                                    type="text"
+                                    defaultValue={user.dateOfBirth ? moment(user.dateOfBirth).format('YYYY-MM-DD') : 'N/A'}
+                                    containerStyle="mt-1"
+                                    labelTitle="Date of Birth"
+                                    updateFormValue={({ value }) => updateFormValue('dateOfBirth', value)}
+                                />
+                            </div>
+                            <div className="flex justify-end gap-4 mt-4">
+                                <button
+                                    type="submit"
+                                    className="btn w-full bg-[#df1f47] text-white hover:bg-[#c0183d] transition duration-200"
+                                >
+                                    Update Profile
+                                </button>
+                            </div>
+                            <div className="divider mt-4"></div>
+                            <p className={`font-bold text-[#df1f47]`}>Address</p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                                <InputText
+                                    type="text"
+                                    defaultValue={user.deliveryAddress?.[0]?.houseNo || 'N/A'}
+                                    containerStyle="mt-1"
+                                    labelTitle="House No."
+                                    updateFormValue={({ value }) => updateFormValue('houseNo', value)}
+                                />
+                                <InputText
+                                    type="text"
+                                    defaultValue={user.deliveryAddress?.[0]?.streetName || 'N/A'}
+                                    containerStyle="mt-1"
+                                    labelTitle="Street Name"
+                                    updateFormValue={({ value }) => updateFormValue('streetName', value)}
                                 />
                             </div>
 
-                            <div className="w-full">
-                                <label className="font-semibold">Address:</label>
-                                <textarea
-                                    name="address"
-                                    value={user.address}
-                                    onChange={updateFormValue}
-                                    className="textarea textarea-bordered w-full"
-                                ></textarea>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
+                                <InputText
+                                    type="text"
+                                    defaultValue={user.deliveryAddress?.[0]?.barangay || 'N/A'}
+                                    containerStyle="mt-1"
+                                    labelTitle="Barangay"
+                                    updateFormValue={({ value }) => updateFormValue('barangay', value)}
+                                />
+                                <InputText
+                                    type="text"
+                                    defaultValue={user.deliveryAddress?.[0]?.city || 'N/A'}
+                                    containerStyle="mt-1"
+                                    labelTitle="City"
+                                    updateFormValue={({ value }) => updateFormValue('city', value)}
+                                />
                             </div>
-                        </div>
+                            <div className="flex justify-end gap-4 mt-4">
+                                <button
+                                    type="submit"
+                                    className="btn w-full bg-[#df1f47] text-white hover:bg-[#c0183d] transition duration-200"
+                                >
+                                    Update Address
+                                </button>
+                            </div>
 
-                        <div className="divider mt-4"></div>
-
-                        <div className="flex justify-end gap-4">
-                            <button type="submit" className="btn btn-primary">
-                                Update
-                            </button>
-                        </div>
-                    </form>
+                            
+                        </form>
+                    </div>
                 </div>
             </div>
+            <FooterPublic />
         </div>
     );
 }

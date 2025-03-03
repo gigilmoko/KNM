@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from 'react-google-login';
-import LandingIntro from './LandingIntro';
 import ErrorText from '../Layout/components/Typography/ErrorText';
+import InputText from '../Layout/components/Input/InputText';
 import googlelogo from '../assets/img/googlelogo.png';
 import axios from 'axios';
 import { toast, ToastContainer } from "react-toastify";
+import HeaderPublic from '../Layout/HeaderPublic';
+import FooterPublic from '../Layout/FooterPublic';
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -20,7 +22,6 @@ function Register() {
     password: '',
     dateOfBirth: '',
     phone: '',
-   
     googleLogin: false,
     avatar: '',
   };
@@ -32,22 +33,28 @@ function Register() {
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
   const [isMember, setIsMember] = useState(null);
   const [memberId, setMemberId] = useState('');
-  const navigate = useNavigate(); // useNavigate hook for navigation
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!localStorage.getItem('theme')) {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
+    }
+  }, []);
 
   const submitForm = async (e) => {
     e.preventDefault();
   
-    // Validation
     const nameRegex = /^[A-Za-z\s]+$/; 
-    const middleInitialRegex = /^[A-Z]$/; // Only a single uppercase letter
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Email format
-    const phoneRegex = /^\d{11}$/; // 11-digit number
+    const middleInitialRegex = /^[A-Z]$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{11}$/;
   
     const capitalizeFirstLetter = (text) => {
       return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
     };
     
-    // Apply capitalization before validation and submission
     if (registerObj.fname.trim() === '') return toast.error('First Name is required!');
     registerObj.fname = capitalizeFirstLetter(registerObj.fname.trim());
     if (!nameRegex.test(registerObj.fname)) return toast.error('First Name must only contain letters!');
@@ -57,7 +64,7 @@ function Register() {
     if (!nameRegex.test(registerObj.lname)) return toast.error('Last Name must only contain letters!');
     
     if (registerObj.middlei.trim() === '') return toast.error('Middle Initial is required!');
-    registerObj.middlei = capitalizeFirstLetter(registerObj.middlei.trim()); // For middle initial
+    registerObj.middlei = capitalizeFirstLetter(registerObj.middlei.trim());
     if (!middleInitialRegex.test(registerObj.middlei)) return toast.error('Middle Initial must be a single letter!');
     
     if (registerObj.email.trim() === '') return toast.error('Email is required!');
@@ -71,8 +78,6 @@ function Register() {
     if (registerObj.phone.trim() === '') return toast.error('Phone number is required!');
     if (!phoneRegex.test(registerObj.phone.trim())) return toast.error('Phone number must be exactly 11 digits!');
     
-
-    // Open the member modal
     setIsMemberModalOpen(true);
   };
 
@@ -81,10 +86,8 @@ function Register() {
     setIsMemberModalOpen(false);
 
     if (choice) {
-      // Open the member ID modal
       setIsMemberModalOpen(true);
     } else {
-      // Proceed with normal registration immediately
       await registerUser();
     }
   };
@@ -94,7 +97,6 @@ function Register() {
       return toast.error('Member ID is required!');
     }
 
-    // Proceed with member registration
     await registerUserMember();
   };
 
@@ -104,12 +106,11 @@ function Register() {
     try {
       const updatedRegisterObj = {
         ...registerObj,
-        role: 'user', // Default role is 'user'
+        role: 'user',
       };
     
       console.log("Form values:", updatedRegisterObj);
     
-      // Send form data to server
       const response = await axios.post(
         `${process.env.REACT_APP_API}/api/register`,
         updatedRegisterObj,
@@ -122,20 +123,17 @@ function Register() {
     
       console.log("User registered successfully", response.data);
       
-      // Display success toast notification
       toast.success("User registered successfully!");
   
-      // Add a delay before navigating to the login page
       setTimeout(() => {
         navigate("/login");
-      }, 3000); // 3 seconds delay
+      }, 3000);
     } catch (error) {
       console.error("Registration failed", error);
     
-      // Handle different error types
       if (error.response) {
         const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
-        toast.error(errorMsg); // Display error toast notification
+        toast.error(errorMsg);
       } else if (error.request) {
         toast.error('Network error. Please try again later.');
       } else {
@@ -152,12 +150,11 @@ function Register() {
     try {
       const updatedRegisterObj = {
         ...registerObj,
-        memberId, // Include memberId for member registration
+        memberId,
       };
     
       console.log("Form values:", updatedRegisterObj);
     
-      // Send form data to server
       const response = await axios.post(
         `${process.env.REACT_APP_API}/api/register-member`,
         updatedRegisterObj,
@@ -170,20 +167,17 @@ function Register() {
     
       console.log("User registered successfully", response.data);
       
-      // Display success toast notification
       toast.success("User registered successfully!");
   
-      // Add a delay before navigating to the login page
       setTimeout(() => {
         navigate("/login");
-      }, 3000); // 3 seconds delay
+      }, 3000);
     } catch (error) {
       console.error("Registration failed", error);
     
-      // Handle different error types
       if (error.response) {
         const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
-        toast.error(errorMsg); // Display error toast notification
+        toast.error(errorMsg);
       } else if (error.request) {
         toast.error('Network error. Please try again later.');
       } else {
@@ -194,10 +188,9 @@ function Register() {
     }
   };
 
-  const updateFormValue = (e) => {
-    const { name, value } = e.target;
+  const updateFormValue = ({ updateType, value }) => {
     setErrorMessage('');
-    setRegisterObj({ ...registerObj, [name]: value });
+    setRegisterObj({ ...registerObj, [updateType]: value });
   };
 
   const handleGoogleSuccess = (res) => {
@@ -205,7 +198,6 @@ function Register() {
 
     console.log("Google Login Success! User: ", profileObj);
 
-    // Update form values with Google login data
     setRegisterObj(prev => ({
       ...prev,
       fname: profileObj.givenName,
@@ -215,7 +207,6 @@ function Register() {
       avatar: profileObj.imageUrl
     }));
 
-    // Update avatar preview
     setAvatarImage(profileObj.imageUrl);
   };
 
@@ -228,11 +219,11 @@ function Register() {
     if (file) {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('upload_preset', 'ml_default'); // Replace with your Cloudinary upload preset
+        formData.append('upload_preset', 'ml_default');
 
         try {
             const response = await axios.post(
-                'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+                'https://api.cloudinary.com/v1_1/dglawxazg/image/upload',
                 formData,
                 {
                     headers: {
@@ -241,161 +232,160 @@ function Register() {
                 }
             );
             const imageUrl = response.data.secure_url;
-            setAvatarImage(imageUrl); // Update avatar image preview
+            setAvatarImage(imageUrl);
             setRegisterObj(prev => ({ ...prev, avatar: imageUrl }));
 
-            toast.success("Avatar uploaded successfully!"); // Success notification
+            toast.success("Avatar uploaded successfully!");
         } catch (error) {
             console.error('Failed to upload avatar', error);
             setErrorMessage('Failed to upload avatar. Please try again.');
-            toast.error('Failed to upload avatar. Please try again.'); // Error notification
+            toast.error('Failed to upload avatar. Please try again.');
         }
     }
 };
 
   return (
-    <div className="min-h-screen bg-base-200 flex items-center">
-     <ToastContainer/>
-      <div className="card mx-auto w-full max-w-5xl shadow-xl">
-        <div className="grid md:grid-cols-2 grid-cols-1 bg-base-100 rounded-xl">
-          <div>
-            <LandingIntro />
-          </div>
-          <div className="py-10 px-10">
-            <h2 className="text-2xl font-semibold mb-2 text-center">Register as User</h2>
-            <form onSubmit={submitForm}>
-              <div className="mb-4">
-                {/* Avatar Upload and Preview */}
-                <div className="flex justify-center items-center mb-4">
-                  <label htmlFor="avatar-upload" className="cursor-pointer">
-                    <img
-                      src={avatarImage || 'https://via.placeholder.com/150'} // Default placeholder image
-                      alt="Avatar"
-                      className="w-32 h-32 rounded-full object-cover"
-                    />
-                    <input
-                      id="avatar-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarChange}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
+    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-base-200 text-black'} flex flex-col`}>
+      <HeaderPublic />
+      <ToastContainer/>
+      <div className={`mx-auto w-full max-w-2xl shadow-xl p-6 my-12 ${theme === 'dark' ? 'bg-gray-800' : 'bg-base-100'} rounded-xl border border-gray-300`}>
+        <h2 className="text-3xl font-bold mb-2 text-center text-[#df1f47]">Create an Account</h2>
+        <p className={`text-center mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Enter your information to create an account</p>
 
-                {/* Name and Middle Initial */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <input
-                    type="text"
-                    name="fname"
-                    value={registerObj.fname}
-                    onChange={updateFormValue}
-                    placeholder="First Name"
-                    className="input input-bordered w-full"
-                  />
-                  <input
-                    type="text"
-                    name="lname"
-                    value={registerObj.lname}
-                    onChange={updateFormValue}
-                    placeholder="Last Name"
-                    className="input input-bordered w-full"
-                  />
-                  <input
-                    type="text"
-                    name="middlei"
-                    value={registerObj.middlei}
-                    onChange={updateFormValue}
-                    placeholder="Middle Initial"
-                    className="input input-bordered w-full"
-                  />
-                </div>
+        <form onSubmit={submitForm}>
+          <div className="mb-4">
+            <div className="flex justify-center items-center mb-4">
+              <label htmlFor="avatar-upload" className="cursor-pointer">
+                <img
+                  src={avatarImage || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'}
+                  alt="Avatar"
+                  className="w-32 h-32 rounded-full object-cover"
+                />
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
 
-                {/* Email and Password */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <input
-                    type="email"
-                    name="email"
-                    value={registerObj.email}
-                    onChange={updateFormValue}
-                    placeholder="Email Id"
-                    className="input input-bordered w-full"
-                    readOnly={registerObj.googleLogin} // Make email readonly if registered with Google
-                  />
-                  <input
-                    type="password"
-                    name="password"
-                    value={registerObj.password}
-                    onChange={updateFormValue}
-                    placeholder="Password"
-                    className="input input-bordered w-full"
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <InputText
+                type="text"
+                defaultValue={registerObj.fname}
+                updateType="fname"
+                containerStyle="mt-1"
+                labelTitle="First Name"
+                updateFormValue={updateFormValue}
+              />
+              <InputText
+                type="text"
+                defaultValue={registerObj.lname}
+                updateType="lname"
+                containerStyle="mt-1"
+                labelTitle="Last Name"
+                updateFormValue={updateFormValue}
+              />
+              <InputText
+                type="text"
+                defaultValue={registerObj.middlei}
+                updateType="middlei"
+                containerStyle="mt-1"
+                labelTitle="Middle Initial"
+                updateFormValue={updateFormValue}
+              />
+            </div>
 
-                {/* Date of Birth and Phone Number */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    value={registerObj.dateOfBirth}
-                    onChange={updateFormValue}
-                    className="input input-bordered w-full"
-                  />
-                  <input
-                    type="text"
-                    name="phone"
-                    value={registerObj.phone}
-                    onChange={updateFormValue}
-                    placeholder="Phone Number"
-                    className="input input-bordered w-full"
-                  />
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+              <InputText
+                type="email"
+                defaultValue={registerObj.email}
+                updateType="email"
+                containerStyle="mt-1"
+                labelTitle="Email Id"
+                updateFormValue={updateFormValue}
+                readOnly={registerObj.googleLogin}
+              />
+              <InputText
+                type="password"
+                defaultValue={registerObj.password}
+                updateType="password"
+                containerStyle="mt-1"
+                labelTitle="Password"
+                updateFormValue={updateFormValue}
+              />
+            </div>
 
-                <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ">
+              <InputText
+                type="date"
+                defaultValue={registerObj.dateOfBirth}
+                updateType="dateOfBirth"
+                containerStyle="mt-1"
+                labelTitle="Date of Birth"
+                updateFormValue={updateFormValue}
+              />
+              <InputText
+                type="text"
+                defaultValue={registerObj.phone}
+                updateType="phone"
+                containerStyle="mt-1"
+                labelTitle="Phone Number"
+                updateFormValue={updateFormValue}
+              />
+            </div>
 
-                <button type="submit" className="btn mt-2 w-full btn-primary">
-                  Register
-                </button>
+            <ErrorText styleClass="mt-8">{errorMessage}</ErrorText>
 
+            <button type="submit" className="btn w-full bg-[#df1f47] text-white hover:bg-[#c0183d] transition duration-200">
+              Register
+            </button>
 
-                {/* Google Registration Button - styled like the one in the login form */}
-                <div className="container-login100-form-btn p-t-13">
-                  <div className="wrap-login100-form-btn">
-                    <div className="login100-form-bgbtn1" />
-                    <GoogleLogin
-                      clientId={clientId}
-                      buttonText="Login with Google"
-                      onSuccess={handleGoogleSuccess}
-                      onFailure={handleGoogleFailure}
-                      cookiePolicy={'single_host_origin'}
-                      render={renderProps => (
-                        <button
-                          onClick={renderProps.onClick}
-                          disabled={renderProps.disabled}
-                          className="btn w-full flex items-center justify-center border mt-4"
-                        >
-                          <img src={googlelogo} alt="Google logo" className="w-5 h-5 mr-2" />
-                          Register with Google
-                        </button>
-                      )}
-                    />
-                  </div>
-                </div>
+            <div className="relative flex items-center my-4">
+              <div className="flex-grow border-t border-gray-300"></div>
+              <span className="mx-4 text-gray-500 text-sm">or</span>
+              <div className="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            <div className="container-login100-form-btn p-t-13">
+              <div className="wrap-login100-form-btn">
+                <div className="login100-form-bgbtn1" />
+                <GoogleLogin
+                  clientId={clientId}
+                  buttonText="Register with Google"
+                  onSuccess={handleGoogleSuccess}
+                  onFailure={handleGoogleFailure}
+                  cookiePolicy={'single_host_origin'}
+                  render={renderProps => (
+                    <button
+                      onClick={renderProps.onClick}
+                      disabled={renderProps.disabled}
+                      className="btn mt-4 w-full flex justify-center items-center border border-gray-300 rounded-md shadow-sm py-2 bg-white text-gray-700 hover:bg-gray-100 transition duration-200"
+                    >
+                      <img src={googlelogo} alt="Google logo" className="w-5 h-5 mr-2" />
+                      <span className="font-medium">Register with Google</span>
+                    </button>
+                  )}
+                />
               </div>
-            </form>
-            <div className="text-center mt-4">
-              <p>
-                Already have an account?{" "}
-                <Link to="/login" className="text-primary">
-                  Login Here
-                </Link>
-              </p>
             </div>
           </div>
+        </form>
+
+        <div className="text-center mt-4">
+          <p>
+            Already have an account?{" "}
+            <Link to="/login" className="text-[#df1f47] hover:underline transition duration-200">
+              Login Here
+            </Link>
+          </p>
         </div>
       </div>
 
-      {/* Member Modal */}
+      <FooterPublic />
+
       {isMemberModalOpen && (
         <div className="modal modal-open">
           <div className="modal-box">
@@ -408,7 +398,6 @@ function Register() {
         </div>
       )}
 
-      {/* Member ID Modal */}
       {isMember && (
         <div className="modal modal-open">
           <div className="modal-box">

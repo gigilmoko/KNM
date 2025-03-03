@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import BellIcon from '@heroicons/react/24/outline/BellIcon';
 import Bars3Icon from '@heroicons/react/24/outline/Bars3Icon';
 import MoonIcon from '@heroicons/react/24/outline/MoonIcon';
@@ -9,25 +9,23 @@ import { RIGHT_DRAWER_TYPES } from '../utils/globalConstantUtil';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { themeChange } from 'theme-change';
-import logoImg from '../assets/img/KNMlogo.png';
 
 function Header() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
-    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme'));
+    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'light');
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [unreadNotifications, setUnreadNotifications] = useState(0);
 
+    const isAuthPage = location.pathname === "/register" || location.pathname === "/login";
+
     useEffect(() => {
         themeChange(false);
-        if (currentTheme === null) {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                setCurrentTheme('dark');
-            } else {
-                setCurrentTheme('light');
-            }
+        if (!localStorage.getItem('theme')) {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setCurrentTheme(prefersDark ? 'dark' : 'light');
         }
         getProfile();
         getUnreadNotifications();
@@ -64,8 +62,7 @@ function Header() {
     };
 
     const openNotification = () => {
-        const action = openRightDrawer({ header: 'Notifications', bodyType: RIGHT_DRAWER_TYPES.NOTIFICATION });
-        dispatch(action);
+        dispatch(openRightDrawer({ header: 'Notifications', bodyType: RIGHT_DRAWER_TYPES.NOTIFICATION }));
     };
 
     const logoutHandler = async () => {
@@ -88,112 +85,73 @@ function Header() {
 
     const handleNavigation = (path, sectionId) => {
         if (location.pathname === '/') {
-            // Scroll to the section if on the homepage
             const section = document.getElementById(sectionId);
             if (section) {
                 section.scrollIntoView({ behavior: 'smooth' });
             }
         } else {
-            // Navigate to the respective page and scroll after navigating
             navigate(path);
             setTimeout(() => {
                 const section = document.getElementById(sectionId);
                 if (section) {
                     section.scrollIntoView({ behavior: 'smooth' });
                 }
-            }, 500); // Delay to allow the page transition
+            }, 500);
         }
     };
 
     return (
-        <div className="navbar sticky top-0 bg-base-100 z-10 shadow-md">
+        <div className={`navbar sticky top-0 bg-base-100 z-10 shadow-md ${currentTheme === 'dark' ? 'text-white' : 'text-black'}`}>
             <div className="flex-1 flex items-center">
                 <label htmlFor="left-sidebar-drawer" className="btn btn-primary drawer-button lg:hidden">
                     <Bars3Icon className="h-5 w-5" />
                 </label>
 
-                <Link to="/">
-                    <img src={logoImg} alt="Logo" className="h-20 w-20 mr-2" />
+                <Link to="/" className="flex items-end">
+                    <span className="text-5xl font-extrabold" style={{ color: '#df1f47', lineHeight: '1' }}>KNM</span>
+                    <h1 className="text-2xl font-semibold ml-2 pb-1">Kababaihan ng Maynila</h1>
                 </Link>
-                <h1 className="text-2xl font-semibold ml-2">KBituin</h1>
             </div>
 
-            <div className="flex-none flex items-center space-x-6 ml-auto">
-                <button
-                    className="btn btn-ghost text-sm font-medium"
-                    onClick={() => handleNavigation('/about', 'about-section')}
-                >
-                    About Us
-                </button>
-                <button
-                    className="btn btn-ghost text-sm font-medium"
-                    onClick={() => handleNavigation('/gallery', 'products-section')}
-                >
-                    Our Products
-                </button>
-                <button
-                    className="btn btn-ghost text-sm font-medium"
-                    onClick={() => handleNavigation('/blog', 'blogs-section')}
-                >
-                    Blogs
-                </button>
-                <button
-                    className="btn btn-ghost text-sm font-medium"
-                    onClick={() => handleNavigation('/contact', 'contact-section')}
-                >
-                    Contact Us
-                </button>
+            <div className="flex-none font-semibold flex items-center space-x-6 ml-auto">
+                {['About Us', 'Our Products', 'Blogs', 'Contact Us'].map((item, index) => (
+                    <button
+                        key={index}
+                        className="btn btn-ghost text-sm font-medium"
+                        style={{ color: '#df1f47' }}
+                        onClick={() => handleNavigation(`/${item.toLowerCase().replace(/\s+/g, '-')}`, `${item.toLowerCase()}-section`)}
+                    >
+                        {item}
+                    </button>
+                ))}
 
                 <label className="swap">
                     <input type="checkbox" onClick={handleThemeToggle} />
-                    <SunIcon
-                        data-set-theme="light"
-                        className={
-                            'fill-current w-6 h-6 ' +
-                            (currentTheme === 'dark' ? 'swap-on' : 'swap-off')
-                        }
-                    />
-                    <MoonIcon
-                        data-set-theme="dark"
-                        className={
-                            'fill-current w-6 h-6 ' +
-                            (currentTheme === 'light' ? 'swap-on' : 'swap-off')
-                        }
-                    />
+                    <SunIcon className={`fill-current w-6 h-6 ${currentTheme === 'dark' ? 'swap-on' : 'swap-off'}`} />
+                    <MoonIcon className={`fill-current w-6 h-6 ${currentTheme === 'light' ? 'swap-on' : 'swap-off'}`} />
                 </label>
+
                 {loading ? (
                     <span>Loading...</span>
                 ) : user ? (
                     <div className="flex items-center space-x-4">
-                        <button
-                            className="btn btn-ghost btn-circle"
-                            onClick={() => openNotification()}
-                        >
+                        <button className="btn btn-ghost btn-circle" onClick={openNotification}>
                             <div className="indicator">
                                 <BellIcon className="h-6 w-6" />
-                                {unreadNotifications > 0 ? (
+                                {unreadNotifications > 0 && (
                                     <span className="indicator-item badge badge-secondary badge-sm">
                                         {unreadNotifications}
                                     </span>
-                                ) : null}
+                                )}
                             </div>
                         </button>
 
                         <div className="flex items-center space-x-2">
                             <span className="font-medium">{user.fname}</span>
                             <div className="dropdown dropdown-end">
-                                <label
-                                    tabIndex={0}
-                                    className="btn btn-ghost btn-circle avatar flex items-center"
-                                >
+                                <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
                                     <div className="w-10 rounded-full mr-2">
-                                        <img
-                                            src={
-                                                user.avatar ||
-                                                'https://placeimg.com/80/80/people'
-                                            }
-                                            alt="profile"
-                                        />
+                                        <img src={user.avatar || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'} alt="profile" />
                                     </div>
                                 </label>
                                 <ul
@@ -212,14 +170,16 @@ function Header() {
                         </div>
                     </div>
                 ) : (
-                    <div className="flex space-x-2">
-                        <Link to="/login" className="btn btn-outline">
-                            Login
-                        </Link>
-                        <Link to="/register" className="btn btn-primary">
-                            Sign Up
-                        </Link>
-                    </div>
+                    !isAuthPage && (
+                        <div className="flex space-x-2">
+                            <Link to="/login" className="btn btn-outline" style={{ color: '#df1f47', borderColor: '#df1f47' }}>
+                                Login
+                            </Link>
+                            <Link to="/register" className="btn" style={{ backgroundColor: '#df1f47', color: 'white' }}>
+                                Sign Up
+                            </Link>
+                        </div>
+                    )
                 )}
             </div>
         </div>

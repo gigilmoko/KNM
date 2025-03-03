@@ -46,6 +46,7 @@ import NewRider from './Admin/Rider/NewRider';
 import UpdateRider from './Admin/Rider/UpdateRider';
 import RiderList from './Admin/Rider/RiderList';
 import ChangePassword from './Admin/Rider/ChangePassword';
+import ChangePasswordUser from './User/ChangePassword';
 import SingleProduct from './Admin/Feedback/SingleProduct';
 import TruckList from './Admin/Truck/TruckList';
 import NewTruck from './Admin/Truck/NewTruck';
@@ -94,6 +95,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/edit" element={<ProfileUpdate />} />
           <Route path="/profile/apply" element={<MemberApply />} />
+          <Route path="/profile/changepassword" element={<ChangePasswordUser />} />
           {/* Fillup */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
