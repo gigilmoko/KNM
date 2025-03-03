@@ -9,7 +9,7 @@ import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
 
-const passwordRegex = /^[A-Za-z0-9!@#$%^&*]{6,}$/; // Password must be at least 6 characters
+const passwordRegex = /^[A-Za-z0-9!@#$%^&*]{8,}$/; // Password must be at least 6 characters
 
 function UpdatePassword() {
     const navigate = useNavigate();
