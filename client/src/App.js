@@ -59,8 +59,10 @@ import RevenueReport from './Admin/Reports/RevenueReport';
 import OrderReports from './Admin/Reports/OrderReports';
 import UserReports from './Admin/Reports/UserReports';
 import MemberReports from './Admin/Reports/MemberReports';
-import SingleEvent from './Admin/Feedback/SingleEvent';
-
+// import SingleEvent from './Admin/Feedback/SingleEvent';
+import SingleEvent from './Public/SingleEvent';
+import Products from './Public/Products';
+import EventList from './Public/EventList';
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -87,6 +89,9 @@ function App() {
           <Route path="/gallery" element={<ProductGallery />} />
           <Route path="/contact" element={<Contact/>} />
           <Route path="/blog" element={<Blog/>} />
+          <Route path="/products" element={<Products/>} />
+          <Route path="/event/:id" element={<SingleEvent/>} />
+          <Route path="/event-list" element={<EventList/>} />
           {/* Feedback */}
           <Route path="/feedback/new" element={<NewFeedback />} />
           {/* <Route path="/event/feedback/new" element={<NewFeedback />} />

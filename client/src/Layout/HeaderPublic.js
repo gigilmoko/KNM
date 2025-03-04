@@ -83,106 +83,113 @@ function Header() {
         window.location.reload();
     };
 
-    const handleNavigation = (path, sectionId) => {
-        if (location.pathname === '/') {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth' });
-            }
-        } else {
-            navigate(path);
-            setTimeout(() => {
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 500);
+    const handleNavigation = (path) => {
+        if (location.pathname !== path) {
+            navigate(path); // Navigate to the new page
         }
     };
+    
 
     return (
         <div className={`navbar sticky top-0 bg-base-100 z-10 shadow-md ${currentTheme === 'dark' ? 'text-white' : 'text-black'}`}>
-            <div className="flex-1 flex items-center">
-                <label htmlFor="left-sidebar-drawer" className="btn btn-primary drawer-button lg:hidden">
-                    <Bars3Icon className="h-5 w-5" />
-                </label>
+        <div className="flex-1 flex items-center">
+            <label htmlFor="left-sidebar-drawer" className="btn btn-primary drawer-button lg:hidden">
+                <Bars3Icon className="h-5 w-5" />
+            </label>
+    
+            {/* Replace KNM text with an image */}
+            <Link to="/" className="flex items-center">
+                <img 
+                    src="https://res.cloudinary.com/dglawxazg/image/upload/v1741112980/image_2025-03-05_022855838-removebg-preview_thwgac.png"  // Update this with the correct path to your KNM logo 
+                    alt="KNM Logo"
+                    className="h-10 w-auto mt-[-4px]"
+                />
+                <h1 className="text-2xl font-semibold ml-2 pb-1">Kababaihan ng Maynila</h1>
+            </Link>
+        </div>
+    
+        <div className="flex-none font-semibold flex items-center space-x-6 ml-auto">
+    {[
+        { name: 'About Us', path: '/about' },
+        { name: 'Events', path: '/event-list' },
+        { name: 'Our Products', path: '/products' },
+        { name: 'Blogs', path: '/blog' },
+        { name: 'Contact Us', path: '/contact' },
+        
+    ].map((item, index) => (
+        <button
+            key={index}
+            className="btn btn-ghost text-sm font-medium"
+            style={{ color: '#df1f47' }}
+            onClick={() => handleNavigation(item.path)}
+        >
+            {item.name}
+        </button>
+    ))}
 
-                <Link to="/" className="flex items-end">
-                    <span className="text-5xl font-extrabold" style={{ color: '#df1f47', lineHeight: '1' }}>KNM</span>
-                    <h1 className="text-2xl font-semibold ml-2 pb-1">Kababaihan ng Maynila</h1>
-                </Link>
-            </div>
+    <label className="swap">
+        <input type="checkbox" onClick={handleThemeToggle} />
+        <SunIcon className={`fill-current w-6 h-6 ${currentTheme === 'dark' ? 'swap-on' : 'swap-off'}`} />
+        <MoonIcon className={`fill-current w-6 h-6 ${currentTheme === 'light' ? 'swap-on' : 'swap-off'}`} />
+    </label>
 
-            <div className="flex-none font-semibold flex items-center space-x-6 ml-auto">
-                {['About Us', 'Our Products', 'Blogs', 'Contact Us'].map((item, index) => (
-                    <button
-                        key={index}
-                        className="btn btn-ghost text-sm font-medium"
-                        style={{ color: '#df1f47' }}
-                        onClick={() => handleNavigation(`/${item.toLowerCase().replace(/\s+/g, '-')}`, `${item.toLowerCase()}-section`)}
+    {loading ? (
+        <span>Loading...</span>
+    ) : user ? (
+        <div className="flex items-center space-x-4">
+            <button className="btn btn-ghost btn-circle" onClick={openNotification}>
+                <div className="indicator">
+                    <BellIcon className="h-6 w-6" />
+                    {unreadNotifications > 0 && (
+                        <span className="indicator-item badge badge-secondary badge-sm">
+                            {unreadNotifications}
+                        </span>
+                    )}
+                </div>
+            </button>
+
+            <div className="flex items-center space-x-2">
+                <span className="font-medium">{user.fname}</span>
+                <div className="dropdown dropdown-end">
+                    <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
+                        <div className="w-10 rounded-full mr-2">
+                            <img
+                                src={user.avatar || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'}
+                                alt="profile"
+                            />
+                        </div>
+                    </label>
+                    <ul
+                        tabIndex={0}
+                        className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
                     >
-                        {item}
-                    </button>
-                ))}
-
-                <label className="swap">
-                    <input type="checkbox" onClick={handleThemeToggle} />
-                    <SunIcon className={`fill-current w-6 h-6 ${currentTheme === 'dark' ? 'swap-on' : 'swap-off'}`} />
-                    <MoonIcon className={`fill-current w-6 h-6 ${currentTheme === 'light' ? 'swap-on' : 'swap-off'}`} />
-                </label>
-
-                {loading ? (
-                    <span>Loading...</span>
-                ) : user ? (
-                    <div className="flex items-center space-x-4">
-                        <button className="btn btn-ghost btn-circle" onClick={openNotification}>
-                            <div className="indicator">
-                                <BellIcon className="h-6 w-6" />
-                                {unreadNotifications > 0 && (
-                                    <span className="indicator-item badge badge-secondary badge-sm">
-                                        {unreadNotifications}
-                                    </span>
-                                )}
-                            </div>
-                        </button>
-
-                        <div className="flex items-center space-x-2">
-                            <span className="font-medium">{user.fname}</span>
-                            <div className="dropdown dropdown-end">
-                                <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
-                                    <div className="w-10 rounded-full mr-2">
-                                        <img src={user.avatar || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'} alt="profile" />
-                                    </div>
-                                </label>
-                                <ul
-                                    tabIndex={0}
-                                    className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"
-                                >
-                                    <li>
-                                        <Link to={'/profile'}>Profile</Link>
-                                    </li>
-                                    <div className="divider mt-0 mb-0"></div>
-                                    <li>
-                                        <a onClick={logoutHandler}>Logout</a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    !isAuthPage && (
-                        <div className="flex space-x-2">
-                            <Link to="/login" className="btn btn-outline" style={{ color: '#df1f47', borderColor: '#df1f47' }}>
-                                Login
-                            </Link>
-                            <Link to="/register" className="btn" style={{ backgroundColor: '#df1f47', color: 'white' }}>
-                                Sign Up
-                            </Link>
-                        </div>
-                    )
-                )}
+                        <li>
+                            <Link to="/profile">Profile</Link>
+                        </li>
+                        <div className="divider mt-0 mb-0"></div>
+                        <li>
+                            <a onClick={logoutHandler}>Logout</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
+    ) : (
+        !isAuthPage && (
+            <div className="flex space-x-2">
+                <Link to="/login" className="btn btn-outline" style={{ color: '#df1f47', borderColor: '#df1f47' }}>
+                    Login
+                </Link>
+                <Link to="/register" className="btn" style={{ backgroundColor: '#df1f47', color: 'white' }}>
+                    Sign Up
+                </Link>
+            </div>
+        )
+    )}
+</div>
+
+    </div>
+    
     );
 }
 

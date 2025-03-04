@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import HeaderPublic from '../Layout/HeaderPublic';
 import About from './About';
+import Contact from './Contact';
 import ProductGallery from './ProductGallery';
 import EventGallery from './EventGallery';
 import FooterPublic from '../Layout/FooterPublic'; // Import the new footer component
@@ -68,6 +69,7 @@ const Homepage = () => {
       </main>
       <section id="events-section" className="py-16"><EventGallery /></section>
       <section id="products-section" className="py-16"><ProductGallery /></section>
+      {/* <section id="about-section" className="py-16"><Contact /></section> */}
       
       {/* Footer */}
       <FooterPublic />

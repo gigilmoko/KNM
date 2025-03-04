@@ -38,6 +38,28 @@ exports.getProduct = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.getProductUser = async (req, res, next) => {
+    console.log('Get Product User')
+	try {
+		const products = await Product.find().populate('category', 'name'); // Populating category name
+
+		if (!products || products.length === 0) {
+			return res.status(404).json({
+				success: false,
+				message: 'No products Found'
+			});
+		}
+
+		res.status(200).json({
+			success: true,
+			count: products.length,
+			products
+		});
+	} catch (error) {
+		next(error);
+	}
+};
 	
 exports.newProduct = async (req, res, next) => {
     const { name, description, price, category, stock, images } = req.body;
@@ -148,7 +170,7 @@ exports.getProductsByCategory = async (req, res, next) => {
     const { id } = req.params;  // Use 'id' to get the category ID from URL params
 
     try {
-        const products = await Product.find({ category: id });
+        const products = await Product.find({ category: id }).populate('category', 'name');
 
         if (!products || products.length === 0) {
             return res.status(404).json({

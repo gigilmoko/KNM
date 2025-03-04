@@ -20,6 +20,7 @@
     "capitalize-the-first-letter": "^1.0.8",
     "chart.js": "^4.4.7",
     "cloudinary": "^2.5.0",
+    "emailjs-com": "^3.2.0",
     "formik": "^2.4.6",
     "gapi-script": "^1.2.0",
     "geosearch": "^0.3.0",
