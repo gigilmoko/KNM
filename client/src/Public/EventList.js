@@ -50,7 +50,7 @@ const EventList = () => {
                 <div className={`rounded-lg overflow-hidden shadow-md ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`} key={event._id}>
                   <div className="relative group">
                     <img
-                      src={event.image || '/path/to/placeholder.jpg'}
+                      src={event.image || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'}
                       alt={event.title}
                       className="w-full aspect-square object-cover"
                     />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -7,6 +7,7 @@ import Header from '../Layout/HeaderPublic';
 
 const EventGallery = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [featuredEvents, setFeaturedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -65,9 +66,12 @@ const EventGallery = () => {
                     className="w-full aspect-square object-cover"
                   />
                   <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 hover:opacity-100">
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">View</button>
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded mx-2 hover:bg-black hover:text-white">Save</button>
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">Register</button>
+                    <button
+                      className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white"
+                      onClick={() => navigate(`/event/${event._id}`)}
+                    >
+                      View
+                    </button>
                   </div>
                 </div>
                 <div className="p-4">
@@ -86,6 +90,7 @@ const EventGallery = () => {
           className="mt-8 px-6 py-3 text-lg font-bold text-white bg-[#df1f47] rounded-full shadow-md hover:bg-[#bf1a3d] transition duration-300"
           data-aos="fade-up"
           data-aos-delay="200"
+          onClick={() => navigate('/event-list')}
         >
           View All Events
         </button>

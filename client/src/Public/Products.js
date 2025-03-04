@@ -119,7 +119,9 @@ const Products = () => {
             {categories.map((category, index) => (
                 <div
                 key={index}
-                className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md border border-gray-300 cursor-pointer hover:bg-gray-100 transition"
+                className={`flex flex-col items-center p-6 rounded-lg shadow-md border border-gray-300 cursor-pointer transition ${
+                  theme === "dark" ? "bg-gray-700 text-white" : "bg-white text-black"
+                }`}
                 onClick={() => handleCategoryClick(category.name)}
                 >
                 {category.icon}
@@ -135,34 +137,43 @@ const Products = () => {
             <Loading />
 ) : (
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-8xl mx-auto mt-6">
-              {products.map((product) => (
-                <div className="flex flex-col items-center p-6 bg-white rounded-lg shadow-md border border-gray-300" key={product._id}>
-                  <div className="relative w-80 h-80">
-                    <img
-                      src={product.images[0]?.url || "placeholder.jpg"}
-                      alt={product.name}
-                      className="w-full h-full object-cover rounded-md"
-                    />
-                    <div
-                      className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 hover:opacity-100 cursor-pointer"
-                      onClick={() => openModal(product)}
-                    >
-                      <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">
-                        View Details
-                      </button>
-                    </div>
-                  </div>
-                  <div className="p-4 text-center">
-                    <div className="flex justify-between text-sm mb-2 w-full">
-                      <span>{product.category?.name || "Unknown"}</span>
-                      <span className="text-right font-bold text-[#df1f47]">₱{product.price}</span>
-                    </div>
-                    <div className="text-xl font-bold text-[#df1f47] font-poppins">{product.name}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-8xl mx-auto mt-6">
+  {products.map((product) => (
+    <div
+      className={`flex flex-col items-center p-6 rounded-lg shadow-md border border-gray-300 w-full ${
+        theme === "dark" ? "bg-gray-700 text-white" : "bg-white text-black"
+      }`}
+      key={product._id}
+    >
+      {/* Product Image */}
+      <div className="relative w-80 h-80">
+        <img
+          src={product.images[0]?.url ||'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'}
+          alt={product.name}
+          className="w-full h-full object-cover rounded-md"
+        />
+        <div
+          className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 hover:opacity-100 cursor-pointer"
+          onClick={() => openModal(product)}
+        >
+          <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">
+            View Details
+          </button>
+        </div>
+      </div>
+
+      {/* Product Details */}
+      <div className="p-4 w-full">
+        <div className="flex justify-between text-sm mb-2">
+          <span className="text-left">{product.category?.name || "Unknown"}</span>
+          <span className="text-right font-bold text-[#df1f47]">₱{product.price}</span>
+        </div>
+        <div className="text-xl font-bold text-[#df1f47] font-poppins text-left">{product.name}</div>
+      </div>
+    </div>
+  ))}
+</div>
+
           )}
         </section>
       </main>
@@ -170,41 +181,43 @@ const Products = () => {
 
       {/* Product Modal */}
       {modalOpen && selectedProduct && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-    <div className="bg-white rounded-lg shadow-lg w-[1000px] max-h-[500px] p-8 relative flex">
-      {/* Close Button */}
-      <button className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl" onClick={closeModal}>
-        &times;
-      </button>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className={`rounded-lg shadow-lg w-[1000px] max-h-[500px] p-8 relative flex ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
+            {/* Close Button */}
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl" onClick={closeModal}>
+              &times;
+            </button>
 
-      {/* Left: Product Image */}
-      <div className="w-1/2 flex justify-center items-center">
-        <img
-          src={selectedProduct.images[0]?.url || "placeholder.jpg"}
-          alt={selectedProduct.name}
-          className="w-[600px] h-[400px] object-cover rounded-md"
-        />
-      </div>
+            {/* Left: Product Image */}
+            <div className="w-1/2 flex justify-center items-center">
+              <img
+                src={selectedProduct.images[0]?.url || "placeholder.jpg"}
+                alt={selectedProduct.name}
+                className="w-[600px] h-[400px] object-cover rounded-md"
+              />
+            </div>
 
-      {/* Right: Product Details */}
-      <div className="w-1/2 pl-8 flex flex-col bg-white shadow-md rounded-lg p-6 border ml-6 mr-2">
-  {/* Name and Price in the Same Line */}
-  <div className="flex justify-between items-center mb-2">
-    <h2 className="text-3xl font-bold text-[#df1f47]">{selectedProduct.name}</h2>
-    <p className="text-2xl font-bold text-[#df1f47]">₱{selectedProduct.price}</p>
-  </div>
+            {/* Right: Product Details */}
+            <div className="w-1/2 pl-8 flex flex-col shadow-md rounded-lg p-6 border ml-6 mr-2">
+              {/* Name and Price in the Same Line */}
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-3xl font-bold ">{selectedProduct.name}</h2>
+                <p className="text-2xl font-bold text-[#df1f47]">₱{selectedProduct.price}</p>
+              </div>
 
-  {/* Category Name */}
-  <p className="text-lg font-semibold text-gray-500 mb-2">{selectedProduct.category?.name || "No category"}</p>
+              {/* Category Name */}
+              <p className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+  {selectedProduct.category?.name || "No category"}
+</p>
 
-  {/* Description */}
-  <p className="text-gray-600">{selectedProduct.description || "No description available."}</p>
-</div>
-
-
-    </div>
-  </div>
-)}
+{/* Description */}
+<p className={`text-gray-600 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+  {selectedProduct.description || "No description available."}
+</p>
+            </div>
+          </div>
+        </div>
+      )}
 
 
     </div>

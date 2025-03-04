@@ -3,8 +3,10 @@ import { FaUserCircle } from 'react-icons/fa'; // Importing an icon for the foun
 import HeaderPublic from '../Layout/HeaderPublic';
 import FooterPublic from '../Layout/FooterPublic';
 import axios from 'axios';
-
+import { useNavigate } from 'react-router-dom';
+import Loading from '../Layout/Loader';
 const Blog = () => {
+  const navigate = useNavigate();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [featuredEvents, setFeaturedEvents] = useState([]);
   const bottomSectionRef = useRef(null);
@@ -120,172 +122,179 @@ const Blog = () => {
         <h3 className="text-2xl mt-4"> with their innovative work.</h3>
       </div>
       <div className="w-full flex flex-col md:flex-row justify-center gap-28 px-8 mt-10 mb-10">
-      <div className="relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg bg-white min-h-[650px]">
+      <div className={`relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg min-h-[650px] 
+  ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
 
-{/* Profile Image */}
-<div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
-  <img
-    src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
-    alt="Profile"
-    className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
-  />
-</div>
+  {/* Profile Image */}
+  <div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
+    <img
+      src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
+      alt="Profile"
+      className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
+    />
+  </div>
 
-{/* Name and Membership Info */}
-<div className="flex items-center pl-28 ">
-  <div>
-    <p className="text-4xl font-bold text-gray-900">Sarah Williams</p>
-    <p className="text-xl text-gray-600">Member since 2000</p>
+  {/* Name and Membership Info */}
+  <div className="flex items-center pl-28">
+    <div>
+      <p className="text-4xl font-bold">Sarah Williams</p>
+      <p className="text-xl opacity-80">Member since 2000</p>
+    </div>
+  </div>
+
+  {/* Testimonial Text */}
+  <div className="mt-8 space-y-5">
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
   </div>
 </div>
 
-{/* Testimonial Text */}
-<div className="mt-8 space-y-5">
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-</div>
-</div>
-<div className="relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg bg-white min-h-[650px]">
+<div className={`relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg min-h-[650px] 
+  ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
 
-{/* Profile Image */}
-<div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
-  <img
-    src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
-    alt="Profile"
-    className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
-  />
-</div>
+  {/* Profile Image */}
+  <div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
+    <img
+      src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
+      alt="Profile"
+      className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
+    />
+  </div>
 
-{/* Name and Membership Info */}
-<div className="flex items-center pl-28 ">
-  <div>
-    <p className="text-4xl font-bold text-gray-900">Sarah Williams</p>
-    <p className="text-xl text-gray-600">Member since 2000</p>
+  {/* Name and Membership Info */}
+  <div className="flex items-center pl-28">
+    <div>
+      <p className="text-4xl font-bold">Sarah Williams</p>
+      <p className="text-xl opacity-80">Member since 2000</p>
+    </div>
+  </div>
+
+  {/* Testimonial Text */}
+  <div className="mt-8 space-y-5">
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
   </div>
 </div>
-
-{/* Testimonial Text */}
-<div className="mt-8 space-y-5">
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-</div>
-</div>
-
-
-
-
 
 </div>
 <div className="w-full flex flex-col md:flex-row justify-center gap-28 px-8 mt-20 mb-5">
-      <div className="relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg bg-white min-h-[650px]">
+<div className={`relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg min-h-[650px] 
+  ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
 
-{/* Profile Image */}
-<div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
-  <img
-    src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
-    alt="Profile"
-    className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
-  />
-</div>
+  {/* Profile Image */}
+  <div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
+    <img
+      src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
+      alt="Profile"
+      className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
+    />
+  </div>
 
-{/* Name and Membership Info */}
-<div className="flex items-center pl-28 ">
-  <div>
-    <p className="text-4xl font-bold text-gray-900">Sarah Williams</p>
-    <p className="text-xl text-gray-600">Member since 2000</p>
+  {/* Name and Membership Info */}
+  <div className="flex items-center pl-28">
+    <div>
+      <p className="text-4xl font-bold">Sarah Williams</p>
+      <p className="text-xl opacity-80">Member since 2000</p>
+    </div>
+  </div>
+
+  {/* Testimonial Text */}
+  <div className="mt-8 space-y-5">
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
   </div>
 </div>
 
-{/* Testimonial Text */}
-<div className="mt-8 space-y-5">
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-</div>
-</div>
-<div className="relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg bg-white min-h-[650px]">
+<div className={`relative w-full max-w-xl p-10 border-2 border-red-300 rounded-3xl shadow-lg min-h-[650px] 
+  ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
 
-{/* Profile Image */}
-<div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
-  <img
-    src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
-    alt="Profile"
-    className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
-  />
-</div>
+  {/* Profile Image */}
+  <div className="absolute -top-20 -left-14 w-48 h-48 bg-gray-200 rounded-full border-4 border-white overflow-hidden">
+    <img
+      src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png"
+      alt="Profile"
+      className="w-52 h-52 object-cover rounded-full border-4 border-white shadow-lg"
+    />
+  </div>
 
-{/* Name and Membership Info */}
-<div className="flex items-center pl-28 ">
-  <div>
-    <p className="text-4xl font-bold text-gray-900">Sarah Williams</p>
-    <p className="text-xl text-gray-600">Member since 2000</p>
+  {/* Name and Membership Info */}
+  <div className="flex items-center pl-28">
+    <div>
+      <p className="text-4xl font-bold">Sarah Williams</p>
+      <p className="text-xl opacity-80">Member since 2000</p>
+    </div>
+  </div>
+
+  {/* Testimonial Text */}
+  <div className="mt-8 space-y-5">
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
+    <p className="text-xl leading-relaxed">
+      "This platform completely transformed how I approach design projects. The
+      collaborative tools are intuitive and powerful."
+    </p>
   </div>
 </div>
 
-{/* Testimonial Text */}
-<div className="mt-8 space-y-5">
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-  <p className="text-gray-700 text-xl leading-relaxed">
-    "This platform completely transformed how I approach design projects. The
-    collaborative tools are intuitive and powerful."
-  </p>
-</div>
-</div>
 
 </div>
 <h2 className="text-2xl font-bold italic text-[#df1f47] text-center mb-5">Join our growing community of innovators and become part of our story</h2>
 {loading ? (
-          <p className="text-lg mt-4">Loading featured events...</p>
+          <Loading />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 mt-6" data-aos="zoom-in" data-aos-delay="100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4  mb-10">
             {featuredEvents.map((event) => (
-              <div className={`rounded-lg overflow-hidden shadow-md transform transition-transform duration-300 hover:scale-105 ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`} key={event._id} data-aos="zoom-in" data-aos-delay="200">
+              <div className={`rounded-lg overflow-hidden shadow-md transform transition-transform duration-300 hover:scale-105 ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`} key={event._id} >
                 <div className="relative">
                   <img
-                    src={event.image || 'placeholder.jpg'}
+                    src={event.image || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'}
                     alt={event.title}
                     className="w-full aspect-square object-cover"
                   />
                   <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 hover:opacity-100">
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">View</button>
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded mx-2 hover:bg-black hover:text-white">Save</button>
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">Register</button>
+                  <button
+  onClick={() => navigate(`/event/${event._id}`)}
+  className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white transition-all duration-300"
+>
+  View
+</button>
+                    
                   </div>
                 </div>
                 <div className="p-4">

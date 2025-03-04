@@ -4,12 +4,16 @@ import axios from 'axios';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Header from '../Layout/HeaderPublic';
+import { useNavigate } from 'react-router-dom';
 
 const ProductGallery = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     AOS.init({
@@ -39,6 +43,16 @@ const ProductGallery = () => {
     fetchFeaturedProducts();
   }, []);
 
+  const openModal = (product) => {
+    setSelectedProduct(product);
+    setModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedProduct(null);
+  };
+
   return (
     <div className={`${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
       {location.pathname !== '/' && <Header />}
@@ -65,9 +79,12 @@ const ProductGallery = () => {
                     className="w-full aspect-square object-cover"
                   />
                   <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 hover:opacity-100">
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">View</button>
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded mx-2 hover:bg-black hover:text-white">Wishlist</button>
-                    <button className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white">Buy</button>
+                    <button
+                      className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white"
+                      onClick={() => openModal(product)}
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
                 <div className="p-4">
@@ -86,12 +103,52 @@ const ProductGallery = () => {
           className="mt-8 px-6 py-3 text-lg font-bold text-white bg-[#df1f47] rounded-full shadow-md hover:bg-[#bf1a3d] transition duration-300"
           data-aos="fade-up"
           data-aos-delay="200"
+          onClick={() => navigate('/products')}
         >
           View All Products
         </button>
       </div>
+
+      {modalOpen && selectedProduct && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className={`rounded-lg shadow-lg w-[1000px] max-h-[500px] p-8 relative flex ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-black'}`}>
+            {/* Close Button */}
+            <button className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-3xl" onClick={closeModal}>
+              &times;
+            </button>
+
+            {/* Left: Product Image */}
+            <div className="w-1/2 flex justify-center items-center">
+              <img
+                src={selectedProduct.images[0]?.url || "placeholder.jpg"}
+                alt={selectedProduct.name}
+                className="w-[600px] h-[400px] object-cover rounded-md"
+              />
+            </div>
+
+            {/* Right: Product Details */}
+            <div className="w-1/2 pl-8 flex flex-col shadow-md rounded-lg p-6 border ml-6 mr-2">
+              {/* Name and Price in the Same Line */}
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-3xl font-bold ">{selectedProduct.name}</h2>
+                <p className="text-2xl font-bold text-[#df1f47]">₱{selectedProduct.price}</p>
+              </div>
+
+              {/* Category Name */}
+              <p className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+  {selectedProduct.category?.name || "No category"}
+</p>
+
+{/* Description */}
+<p className={`text-gray-600 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+  {selectedProduct.description || "No description available."}
+</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ProductGallery
+export default ProductGallery;

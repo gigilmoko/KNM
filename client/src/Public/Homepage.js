@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import HeaderPublic from '../Layout/HeaderPublic';
+import { Link, useNavigate } from 'react-router-dom';
 import About from './About';
 import Contact from './Contact';
 import ProductGallery from './ProductGallery';
@@ -10,7 +11,7 @@ import 'aos/dist/aos.css';
 
 const Homepage = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-
+  const navigate = useNavigate();
   useEffect(() => {
     AOS.init({ 
       duration: 1000,
@@ -39,12 +40,18 @@ const Homepage = () => {
               Streamline operations, boost productivity, and drive growth with our all-in-one solution.
             </p>
             <div className="mt-8 flex justify-center space-x-6">
-              <button className="bg-[#df1f47] text-white text-lg px-8 py-3 rounded-lg shadow-md hover:bg-red-600">
-                Learn Our Story
-              </button>
-              <button className="bg-[#df1f47] text-white text-lg px-8 py-3 rounded-lg shadow-md hover:bg-red-600">
-                View Collections
-              </button>
+            <button
+        className="bg-[#df1f47] text-white text-lg px-8 py-3 rounded-lg shadow-md hover:bg-red-600"
+        onClick={() => navigate("/blog")}
+      >
+        Learn Our Story
+      </button>
+      <button
+        className="bg-[#df1f47] text-white text-lg px-8 py-3 rounded-lg shadow-md hover:bg-red-600"
+        onClick={() => navigate("/products")}
+      >
+        View Collections
+      </button>
             </div>
           </div>
         </section>
@@ -68,7 +75,7 @@ const Homepage = () => {
         </section>
       </main>
       <section id="events-section" className="py-16"><EventGallery /></section>
-      <section id="products-section" className="py-16"><ProductGallery /></section>
+      <section id="products-section" className=""><ProductGallery /></section>
       {/* <section id="about-section" className="py-16"><Contact /></section> */}
       
       {/* Footer */}
