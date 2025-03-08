@@ -245,7 +245,7 @@ exports.getMyOrders = async (req, res, next) => {
       // Fetch orders for the user and populate the user details, including the delivery address
       const orders = await Order.find({ user: req.user._id })
           .populate('user', 'fname lname middlei email phone deliveryAddress'); // Populate the necessary user fields
-
+        console.log("Orders:", orders);
       res.status(200).json({
           success: true,
           orders,
@@ -256,6 +256,31 @@ exports.getMyOrders = async (req, res, next) => {
           message: error.message,
       });
   }
+};
+
+exports.getMyOrdersMobile = async (req, res, next) => {
+  try {
+    // Fetch orders for the user and populate the user details and product details
+    const orders = await Order.find({ user: req.user._id })
+      .populate('user', 'fname lname middlei email phone deliveryAddress') // Populate user details
+      .populate({
+        path: 'orderProducts.product', // Populate the product details
+        select: 'name price image', // Fetch only necessary fields
+      });
+
+    console.log("Orders with populated products:", orders);
+
+    res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+
 };
 
 exports.getOrderDetails = async (req, res, next) => {
