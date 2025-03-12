@@ -39,6 +39,27 @@ exports.getProduct = async (req, res, next) => {
 	}
 };
 
+exports.getProductMobile = async (req, res, next) => {
+    try {
+        const products = await Product.find().populate('category', 'name'); // Populating category name
+        
+        if (!products || products.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No products found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            count: products.length,
+            products
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.getProductUser = async (req, res, next) => {
     console.log('Get Product User')
 	try {
@@ -209,7 +230,7 @@ exports.searchProduct = async (req, res, next) => {
                 { name: { $regex: keyword, $options: "i" } }, // Case-insensitive search in name
                 { description: { $regex: keyword, $options: "i" } }, // Case-insensitive search in description
             ],
-        });
+        }).populate('category', 'name');
 
         if (products.length === 0) {
             return res.status(404).json({

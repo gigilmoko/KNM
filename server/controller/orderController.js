@@ -287,7 +287,7 @@ exports.getOrderDetails = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('user', 'fname lname email address')
-      .populate('orderProducts.product', 'name price');
+      .populate('orderProducts.product', 'name price images'); // Added images field
 
     if (!order) {
       return res.status(404).json({

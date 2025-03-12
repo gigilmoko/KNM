@@ -87,6 +87,51 @@ exports.getEventFeedback = async (req, res) => {
   }
 };
 
+exports.getEventFeedbackMobile = async (req, res) => {
+  console.log("event feedback");
+  const { eventId } = req.params; // Extract the eventId from the URL parameters
+
+  try {
+    let feedbacks;
+    if (eventId === "all") {
+      // Fetch all feedbacks and populate user details
+      feedbacks = await EventFeedback.find().populate({
+        path: "userId",
+        select: "fname middlei lname avatar", // ✅ Correct field names from User schema
+      });
+    } else {
+      // Fetch feedbacks for the given eventId and populate user details
+      feedbacks = await EventFeedback.find({ eventId }).populate({
+        path: "userId",
+        select: "fname middlei lname avatar", // ✅ Fix: Use correct field names
+      });
+    }
+
+    // Check if there is no feedback
+    if (feedbacks.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No feedback found.",
+      });
+    }
+
+    // Return the feedbacks
+    return res.status(200).json({
+      success: true,
+      message: "Feedback fetched successfully.",
+      data: feedbacks,
+    });
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error. Failed to fetch feedback.",
+    });
+  }
+};
+
+
+
 // Fetch All Feedback Events Controller
 exports.getAllFeedbackEvents = async (req, res) => {
   console.log("getAllFeedbackEvents");

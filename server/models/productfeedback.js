@@ -27,6 +27,7 @@ const productFeedbackSchema = new mongoose.Schema({
         required: false,
         trim: true,
         maxlength: 500,
+        minlength: 20,
     }
 }, {
     timestamps: true,
