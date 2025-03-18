@@ -26,9 +26,12 @@ const {
     proofOfDeliveryConfirmed,
     proofOfDeliveryNotConfirmed,
     getPendingDeliveries, 
-    getMyOrdersMobile
+    getMyOrdersMobile,
+    getLatestOrders,
+    getAdminOrdersMobile
 
 } = require("../controller/orderController");
+const { get } = require('mongoose');
 
 router.post('/neworder', isAuthenticatedUser, createOrder);
 router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
@@ -37,6 +40,7 @@ router.delete('/orders/delete/:id',isAuthenticatedUser, isAdmin, deleteOrder);
 router.get("/my", isAuthenticatedUser, getMyOrders);
 router.get("/my/mobile", isAuthenticatedUser, getMyOrdersMobile);
 router.get("/orders/list",  isAuthenticatedUser, getAdminOrders);
+router.get("/orders/list/mobile",  isAuthenticatedUser, getAdminOrdersMobile);
 router.route("/orders/single/:id")
     .get(getOrderDetails)
     
@@ -44,6 +48,7 @@ router.put("/orders/update/:id", processOrder)
 router.get('/predictions/demand-forecast',isAuthenticatedUser, isAdmin,getDemandForecast)
 router.get('/predictions/market-basket',isAuthenticatedUser, isAdmin,getMarketBasketAnalysis)
 router.get('/predictions/get-top-products', getTopProducts)
+router.get('/analytics/order-latest', getLatestOrders)
 router.get('/predictions/get-seasonality',isAuthenticatedUser, isAdmin,getSeasonalityAnalysis)
 router.get('/predictions/get-peak-hours',isAuthenticatedUser, isAdmin,getPeakOrderHours)
 router.get('/analytics/orders/totalprice',isAuthenticatedUser, isAdmin,calculateTotalPrice)

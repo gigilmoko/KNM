@@ -164,7 +164,6 @@ exports.getUserInterestedAndAttended = async (req, res) => {
   }
 };
 
-
 exports.getAllInterestedUsers = async (req, res) => {
   try {
     const { eventId } = req.params;
@@ -178,9 +177,9 @@ exports.getAllInterestedUsers = async (req, res) => {
     const interests = await UserInterest.find({ event: eventId })
       .populate('user', 'fname lname email avatar');  // Populate user details
 
-    if (!interests || interests.length === 0) {
-      return res.status(404).json({ message: 'No users are interested in this event.' });
-    }
+    // if (!interests || interests.length === 0) {
+    //   return res.status(404).json({ message: 'No users are interested in this event.' });
+    // }
 
     // Map through the interests and include both user details and isAttended
     const interestedUsers = interests.map(interest => ({

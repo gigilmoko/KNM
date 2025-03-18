@@ -467,9 +467,9 @@ exports.afterCurrentDay = async (req, res) => {
         // Get the current date in Hong Kong Time (PH Time, UTC+8)
         const currentDate = moment.tz('Asia/Hong_Kong').startOf('day'); // Start of the current day
 
-        // Fetch events with date after the current day
+        // Fetch events with startDate after the current day
         const eventsAfter = await CalendarEvent.find({
-            date: { $gt: currentDate.toDate() } // Only events after the current date
+            startDate: { $gt: currentDate.toDate() } // Only events with startDate after the current date
         });
 
         res.status(200).json({

@@ -240,6 +240,28 @@ exports.getAdminOrders = async (req, res, next) => {
   }
 };
 
+exports.getAdminOrdersMobile = async (req, res, next) => {
+  try {
+    const orders = await Order.find({})
+      .populate({
+        path: "orderProducts.product",
+        select: "name price", // Include the fields you need from Product
+      })
+      .populate({
+        path: "user",
+        select: "fname lname avatar email", // Include the required fields from User
+      });
+
+    res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 exports.getMyOrders = async (req, res, next) => {
   try {
       // Fetch orders for the user and populate the user details, including the delivery address
@@ -985,5 +1007,23 @@ exports.getPendingDeliveries = async (req, res) => {
           success: false,
           message: "Server error",
       });
+  }
+};
+
+exports.getLatestOrders = async (req, res, next) => {
+  try {
+      const orders = await Order.find()
+          .populate("user", "fname lname email") // Populate user details
+          .populate("orderProducts.product", "name price") // Populate product details
+          .sort({ createdAt: -1 }) // Sort by latest orders
+          .limit(10); // Fetch only the latest 10 orders
+
+      res.status(200).json({
+          success: true,
+          count: orders.length,
+          orders,
+      });
+  } catch (error) {
+      next(error);
   }
 };

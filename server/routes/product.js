@@ -12,10 +12,12 @@ const {
     searchProduct,
     getProductUser,
     getProductMobile,
+    getTotalProducts
 } = require('../controller/productController');
 const { isAuthenticatedUser, authorizeRoles, isAdmin } = require('../middlewares/auth');
 
 router.get('/product/all', getProduct);
+router.get('/product/total', getTotalProducts);
 router.get('/product/all/mobile', getProductMobile);
 router.get('/product/all/user', getProductUser);
 router.get('/product/search', searchProduct);

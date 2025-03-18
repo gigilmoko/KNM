@@ -108,12 +108,12 @@ exports.getEventFeedbackMobile = async (req, res) => {
     }
 
     // Check if there is no feedback
-    if (feedbacks.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No feedback found.",
-      });
-    }
+    // if (feedbacks.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "No feedback found.",
+    //   });
+    // }
 
     // Return the feedbacks
     return res.status(200).json({

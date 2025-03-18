@@ -109,12 +109,12 @@ exports.getProductFeedbacksMobile = async (req, res, next) => {
             .populate('productId', 'name description price'); // Populate product details
 
         // If no feedbacks are found
-        if (!feedbacks || feedbacks.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'No feedbacks found for this product.'
-            });
-        }
+        // if (!feedbacks || feedbacks.length === 0) {
+        //     return res.status(404).json({
+        //         success: false,
+        //         message: 'No feedbacks found for this product.'
+        //     });
+        // }
 
         // Return the feedbacks
         res.status(200).json({

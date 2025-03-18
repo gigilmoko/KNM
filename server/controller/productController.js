@@ -252,3 +252,15 @@ exports.searchProduct = async (req, res, next) => {
         });
     }
 };
+
+exports.getTotalProducts = async (req, res, next) => {
+    try {
+        const totalProducts = await Product.countDocuments(); // Only counts documents
+        res.status(200).json({
+            success: true,
+            totalProducts // Only returning the count
+        });
+    } catch (error) {
+        next(error);
+    }
+};
