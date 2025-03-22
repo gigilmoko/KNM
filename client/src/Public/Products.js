@@ -4,6 +4,7 @@ import FooterPublic from "../Layout/FooterPublic";
 import { FaShoppingBag, FaMagic, FaGift, FaHeart, FaTshirt, FaStar } from "react-icons/fa";
 import axios from "axios";
 import Loading from "../Layout/Loader";
+import Scene from "./showroom/Scene";
 
 const Products = () => {
   const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
@@ -105,12 +106,12 @@ const Products = () => {
     <div className={theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"}>
       <HeaderPublic />
       <main className="min-h-[calc(100vh-4rem)] flex flex-col justify-between">
-        <section className="container mx-auto py-16">
+        <section className="container mx-auto py-16 px-5">
           <h1 className="text-5xl font-bold text-[#df1f47]">Show Room</h1>
           <div className="mt-4 mb-4">
             <p>A bright and modern showroom designed to showcase KNM's products, making them easy to see and appreciate.</p>
           </div>
-          <div className="w-full min-h-[45vh] p-12 rounded-lg shadow-lg bg-[#df1f47] text-white" />
+          <Scene/>
 
           <h2 className="text-4xl mt-10 font-bold text-center text-[#df1f47]">Shop by Category</h2>
 
