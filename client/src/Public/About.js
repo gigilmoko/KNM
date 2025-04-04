@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
-import AOS from 'aos';
-import 'aos/dist/aos.css'; // Import AOS styles
+
 import '../assets/css/about.css';
 import Pic1 from '../assets/img/aboutpic1.jpg';
 import Pic2 from '../assets/img/aboutpic2.jpg';
@@ -9,12 +8,7 @@ import Pic4 from '../assets/img/aboutpic4.jpg';
 import Header from '../Layout/HeaderPublic';
 
 const About = ({ isPreview = false }) => {
-  useEffect(() => {
-      AOS.init({ 
-        duration: 1000, // Animation duration in milliseconds
-        once: true,     // Whether animation should happen only once - while scrolling down
-      });
-    }, []);
+
   return (
     <div>
       {/* Conditionally render the Header only if not in preview mode */}
@@ -22,12 +16,12 @@ const About = ({ isPreview = false }) => {
       
       <div className="about-section">
         <div className="left-column">
-          <img src={Pic1} alt="About pic1" data-aos="fade-up" data-aos-delay="100"/>
-          <img src={Pic2} alt="About pic2" data-aos="fade-up" data-aos-delay="200"/>
-          <img src={Pic3} alt="About pic3" data-aos="fade-up" data-aos-delay="300"/>
-          <img src={Pic4} alt="About pic4" data-aos="fade-up" data-aos-delay="400"/>
+          <img src={Pic1} alt="About pic1" />
+          <img src={Pic2} alt="About pic2" />
+          <img src={Pic3} alt="About pic3"/>
+          <img src={Pic4} alt="About pic4" />
         </div>
-        <div className="right-column" data-aos="fade-up" data-aos-delay="300">
+        <div className="right-column" >
           <h2>About Us</h2>
           {isPreview ? (
             <>

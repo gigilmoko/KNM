@@ -6,17 +6,13 @@ import Contact from './Contact';
 import ProductGallery from './ProductGallery';
 import EventGallery from './EventGallery';
 import FooterPublic from '../Layout/FooterPublic'; // Import the new footer component
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+
 
 const Homepage = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const navigate = useNavigate();
   useEffect(() => {
-    AOS.init({ 
-      duration: 1000,
-      once: true,
-    });
+   
 
     if (!localStorage.getItem('theme')) {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

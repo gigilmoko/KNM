@@ -432,6 +432,42 @@ exports.processOrder = async (req, res, next) => {
   }
 };
 
+exports.processOrderAny = async (req, res, next) => {
+  try {
+      const order = await Order.findById(req.params.id);
+      if (!order) {
+          return res.status(404).json({
+              success: false,
+              message: "Order Not Found",
+          });
+      }
+
+      // Allow updating status to any valid value
+      const newStatus = req.body.status;
+      if (!["Preparing", "Shipped", "Delivered", "Delivered Pending", "Cancelled"].includes(newStatus)) {
+          return res.status(400).json({
+              success: false,
+              message: "Invalid Status Provided",
+          });
+      }
+
+      order.status = newStatus;
+
+      if (newStatus === "Delivered") {
+          order.deliveredAt = new Date(Date.now());
+      }
+
+      await order.save();
+
+      res.status(200).json({
+          success: true,
+          message: "Order Status Updated Successfully",
+      });
+  } catch (error) {
+      next(error);
+  }
+};
+
 exports.getDemandForecast = async (req, res) => {
     try {
       // Fetch all orders

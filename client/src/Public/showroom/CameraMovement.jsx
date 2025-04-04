@@ -29,25 +29,18 @@ const CameraMovement = ({ onStatsUpdate, target }) => {
         targetPosition.current = null;
       }
     } else {
-      // Only apply WASD movement when not transitioning
-      if (!isTransitioning.current) {
-        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-        forward.y = 0;
-        forward.normalize();
+      // Recalculate movement direction based on current camera rotation
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
 
-        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
-        right.y = 0;
-        right.normalize();
+      velocity.current.set(0, 0, 0);
 
-        velocity.current.set(0, 0, 0);
+      if (keys.current.forward) velocity.current.add(forward.multiplyScalar(movementSpeed));
+      if (keys.current.backward) velocity.current.add(forward.multiplyScalar(-movementSpeed));
+      if (keys.current.right) velocity.current.add(right.multiplyScalar(movementSpeed));
+      if (keys.current.left) velocity.current.add(right.multiplyScalar(-movementSpeed));
 
-        if (keys.current.forward) velocity.current.add(forward.multiplyScalar(movementSpeed));
-        if (keys.current.backward) velocity.current.add(forward.multiplyScalar(-movementSpeed));
-        if (keys.current.right) velocity.current.add(right.multiplyScalar(movementSpeed));
-        if (keys.current.left) velocity.current.add(right.multiplyScalar(-movementSpeed));
-
-        camera.position.add(velocity.current);
-      }
+      camera.position.add(velocity.current);
     }
 
     // Update camera stats

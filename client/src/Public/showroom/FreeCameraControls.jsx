@@ -164,16 +164,9 @@ const FreeCameraControls = ({ onStatsUpdate, target }) => {
     camera.rotation.y = rotation.current.x;
 
     if (!isTransitioning.current) {
-      // Calculate movement direction based on current camera rotation
-      const forward = new THREE.Vector3(0, 0, -1);
-      forward.applyQuaternion(camera.quaternion);
-      forward.y = 0;
-      forward.normalize();
-
-      const right = new THREE.Vector3(1, 0, 0);
-      right.applyQuaternion(camera.quaternion);
-      right.y = 0;
-      right.normalize();
+      // Recalculate movement direction based on current camera rotation
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
 
       velocity.current.set(0, 0, 0);
 

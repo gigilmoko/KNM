@@ -12,25 +12,25 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader";
 const Model = () => {
   const [scene, setScene] = useState(null);
-  
+ 
   useEffect(() => {
     // Create a DRACOLoader instance
     const dracoLoader = new DRACOLoader();
     // Specify the path to the Draco decoder (you'll need these files in your public folder)
     dracoLoader.setDecoderPath('/draco/');
-    
+   
     // Create GLTFLoader and assign the DRACOLoader
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
-    
+   
     // Load your model
-    loader.load('/v4.glb', (gltf) => {
+    loader.load('/SHOWROOM_BAKED_LATEST3.glb', (gltf) => {
       setScene(gltf.scene);
     }, undefined, (error) => {
       console.error('An error happened while loading the model:', error);
     });
   }, []);
-  
+ 
   return scene ? <primitive object={scene} scale={1} /> : null;
 };
 
@@ -103,7 +103,7 @@ const Scene = () => {
 
   const locations = {
     christmas: {
-      position: [-1.08, 5.0, 3.37],
+      position: [-8.07, 5.00,5.40],
       rotation: [0.92, 180.83, 0.0],
       icon: Gift,
     },
@@ -113,7 +113,7 @@ const Scene = () => {
       icon: Sparkles,
     },
     accessories: {
-      position: [-0.17, 5.0, -1.96],
+      position: [-7.02, 5.00, -7.66],
       rotation: [-8.48, -1.6, 0.0],
       icon: Gem,
     },
@@ -123,12 +123,12 @@ const Scene = () => {
       icon: Palette,
     },
     clothing: {
-      position: [13.18, 5.0, 3.19],
+      position: [2.46, 5.00, 10.33]    ,
       rotation: [-19.94, 89.5, 0.0],
       icon: Shirt,
     },
     bags: {
-      position: [12.95, 5.0, -2.78],
+      position: [7.91, 5.00, -6.31],
       rotation: [-19.94, 89.5, 0.0],
       icon: ShoppingBag,
     },
@@ -187,4 +187,6 @@ const Scene = () => {
 }
 
 export default Scene
+
+
 

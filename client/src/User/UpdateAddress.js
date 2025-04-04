@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
-import "leaflet/dist/leaflet.css";
+import leaflet from 'leaflet'
 import L from "leaflet";
 import InputText from "../Layout/components/Input/InputText";
 import axios from "axios";

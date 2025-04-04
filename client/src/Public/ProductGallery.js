@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+
 import Header from '../Layout/HeaderPublic';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,10 +15,7 @@ const ProductGallery = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: true,
-    });
+   
 
     if (!localStorage.getItem('theme')) {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -57,21 +53,21 @@ const ProductGallery = () => {
     <div className={`${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
       {location.pathname !== '/' && <Header />}
 
-      <div className="text-center py-12 bg-transparent">
-        <h2 className="text-4xl font-bold uppercase font-poppins text-[#df1f47]" data-aos="zoom-in" data-aos-delay="100">
+      <div className="text-center pb-20 bg-transparent">
+        <h2 className="text-4xl font-bold uppercase font-poppins text-[#df1f47]" >
           Featured Products
         </h2>
 
-        <p className="text-lg mt-2" data-aos="fade-up" data-aos-delay="150">
+        <p className="text-lg mt-2" >
           Each piece tells a story of Filipino heritage and craftsmanship.
         </p>
 
         {loading ? (
           <p className="text-lg mt-4">Loading featured products...</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 mt-6" data-aos="zoom-in" data-aos-delay="100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 mt-6" >
             {featuredProducts.map(({ product }) => (
-              <div className={`rounded-lg overflow-hidden shadow-md transform transition-transform duration-300 hover:scale-105 ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`} key={product._id} data-aos="zoom-in" data-aos-delay="200">
+              <div className={`rounded-lg overflow-hidden shadow-md transform transition-transform duration-300 hover:scale-105 ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`} key={product._id}>
                 <div className="relative">
                   <img
                     src={product.images[0]?.url || 'placeholder.jpg'}
@@ -101,8 +97,6 @@ const ProductGallery = () => {
 
         <button
           className="mt-8 px-6 py-3 text-lg font-bold text-white bg-[#df1f47] rounded-full shadow-md hover:bg-[#bf1a3d] transition duration-300"
-          data-aos="fade-up"
-          data-aos-delay="200"
           onClick={() => navigate('/products')}
         >
           View All Products

@@ -9,7 +9,7 @@ import { quantum } from 'ldrs';
 import InputText from "../Layout/components/Input/InputText";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
-import "leaflet/dist/leaflet.css";
+import leaflet from 'leaflet'
 import L from 'leaflet';
 
 quantum.register();

@@ -110,10 +110,10 @@ function Header() {
     
         <div className="flex-none font-semibold flex items-center space-x-6 ml-auto">
     {[
-        { name: 'About Us', path: '/about' },
-        { name: 'Events', path: '/event-list' },
+        { name: 'Home ', path: '/' },
+        { name: 'About Us', path: '/blog' },
+        // { name: 'Events', path: '/event-list' },
         { name: 'Our Products', path: '/products' },
-        { name: 'Blogs', path: '/blog' },
         { name: 'Contact Us', path: '/contact' },
         
     ].map((item, index) => (

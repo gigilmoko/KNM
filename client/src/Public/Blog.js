@@ -3,14 +3,17 @@ import { FaUserCircle } from 'react-icons/fa'; // Importing an icon for the foun
 import HeaderPublic from '../Layout/HeaderPublic';
 import FooterPublic from '../Layout/FooterPublic';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Loading from '../Layout/Loader';
+
 const Blog = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [featuredEvents, setFeaturedEvents] = useState([]);
   const bottomSectionRef = useRef(null);
- const [loading, setLoading] = useState(true);
+  const eventRefs = useRef({}); // Store refs for each event
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!localStorage.getItem('theme')) {
@@ -42,6 +45,16 @@ const Blog = () => {
 
     fetchFeaturedEvents();
   }, []);
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const eventId = queryParams.get('eventId');
+    if (eventId && eventRefs.current[eventId]) {
+      const yOffset = -100; // Adjusted offset for better alignment
+      const y = eventRefs.current[eventId].getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, [location]);
 
   return (
     <div className={`min-h-screen flex flex-col ${theme === "dark" ? "bg-gray-900 text-white" : "bg-base-200 text-black"}`}>
@@ -308,6 +321,89 @@ const Blog = () => {
             ))}
           </div>
         )}
+
+      {/* Huge Red Card at the Bottom */}
+      <div className="w-full  px-8 mb-12">
+        <div
+          ref={(el) => (eventRefs.current['1'] = el)} // Assign ref for event 1
+          className="w-full p-8 rounded-lg shadow-lg bg-[#df1f47] text-white flex flex-col md:flex-row items-center"
+        >
+          {/* Left side - Image */}
+          <div className="w-full md:w-1/2 mb-6 md:mb-0">
+            <img
+              src="https://res.cloudinary.com/dglawxazg/image/upload/v1741119999/event2_mloxqk.jpg"
+              alt="Event"
+            className="w-[800px] h-[400px] object-cover rounded-lg shadow-lg"
+            />
+          </div>
+
+          {/* Right side - Content */}
+          <div className="w-full md:w-1/2 flex flex-col justify-center">
+            <h2 className="text-4xl font-bold mb-4">Event Title</h2>
+            <p className="text-lg mb-2">Location: Central Park, NY</p>
+            <p className="text-lg mb-4">Date: November 15, 2023</p>
+            <p className="text-xl mb-4">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+            
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full  px-8 mb-12">
+        <div
+          ref={(el) => (eventRefs.current['2'] = el)} // Assign ref for event 2
+          className="w-full p-8 rounded-lg shadow-lg bg-[#df1f47] text-white flex flex-col md:flex-row items-center"
+        >
+          {/* Left side - Image */}
+          <div className="w-full md:w-1/2 mb-6 md:mb-0">
+            <img
+              src="https://res.cloudinary.com/dglawxazg/image/upload/v1743763463/vibrant-art-exhibition-stockcake_ynn3aj.jpg"
+              alt="Event"
+            className="w-[800px] h-[400px] object-cover rounded-lg shadow-lg"
+            />
+          </div>
+
+          {/* Right side - Content */}
+          <div className="w-full md:w-1/2 flex flex-col justify-center">
+            <h2 className="text-4xl font-bold mb-4">Art Exhibition</h2>
+            <p className="text-lg mb-2">Location: Downtown Gallery, LA</p>
+            <p className="text-lg mb-4">Date: November 15, 2023</p>
+            <p className="text-xl mb-4">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+            
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full  px-8 mb-12">
+        <div
+          ref={(el) => (eventRefs.current['3'] = el)} // Assign ref for event 3
+          className="w-full p-8 rounded-lg shadow-lg bg-[#df1f47] text-white flex flex-col md:flex-row items-center"
+        >
+          {/* Left side - Image */}
+          <div className="w-full md:w-1/2 mb-6 md:mb-0">
+            <img
+              src="https://res.cloudinary.com/dglawxazg/image/upload/v1743763457/images_1_daeglf.jpg"
+              alt="Event"
+            className="w-[800px] h-[400px] object-cover rounded-lg shadow-lg"
+            />
+          </div>
+
+          {/* Right side - Content */}
+          <div className="w-full md:w-1/2 flex flex-col justify-center">
+            <h2 className="text-4xl font-bold mb-4">Tech Conference</h2>
+            <p className="text-lg mb-2">Location: Silicon Valley, CA</p>
+            <p className="text-lg mb-4">Date: November 15, 2023</p>
+            <p className="text-xl mb-4">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+            
+          </div>
+        </div>
+      </div>
+
       <FooterPublic />
     </div>
     

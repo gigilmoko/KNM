@@ -1,19 +1,19 @@
 import React, { Suspense } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client'; // Updated import
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import store from './Layout/common/store';
 import { Provider } from 'react-redux';
-import SuspenseContent from './Layout/SuspenseContent'
+import SuspenseContent from './Layout/SuspenseContent';
 
-ReactDOM.render(
+const root = ReactDOM.createRoot(document.getElementById('root')); // Updated to use createRoot
+root.render(
   <Suspense fallback={<SuspenseContent />}>
     <Provider store={store}>
       <App />
     </Provider>
-  </Suspense>,
-  document.getElementById('root')
+  </Suspense>
 );
 
 // If you want to start measuring performance in your app, pass a function

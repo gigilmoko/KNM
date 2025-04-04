@@ -9,6 +9,7 @@ const {
     getMyOrders, 
     getOrderDetails, 
     processOrder,
+    processOrderAny,
     getDemandForecast,
     getMarketBasketAnalysis,
     getTopProducts,
@@ -45,6 +46,7 @@ router.route("/orders/single/:id")
     .get(getOrderDetails)
     
 router.put("/orders/update/:id", processOrder)
+router.put("/orders/update/status/:id", processOrderAny)
 router.get('/predictions/demand-forecast',isAuthenticatedUser, isAdmin,getDemandForecast)
 router.get('/predictions/market-basket',isAuthenticatedUser, isAdmin,getMarketBasketAnalysis)
 router.get('/predictions/get-top-products', getTopProducts)
