@@ -4,7 +4,7 @@ import * as THREE from "three";
 
 const CameraMovement = ({ onStatsUpdate, target }) => {
   const { camera } = useThree();
-  const movementSpeed = 0.5;
+  const movementSpeed = 0.1; // Reduced movement speed for minimal adjustments
   const velocity = useRef(new THREE.Vector3());
   const keys = useRef({ forward: false, backward: false, left: false, right: false });
   const isTransitioning = useRef(false);
@@ -17,7 +17,53 @@ const CameraMovement = ({ onStatsUpdate, target }) => {
     }
   }, [target]);
 
-  // ... rest of your existing code ...
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      switch (event.code) {
+        case "KeyW":
+          keys.current.forward = true;
+          break;
+        case "KeyS":
+          keys.current.backward = true;
+          break;
+        case "KeyA":
+          keys.current.left = true;
+          break;
+        case "KeyD":
+          keys.current.right = true;
+          break;
+        default:
+          break;
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      switch (event.code) {
+        case "KeyW":
+          keys.current.forward = false;
+          break;
+        case "KeyS":
+          keys.current.backward = false;
+          break;
+        case "KeyA":
+          keys.current.left = false;
+          break;
+        case "KeyD":
+          keys.current.right = false;
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
 
   useFrame(() => {
     if (isTransitioning.current && targetPosition.current) {
@@ -29,33 +75,38 @@ const CameraMovement = ({ onStatsUpdate, target }) => {
         targetPosition.current = null;
       }
     } else {
-      // Recalculate movement direction based on current camera rotation
-      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
-      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
+      if (!isTransitioning.current) {
+        const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+        forward.y = 0;
+        forward.normalize();
 
-      velocity.current.set(0, 0, 0);
+        const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+        right.y = 0;
+        right.normalize();
 
-      if (keys.current.forward) velocity.current.add(forward.multiplyScalar(movementSpeed));
-      if (keys.current.backward) velocity.current.add(forward.multiplyScalar(-movementSpeed));
-      if (keys.current.right) velocity.current.add(right.multiplyScalar(movementSpeed));
-      if (keys.current.left) velocity.current.add(right.multiplyScalar(-movementSpeed));
+        velocity.current.set(0, 0, 0);
 
-      camera.position.add(velocity.current);
+        if (keys.current.forward) velocity.current.add(forward.multiplyScalar(movementSpeed));
+        if (keys.current.backward) velocity.current.add(forward.multiplyScalar(-movementSpeed));
+        if (keys.current.right) velocity.current.add(right.multiplyScalar(movementSpeed));
+        if (keys.current.left) velocity.current.add(right.multiplyScalar(-movementSpeed));
+
+        camera.position.add(velocity.current);
+      }
     }
 
-    // Update camera stats
     if (onStatsUpdate) {
       onStatsUpdate({
         position: [
           parseFloat(camera.position.x.toFixed(2)),
           parseFloat(camera.position.y.toFixed(2)),
-          parseFloat(camera.position.z.toFixed(2))
+          parseFloat(camera.position.z.toFixed(2)),
         ],
         rotation: [
-          parseFloat((camera.rotation.x * 180 / Math.PI).toFixed(2)),
-          parseFloat((camera.rotation.y * 180 / Math.PI).toFixed(2)),
-          parseFloat((camera.rotation.z * 180 / Math.PI).toFixed(2))
-        ]
+          parseFloat((camera.rotation.x * 180) / Math.PI.toFixed(2)),
+          parseFloat((camera.rotation.y * 180) / Math.PI.toFixed(2)),
+          parseFloat((camera.rotation.z * 180) / Math.PI.toFixed(2)),
+        ],
       });
     }
   });

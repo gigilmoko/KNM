@@ -167,7 +167,7 @@ function Login() {
         <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-base-200 text-black'} flex flex-col`}>
             <HeaderPublic />
             <ToastContainer />
-            <div className={`mx-auto w-full max-w-2xl shadow-xl p-6 my-12 ${theme === 'dark' ? 'bg-gray-800' : 'bg-base-100'} rounded-xl border border-gray-300`}>
+            <div className={`mx-auto w-full max-w-2xl shadow-xl p-6 my-14 ${theme === 'dark' ? 'bg-gray-800' : 'bg-base-100'} rounded-xl border border-gray-300`}>
                 <h2 className="text-3xl font-bold mb-2 text-center text-[#df1f47]">Welcome Back!</h2>
                 <p className={`text-center mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Enter your email and password to access your account</p>
 

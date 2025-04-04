@@ -2,86 +2,62 @@ import { useThree, useFrame } from "@react-three/fiber";
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-const FreeCameraControls = ({ onStatsUpdate, target }) => {
+const FreeCameraControls = ({ onStatsUpdate }) => {
   const { camera } = useThree();
-  const movementSpeed = 0.5;
-  const rotationSpeed = 0.002;
+  const movementSpeed = 0.1; // Adjust movement speed as needed
   const velocity = useRef(new THREE.Vector3());
-  const rotation = useRef({ x: 0, y: 0 });
-  const isMouseDown = useRef(false);
-  const isTransitioning = useRef(false);
-  const targetRef = useRef(null);
-
-  const keys = useRef({ 
-    forward: false, 
-    backward: false, 
-    left: false, 
-    right: false 
+  const keys = useRef({
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
   });
 
-  // Handle target changes
-  useEffect(() => {
-    if (target) {
-      isTransitioning.current = true;
-      targetRef.current = {
-        position: new THREE.Vector3(...target.position),
-        rotation: {
-          x: target.rotation[1] * Math.PI / 180,
-          y: target.rotation[0] * Math.PI / 180
-        }
-      };
-    }
-  }, [target]);
+  // Define the movement boundaries
+  const boundaries = {
+    xMin: -3.94,
+    xMax: 4.72,
+    zMin: -17.85,
+    zMax: -0.74,
+    yMin: 2.0,
+    yMax: 2.0,
+  };
 
-  // Set initial camera position and rotation
-  useEffect(() => {
-    camera.position.set(17.84, 5.00, 2.45);
-    camera.rotation.order = 'YXZ';
-    rotation.current.x = camera.rotation.y;
-    rotation.current.y = camera.rotation.x;
-  }, [camera]);
-
-  // Handle keyboard controls
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (isTransitioning.current) return;
       switch (event.code) {
-        case "ArrowUp":
         case "KeyW":
           keys.current.forward = true;
           break;
-        case "ArrowDown":
         case "KeyS":
           keys.current.backward = true;
           break;
-        case "ArrowLeft":
         case "KeyA":
           keys.current.left = true;
           break;
-        case "ArrowRight":
         case "KeyD":
           keys.current.right = true;
+          break;
+        default:
           break;
       }
     };
 
     const handleKeyUp = (event) => {
       switch (event.code) {
-        case "ArrowUp":
         case "KeyW":
           keys.current.forward = false;
           break;
-        case "ArrowDown":
         case "KeyS":
           keys.current.backward = false;
           break;
-        case "ArrowLeft":
         case "KeyA":
           keys.current.left = false;
           break;
-        case "ArrowRight":
         case "KeyD":
           keys.current.right = false;
+          break;
+        default:
           break;
       }
     };
@@ -95,101 +71,42 @@ const FreeCameraControls = ({ onStatsUpdate, target }) => {
     };
   }, []);
 
-  // Handle mouse controls
-  useEffect(() => {
-    const handleMouseDown = (event) => {
-      if (event.button === 0 && !isTransitioning.current) {
-        isMouseDown.current = true;
-      }
-    };
-
-    const handleMouseUp = (event) => {
-      if (event.button === 0) {
-        isMouseDown.current = false;
-      }
-    };
-
-    const handleMouseMove = (event) => {
-      if (isMouseDown.current && !isTransitioning.current) {
-        rotation.current.x -= event.movementX * rotationSpeed;
-        rotation.current.y = Math.max(
-          -Math.PI / 2,
-          Math.min(Math.PI / 2, rotation.current.y - event.movementY * rotationSpeed)
-        );
-      }
-    };
-
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
-
   useFrame(() => {
-    if (isTransitioning.current && targetRef.current) {
-      const lerpFactor = 0.05;
-      
-      camera.position.lerp(targetRef.current.position, lerpFactor);
-      
-      rotation.current.x = THREE.MathUtils.lerp(
-        rotation.current.x,
-        targetRef.current.rotation.x,
-        lerpFactor
-      );
-      rotation.current.y = THREE.MathUtils.lerp(
-        rotation.current.y,
-        targetRef.current.rotation.y,
-        lerpFactor
-      );
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+    forward.y = 0; // Lock movement to the XZ plane
+    forward.normalize();
 
-      const positionDistance = camera.position.distanceTo(targetRef.current.position);
-      const rotationDistance = 
-        Math.abs(rotation.current.x - targetRef.current.rotation.x) +
-        Math.abs(rotation.current.y - targetRef.current.rotation.y);
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+    right.y = 0; // Lock movement to the XZ plane
+    right.normalize();
 
-      if (positionDistance < 0.01 && rotationDistance < 0.01) {
-        isTransitioning.current = false;
-        targetRef.current = null;
-      }
-    }
+    velocity.current.set(0, 0, 0);
 
-    // Apply rotation before movement calculation
-    camera.rotation.order = 'YXZ';
-    camera.rotation.x = rotation.current.y;
-    camera.rotation.y = rotation.current.x;
+    if (keys.current.forward) velocity.current.add(forward.multiplyScalar(movementSpeed));
+    if (keys.current.backward) velocity.current.add(forward.multiplyScalar(-movementSpeed));
+    if (keys.current.right) velocity.current.add(right.multiplyScalar(movementSpeed));
+    if (keys.current.left) velocity.current.add(right.multiplyScalar(-movementSpeed));
 
-    if (!isTransitioning.current) {
-      // Recalculate movement direction based on current camera rotation
-      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
-      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).normalize();
+    // Update camera position
+    camera.position.add(velocity.current);
 
-      velocity.current.set(0, 0, 0);
-
-      if (keys.current.forward) velocity.current.add(forward.multiplyScalar(movementSpeed));
-      if (keys.current.backward) velocity.current.add(forward.multiplyScalar(-movementSpeed));
-      if (keys.current.right) velocity.current.add(right.multiplyScalar(movementSpeed));
-      if (keys.current.left) velocity.current.add(right.multiplyScalar(-movementSpeed));
-
-      camera.position.add(velocity.current);
-    }
+    // Clamp the camera's position within the defined boundaries
+    camera.position.x = THREE.MathUtils.clamp(camera.position.x, boundaries.xMin, boundaries.xMax);
+    camera.position.y = THREE.MathUtils.clamp(camera.position.y, boundaries.yMin, boundaries.yMax);
+    camera.position.z = THREE.MathUtils.clamp(camera.position.z, boundaries.zMin, boundaries.zMax);
 
     if (onStatsUpdate) {
       onStatsUpdate({
         position: [
           parseFloat(camera.position.x.toFixed(2)),
           parseFloat(camera.position.y.toFixed(2)),
-          parseFloat(camera.position.z.toFixed(2))
+          parseFloat(camera.position.z.toFixed(2)),
         ],
         rotation: [
-          parseFloat((camera.rotation.x * 180 / Math.PI).toFixed(2)),
-          parseFloat((camera.rotation.y * 180 / Math.PI).toFixed(2)),
-          parseFloat((camera.rotation.z * 180 / Math.PI).toFixed(2))
-        ]
+          parseFloat((camera.rotation.x * 180) / Math.PI.toFixed(2)),
+          parseFloat((camera.rotation.y * 180) / Math.PI.toFixed(2)),
+          parseFloat((camera.rotation.z * 180) / Math.PI.toFixed(2)),
+        ],
       });
     }
   });

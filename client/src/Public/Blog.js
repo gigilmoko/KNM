@@ -50,8 +50,9 @@ const Blog = () => {
     const queryParams = new URLSearchParams(location.search);
     const eventId = queryParams.get('eventId');
     if (eventId && eventRefs.current[eventId]) {
-      const yOffset = -100; // Adjusted offset for better alignment
-      const y = eventRefs.current[eventId].getBoundingClientRect().top + window.scrollY + yOffset;
+      const element = eventRefs.current[eventId];
+      const yOffset = window.innerHeight / 2 - element.getBoundingClientRect().height / 2; // Center the element
+      const y = element.getBoundingClientRect().top + window.scrollY - yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
   }, [location]);

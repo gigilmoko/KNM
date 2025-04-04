@@ -69,7 +69,7 @@ const EventGallery = () => {
                 <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 hover:opacity-100">
                   <button
                     className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white"
-                    onClick={() => navigate(`/blog?eventId=${event._id}`)}
+                    onClick={() => navigate(`/blog?eventId=${event._id}`)} // Pass correct eventId
                   >
                     View
                   </button>
