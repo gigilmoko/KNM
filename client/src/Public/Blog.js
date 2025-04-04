@@ -82,52 +82,53 @@ const Blog = () => {
 
       {/* Two-column layout */}
       <div ref={bottomSectionRef} className="w-full flex flex-col md:flex-row items-center justify-center mt-12 px-8 gap-12 mb-12">
-        {/* Left side - Image */}
-        <div className="w-full md:w-1/2">
-          <img 
-            src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png" 
-            alt="Community" 
-            className="w-full h-[720px] object-cover rounded-lg shadow-lg"
-          />
-        </div>
+  {/* Left side - Image */}
+  <div className="w-full md:w-1/2">
+    <img 
+      src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png" 
+      alt="Community" 
+      className="w-[650px] h-[650px] object-cover rounded-lg shadow-lg ml-20"
+    />
+  </div>
 
-        {/* Right side - Paragraph */}
-        <div className={`w-full md:w-1/2 flex flex-col justify-center ${theme === "dark" ? "text-white" : "text-black"}`}>
-          <h3 className="text-6xl font-bold mb-4 text-[#df1f47]">A Message from our Founder</h3>
-          <p className="text-2xl mt-4">
-            When I started this journey five years ago, I had a simple vision: to 
-            create a platform that would empower creators and innovators to bring their 
-            ideas to life without technical barriers.
-          </p>
-          <p className="text-2xl mt-4">
-            What began as a small project in my apartment has grown into a vibrant community of thousands of 
-            passionate individuals who are pushing the boundaries of what's possible in their respective fields.
-          </p>
-          <p className="text-2xl mt-4">
-            Our platform was built on the principle that collaboration and knowledge-sharing are the foundations 
-            of innovation. We've stayed true to this belief, continuously evolving our tools based on the feedback 
-            and needs of our community.
-          </p>
-          <p className="text-2xl mt-4">
-            The stories you'll read below are from some of our earliest supporters - our pioneers - who took a 
-            chance on us when we were just starting out. Their insights and contributions have been invaluable 
-            in shaping what we've become today.
-          </p>
-          <p className="text-2xl mt-4">
-            As we look to the future, we remain committed to our mission of democratizing technology and empowering 
-            creators worldwide. Thank you for being part of this incredible journey.
-          </p>
+  {/* Right side - Paragraph */}
+  <div className={`w-full md:w-1/2 flex flex-col justify-center -ml-12 pr-6 ${theme === "dark" ? "text-white" : "text-black"}`}>
+    <h3 className="text-6xl font-bold mb-4 text-[#df1f47]">A Message from our Founder</h3>
+    <p className="text-2xl mt-4">
+      When I started this journey five years ago, I had a simple vision: to 
+      create a platform that would empower creators and innovators to bring their 
+      ideas to life without technical barriers.
+    </p>
+    <p className="text-2xl mt-4">
+      What began as a small project in my apartment has grown into a vibrant community of thousands of 
+      passionate individuals who are pushing the boundaries of what's possible in their respective fields.
+    </p>
+    <p className="text-2xl mt-4">
+      Our platform was built on the principle that collaboration and knowledge-sharing are the foundations 
+      of innovation. We've stayed true to this belief, continuously evolving our tools based on the feedback 
+      and needs of our community.
+    </p>
+    <p className="text-2xl mt-4">
+      The stories you'll read below are from some of our earliest supporters - our pioneers - who took a 
+      chance on us when we were just starting out. Their insights and contributions have been invaluable 
+      in shaping what we've become today.
+    </p>
+    <p className="text-2xl mt-4">
+      As we look to the future, we remain committed to our mission of democratizing technology and empowering 
+      creators worldwide. Thank you for being part of this incredible journey.
+    </p>
 
-          {/* Founder Section */}
-          <div className="flex items-center mt-8 space-x-4">
-            <FaUserCircle className="text-5xl text-[#df1f47]" />
-            <div>
-              <p className="text-2xl font-bold">Sarah Williams</p>
-              <p className="text-lg">Founder</p>
-            </div>
-          </div>
-        </div>
+    {/* Founder Section */}
+    <div className="flex items-center mt-8 space-x-4">
+      <FaUserCircle className="text-5xl text-[#df1f47]" />
+      <div>
+        <p className="text-2xl font-bold">Sarah Williams</p>
+        <p className="text-lg">Founder</p>
       </div>
+    </div>
+  </div>
+</div>
+
 
       {/* Our Pioneers Section */}
       <div className="w-full text-center my-12 px-8">
@@ -324,86 +325,84 @@ const Blog = () => {
         )}
 
       {/* Huge Red Card at the Bottom */}
-      <div className="w-full  px-8 mb-12">
-        <div
-          ref={(el) => (eventRefs.current['1'] = el)} // Assign ref for event 1
-          className="w-full p-8 rounded-lg shadow-lg bg-[#df1f47] text-white flex flex-col md:flex-row items-center"
-        >
-          {/* Left side - Image */}
-          <div className="w-full md:w-1/2 mb-6 md:mb-0">
-            <img
-              src="https://res.cloudinary.com/dglawxazg/image/upload/v1741119999/event2_mloxqk.jpg"
-              alt="Event"
-            className="w-[800px] h-[400px] object-cover rounded-lg shadow-lg"
-            />
-          </div>
+      <div className="w-full px-8 mb-12">
+  <div
+    ref={(el) => (eventRefs.current['1'] = el)}
+    className="w-full p-8 rounded-lg text-black flex flex-col md:flex-row items-center"
+  >
+    {/* Left side - Image */}
+    <div className="w-full md:w-1/2 mb-6 md:mb-0">
+      <img
+        src="https://res.cloudinary.com/dglawxazg/image/upload/v1741119999/event2_mloxqk.jpg"
+        alt="Event"
+        className="w-[800px] h-[400px] object-cover rounded-lg"
+      />
+    </div>
 
-          {/* Right side - Content */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center">
-            <h2 className="text-4xl font-bold mb-4">Event Title</h2>
-            <p className="text-lg mb-2">Location: Central Park, NY</p>
-            <p className="text-lg mb-4">Date: November 15, 2023</p>
-            <p className="text-xl mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-            
-          </div>
-        </div>
-      </div>
+    {/* Right side - Content */}
+    <div className="w-full md:w-1/2 flex flex-col justify-center">
+      <h2 className="text-4xl font-bold mb-4">Event Title</h2>
+      <p className="text-lg mb-2">Location: Central Park, NY</p>
+      <p className="text-lg mb-4">Date: November 15, 2023</p>
+      <p className="text-xl mb-4">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      </p>
+    </div>
+  </div>
+</div>
 
-      <div className="w-full  px-8 mb-12">
-        <div
-          ref={(el) => (eventRefs.current['2'] = el)} // Assign ref for event 2
-          className="w-full p-8 rounded-lg shadow-lg bg-[#df1f47] text-white flex flex-col md:flex-row items-center"
-        >
-          {/* Left side - Image */}
-          <div className="w-full md:w-1/2 mb-6 md:mb-0">
-            <img
-              src="https://res.cloudinary.com/dglawxazg/image/upload/v1743763463/vibrant-art-exhibition-stockcake_ynn3aj.jpg"
-              alt="Event"
-            className="w-[800px] h-[400px] object-cover rounded-lg shadow-lg"
-            />
-          </div>
+<div className="w-full px-8 mb-12">
+  <div
+    ref={(el) => (eventRefs.current['2'] = el)}
+    className="w-full p-8 rounded-lg text-black flex flex-col md:flex-row items-center"
+  >
+    {/* Left side - Image */}
+    <div className="w-full md:w-1/2 mb-6 md:mb-0">
+      <img
+        src="https://res.cloudinary.com/dglawxazg/image/upload/v1743763463/vibrant-art-exhibition-stockcake_ynn3aj.jpg"
+        alt="Event"
+        className="w-[800px] h-[400px] object-cover rounded-lg"
+      />
+    </div>
 
-          {/* Right side - Content */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center">
-            <h2 className="text-4xl font-bold mb-4">Art Exhibition</h2>
-            <p className="text-lg mb-2">Location: Downtown Gallery, LA</p>
-            <p className="text-lg mb-4">Date: November 15, 2023</p>
-            <p className="text-xl mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-            
-          </div>
-        </div>
-      </div>
+    {/* Right side - Content */}
+    <div className="w-full md:w-1/2 flex flex-col justify-center">
+      <h2 className="text-4xl font-bold mb-4">Art Exhibition</h2>
+      <p className="text-lg mb-2">Location: Downtown Gallery, LA</p>
+      <p className="text-lg mb-4">Date: November 15, 2023</p>
+      <p className="text-xl mb-4">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      </p>
+    </div>
+  </div>
+</div>
 
-      <div className="w-full  px-8 mb-12">
-        <div
-          ref={(el) => (eventRefs.current['3'] = el)} // Assign ref for event 3
-          className="w-full p-8 rounded-lg shadow-lg bg-[#df1f47] text-white flex flex-col md:flex-row items-center"
-        >
-          {/* Left side - Image */}
-          <div className="w-full md:w-1/2 mb-6 md:mb-0">
-            <img
-              src="https://res.cloudinary.com/dglawxazg/image/upload/v1743763457/images_1_daeglf.jpg"
-              alt="Event"
-            className="w-[800px] h-[400px] object-cover rounded-lg shadow-lg"
-            />
-          </div>
+<div className="w-full px-8 mb-12">
+  <div
+    ref={(el) => (eventRefs.current['3'] = el)}
+    className="w-full p-8 rounded-lg text-black flex flex-col md:flex-row items-center"
+  >
+    {/* Left side - Image */}
+    <div className="w-full md:w-1/2 mb-6 md:mb-0">
+      <img
+        src="https://res.cloudinary.com/dglawxazg/image/upload/v1743763457/images_1_daeglf.jpg"
+        alt="Event"
+        className="w-[800px] h-[400px] object-cover rounded-lg"
+      />
+    </div>
 
-          {/* Right side - Content */}
-          <div className="w-full md:w-1/2 flex flex-col justify-center">
-            <h2 className="text-4xl font-bold mb-4">Tech Conference</h2>
-            <p className="text-lg mb-2">Location: Silicon Valley, CA</p>
-            <p className="text-lg mb-4">Date: November 15, 2023</p>
-            <p className="text-xl mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-            
-          </div>
-        </div>
-      </div>
+    {/* Right side - Content */}
+    <div className="w-full md:w-1/2 flex flex-col justify-center">
+      <h2 className="text-4xl font-bold mb-4">Tech Conference</h2>
+      <p className="text-lg mb-2">Location: Silicon Valley, CA</p>
+      <p className="text-lg mb-4">Date: November 15, 2023</p>
+      <p className="text-xl mb-4">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+      </p>
+    </div>
+  </div>
+</div>
+
 
       <FooterPublic />
     </div>
