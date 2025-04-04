@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GoogleLogin } from 'react-google-login';
+// import { GoogleLogin } from 'react-google-login';
 import ErrorText from '../Layout/components/Typography/ErrorText';
 import InputText from '../Layout/components/Input/InputText';
 import googlelogo from '../assets/img/googlelogo.png';
@@ -352,7 +352,7 @@ function Register() {
             <div className="container-login100-form-btn p-t-13">
               <div className="wrap-login100-form-btn">
                 <div className="login100-form-bgbtn1" />
-                <GoogleLogin
+                {/* <GoogleLogin
                   clientId={clientId}
                   buttonText="Register with Google"
                   onSuccess={handleGoogleSuccess}
@@ -368,7 +368,7 @@ function Register() {
                       <span className="font-medium">Register with Google</span>
                     </button>
                   )}
-                />
+                /> */}
               </div>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GoogleLogin } from 'react-google-login';
+// import { GoogleLogin } from 'react-google-login';
 import LandingIntro from './LandingIntro';
 import ErrorText from '../Layout/components/Typography/ErrorText';
 import googlelogo from '../assets/img/googlelogo.png';
@@ -357,7 +357,7 @@ const handleImageMemberChange = async (e) => {
                 <div className="container-login100-form-btn p-t-13">
                   <div className="wrap-login100-form-btn">
                     <div className="login100-form-bgbtn1" />
-                  <GoogleLogin
+                  {/* <GoogleLogin
                     clientId={clientId}
                     buttonText="Sign in with Google"
                     onSuccess={handleGoogleSuccess}
@@ -373,7 +373,7 @@ const handleImageMemberChange = async (e) => {
                           Register with Google
                         </button>
                       )}
-                  />
+                  /> */}
                  </div>
                 </div>
               </div>
