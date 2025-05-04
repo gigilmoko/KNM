@@ -249,7 +249,7 @@ exports.getAdminOrdersMobile = async (req, res, next) => {
       })
       .populate({
         path: "user",
-        select: "fname lname avatar email", // Include the required fields from User
+        select: "fname lname avatar email phone", // Include the required fields from User
       });
 
     res.status(200).json({

@@ -70,24 +70,36 @@ exports.avatarUpdate = async (req, res) => {
 
 // Exported function to fetch user and member data where conditions match
 exports.fetchUserMemberMatch = async (req, res) => {
+  console.log('fetchUserMemberMatch endpoint hit'); // Log when the endpoint is accessed
   try {
-      const { fname, lname, memberId, role } = req.query; // Get parameters from request
+      const { memberId } = req.query; // Get memberId from request query
 
-      // Fetch all users and members first
-      let users = await User.find(); // Fetch all users
-      let members = await Member.find(); // Fetch all members
-
-      // Filter users where role is 'user'
-      const filteredUsers = users.filter(user => user.role === 'user');
-
-      // Compare filtered users to members based on matching fname, lname, and memberId
-      const matchingUsers = filteredUsers.filter(user => 
-          members.some(member => 
-              member.fname === user.fname && 
-              member.lname === user.lname && 
-              member.memberId === user.memberId
-          )
-      );
+      // Use aggregation to join User and Member collections based on memberId
+      const matchingUsers = await User.aggregate([
+          {
+              $lookup: {
+                  from: "members", // The name of the Member collection
+                  localField: "memberId", // Field in the User model
+                  foreignField: "memberId", // Field in the Member model
+                  as: "memberDetails" // Output array field
+              }
+          },
+          {
+              $match: {
+                  "memberDetails.memberId": { $exists: true, $ne: null }, // Ensure memberId exists in both
+                  ...(memberId ? { memberId } : {}) // Filter by memberId if provided
+              }
+          },
+          {
+              $project: {
+                  fname: 1,
+                  lname: 1,
+                  memberId: 1,
+                  role: 1,
+                  memberDetails: { fname: 1, lname: 1, memberId: 1 } // Include relevant fields from Member
+              }
+          }
+      ]);
 
       if (matchingUsers.length === 0) {
           return res.status(404).json({
@@ -936,9 +948,9 @@ exports.getTotalMembers = async (req, res) => {
 exports.updateAddressAndDetails = async (req, res, next) => {
   try {
     console.log('Update Address route hit');
-    console.log('Request Body:', req.body);  // Log the incoming request body
+    console.log('Request Body:', req.body);
 
-    const { userId, deliveryAddress } = req.body;  // Accept userId from the request body
+    const { userId, deliveryAddress } = req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -947,43 +959,41 @@ exports.updateAddressAndDetails = async (req, res, next) => {
       });
     }
 
-    // Validate if deliveryAddress is provided and is an array
     if (!deliveryAddress || !Array.isArray(deliveryAddress) || deliveryAddress.length === 0) {
-      console.log('No valid delivery address provided');
       return res.status(400).json({
         success: false,
         message: 'Delivery address is required and must be an array',
       });
     }
 
-    // Extract the first address from the array
     const newAddress = deliveryAddress[0];
 
-    if (!newAddress.houseNo || !newAddress.streetName || !newAddress.barangay || !newAddress.city) {
+    if (
+      !newAddress.houseNo || newAddress.houseNo === 'N/A' ||
+      !newAddress.streetName || newAddress.streetName === 'N/A' ||
+      !newAddress.barangay || newAddress.barangay === 'N/A' ||
+      !newAddress.city || newAddress.city === 'N/A'
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'All address fields are required',
+        message: 'All address fields must be valid and cannot be placeholders',
       });
     }
 
     const updateData = {
       $set: {
-        deliveryAddress: [newAddress],  // Replace the whole array with the new address
+        deliveryAddress: [newAddress],
       },
     };
 
-    console.log('Update Data:', updateData);  // Log the data to be updated
+    console.log('Update Data:', updateData);
 
-    // Fetch the current user data before updating
     const originalUser = await User.findById(userId);
-    
-    // Ensure `address` field exists, defaulting to an empty array if undefined
     const existingAddresses = originalUser.address || [];
 
     console.log('Original Address:', existingAddresses);
 
-    // Check if the address already exists to avoid duplicates
-    const isAddressDuplicate = existingAddresses.some(
+    const isAddressDuplicate = existingAddresses.length > 0 && existingAddresses.some(
       (addr) =>
         addr.houseNo === newAddress.houseNo &&
         addr.streetName === newAddress.streetName &&
@@ -997,18 +1007,16 @@ exports.updateAddressAndDetails = async (req, res, next) => {
       console.log('No actual change in address data, skipping update.');
       return res.status(200).json({
         success: true,
-        user: originalUser,  // Return the original user if no change occurred
+        user: originalUser,
       });
     }
 
-    // Perform the update (push the new address to the array)
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
       runValidators: true,
     });
 
     if (!updatedUser) {
-      console.log('User not found or update failed');
       return res.status(404).json({
         success: false,
         message: 'User Not Found or Not Updated',
@@ -1021,7 +1029,7 @@ exports.updateAddressAndDetails = async (req, res, next) => {
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Error occurred:', error);  // Log the error for better traceability
+    console.error('Error occurred:', error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };

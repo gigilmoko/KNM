@@ -13,6 +13,7 @@ const { registerUser, loginUser, logout, forgotPassword,
         getUsersByMonth, getUsersByCurrentMonth, getAllUsersCount, getUsersCountForToday, 
         getUsersCountForPast7Days, getTotalMembers, countUsersApply, updateAddressAndDetails } = require('../controller/authController');
 
+router.get('/fetchusermember', isAuthenticatedUser, fetchUserMemberMatch);
 router.post('/register', registerUser);
 router.post('/register-member', registerUserMember);
 router.post('/login', loginUser);
@@ -32,7 +33,7 @@ router.delete('/user/:id', isAuthenticatedUser, isAdmin, deleteUser);
 router.get('/users/apply', allUsersApply);
 router.put('/users/applying-for-member/:id', applyingForMember);
 router.delete('/users/delete-images/:public_id', isAuthenticatedUser, deleteImage);
-router.get('/fetchusermember', isAuthenticatedUser, fetchUserMemberMatch);
+
 router.put('/users/approve-apply-member/:id', isAuthenticatedUser, isAdmin, approveApplyMember);
 router.put('/users/deny-apply-member/:id', isAuthenticatedUser, isAdmin, denyApplyMember);
 router.put('/avatar-update/:id', avatarUpdate);

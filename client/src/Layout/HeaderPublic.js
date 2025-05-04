@@ -1,23 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import BellIcon from '@heroicons/react/24/outline/BellIcon';
 import Bars3Icon from '@heroicons/react/24/outline/Bars3Icon';
 import MoonIcon from '@heroicons/react/24/outline/MoonIcon';
 import SunIcon from '@heroicons/react/24/outline/SunIcon';
-import { openRightDrawer } from './common/rightDrawerSlice';
-import { RIGHT_DRAWER_TYPES } from '../utils/globalConstantUtil';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { themeChange } from 'theme-change';
 
 function Header() {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
     const location = useLocation();
     const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'light');
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [unreadNotifications, setUnreadNotifications] = useState(0);
+    const [showNotificationTab, setShowNotificationTab] = useState(false);
+    const [notifications, setNotifications] = useState([]);
 
     const isAuthPage = location.pathname === "/register" || location.pathname === "/login";
 
@@ -61,8 +59,27 @@ function Header() {
         }
     };
 
-    const openNotification = () => {
-        dispatch(openRightDrawer({ header: 'Notifications', bodyType: RIGHT_DRAWER_TYPES.NOTIFICATION }));
+    const fetchNotifications = async () => {
+        const config = {
+            headers: {
+                Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            },
+        };
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications`, config);
+            console.log('Fetched notifications:', data); // Log the fetched notifications
+            setNotifications(Array.isArray(data) ? data : data.notifications || []);
+
+        } catch (error) {
+            console.error('Error fetching notifications', error);
+        }
+    };
+
+    const openNotification = async () => {
+        if (!showNotificationTab) {
+            await fetchNotifications(); // Fetch notifications before opening the tab
+        }
+        setShowNotificationTab(!showNotificationTab);
     };
 
     const logoutHandler = async () => {
@@ -147,6 +164,54 @@ function Header() {
                     )}
                 </div>
             </button>
+
+            {showNotificationTab && (
+                <div
+                    className={`absolute top-16 right-4 shadow-lg rounded-lg w-80 p-4 z-20 ${
+                        currentTheme === 'dark' ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-700'
+                    }`}
+                >
+                    <h3 className="text-lg font-semibold mb-2">Notifications</h3>
+                    {Array.isArray(notifications) && notifications.length > 0 ? ( // Check if notifications array has items
+                        <ul className="space-y-2 max-h-80 overflow-y-auto">
+                            {notifications.map((notification, index) => (
+                                notification && ( // Ensure each notification is valid
+                                    <li
+                                        key={index}
+                                        className={`p-2 border-b last:border-none rounded-lg`}
+                                        style={{
+                                            backgroundColor: notification.isUnread
+                                                ? currentTheme === 'dark'
+                                                    ? 'rgb(255, 183, 3)' // Unread in dark theme
+                                                    : 'rgb(33, 158, 188)' // Unread in light theme
+                                                : currentTheme === 'dark'
+                                                    ? 'rgb(255, 183, 3)' // Read in dark theme
+                                                    : 'rgb(142, 202, 230)', // Read in light theme
+                                            color: currentTheme === 'dark' ? 'black' : 'inherit' // Black text in dark mode
+                                        }}
+                                    >
+                                        <strong>{notification.event?.title || notification.title || 'No Title'}</strong>
+                                        <p>{notification.event?.description || notification.description || 'No Description'}</p>
+                                        <small>
+                                            {notification.event?.startDate || notification.eventDate
+                                                ? `Event Date: ${new Date(notification.event?.startDate || notification.eventDate).toLocaleString()}`
+                                                : 'No Event Date'}
+                                        </small>
+                                        <br />
+                                        <small>
+                                            {notification.createdAt
+                                                ? `Created At: ${new Date(notification.createdAt).toLocaleString()}`
+                                                : ''}
+                                        </small>
+                                    </li>
+                                )
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="text-sm text-gray-500">No notifications available.</p>
+                    )}
+                </div>
+            )}
 
             <div className="flex items-center space-x-2">
                 <span className="font-medium">{user.fname}</span>

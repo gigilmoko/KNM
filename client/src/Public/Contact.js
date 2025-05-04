@@ -25,14 +25,13 @@ const Contact = () => {
     e.preventDefault();
 
     emailjs.sendForm('service_idf070e', 'template_vo713ak', e.target, 'LXmbdzx4vKR1J6vY1')
-      .then((result) => {
-          console.log(result.text);
-          alert('Message sent successfully!');
-      }, (error) => {
-          console.log(error.text);
-          alert('Failed to send message, please try again later.');
-      });
-
+  .then((result) => {
+      console.log(result.text); // ✅ This logs the success message
+      alert('Message sent successfully!');
+  }, (error) => {
+      console.log(error.text); // ✅ This logs the error message
+      alert('Failed to send message, please try again later.');
+  });
     e.target.reset();
   };
 

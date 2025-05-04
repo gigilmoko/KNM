@@ -163,7 +163,7 @@ function MembersConfirmation() {
                                             <th>Name</th>
                                             <th>Role</th>
                                             <th>Member ID</th>
-                                            <th>Apply Member</th>
+                                           
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
@@ -185,7 +185,7 @@ function MembersConfirmation() {
                                                     </td>
                                                     <td>{user.role}</td>
                                                     <td>{user.memberId || 'N/A'}</td>
-                                                    <td>{user.applyMember ? 'Yes' : 'No'}</td>
+                                                    
                                                     <td>
                                                         <button
                                                             className="btn btn-success btn-sm mr-2"

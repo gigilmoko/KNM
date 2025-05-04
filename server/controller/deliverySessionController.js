@@ -190,13 +190,17 @@ exports.completeDeliverySession = async (req, res) => {
   try {
     const { id } = req.params;
 
+
     const session = await DeliverySession.findById(id).populate('rider truck orders');
+
 
     if (!session || session.status !== 'Ongoing') {
       return res.status(404).json({ message: 'Delivery session not found or not in Ongoing status' });
     }
 
+
     session.status = 'Completed';
+
 
     // Set endTime in PH Time
     session.endTime = new Intl.DateTimeFormat('en-US', {
@@ -205,15 +209,60 @@ exports.completeDeliverySession = async (req, res) => {
       timeStyle: 'long'
     }).format(new Date());
 
+
     await session.save();
+
 
     // Set rider and truck inUse to false
     const riderUpdate = await Rider.findByIdAndUpdate(session.rider._id, { inUse: false }, { new: true }).exec();
     const truckUpdate = await Truck.findByIdAndUpdate(session.truck._id, { inUse: false }, { new: true }).exec();
-    
+   
     if (!riderUpdate || !truckUpdate) {
       return res.status(400).json({ message: 'Failed to update rider or truck inUse status' });
     }
+
+
+    // Update all orders to 'Delivered'
+    const updatedOrders = await Promise.all(
+      session.orders.map(async (orderId) => {
+        const order = await Order.findByIdAndUpdate(
+          orderId,
+          { status: 'Delivered', deliveredAt: new Date() },
+          { new: true }
+        ).populate('user');
+       
+        // Send notification to the user
+        if (order && order.user.deviceToken) {
+          const notificationPayload = {
+            app_id: process.env.ONESIGNAL_APP_ID,
+            include_player_ids: [order.user.deviceToken],
+            headings: { en: "Order Delivered" },
+            contents: { en: `Your order #${order._id} has been delivered successfully.` },
+            data: { orderId: order._id.toString(), status: 'Delivered' },
+          };
+
+
+          try {
+            const response = await axios.post('https://onesignal.com/api/v1/notifications', notificationPayload, {
+              headers: {
+                'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            console.log(`Delivered notification sent successfully for order: ${order._id}`, response.data);
+          } catch (error) {
+            console.error(`Error sending delivered notification for order: ${order._id}`, error.response?.data || error.message);
+          }
+        }
+
+
+        return order;
+      })
+    );
+
+
+    console.log("Orders updated to Delivered:", updatedOrders.map(order => order._id));
+
 
     res.status(200).json({ message: 'Delivery session completed successfully', session });
   } catch (error) {
@@ -222,15 +271,19 @@ exports.completeDeliverySession = async (req, res) => {
   }
 };
 
+
 exports.startDeliverySession = async (req, res) => {
   try {
     const { id } = req.params;
 
+
     const session = await DeliverySession.findOne({ _id: id, status: 'Ongoing' }).populate('rider truck orders');
+
 
     if (!session) {
       return res.status(404).json({ message: 'Delivery session not found or not in Ongoing status' });
     }
+
 
     // Set startTime in PH Time if it's not already set
     if (!session.startTime) {
@@ -240,24 +293,56 @@ exports.startDeliverySession = async (req, res) => {
         timeStyle: 'long'
       }).format(new Date());
 
+
       await session.save();
       console.log('Session startTime set:', session.startTime);
     } else {
       console.log('Session already has a startTime:', session.startTime);
     }
 
+
     // Update all orders to 'Shipped'
-    const orderUpdate = await Order.updateMany(
-      { _id: { $in: session.orders.map(order => order._id) } },
-      { status: 'Shipped' }
+    const updatedOrders = await Promise.all(
+      session.orders.map(async (orderId) => {
+        const order = await Order.findByIdAndUpdate(
+          orderId,
+          { status: 'Shipped' },
+          { new: true }
+        ).populate('user');
+
+
+        // Send notification to the user
+        if (order && order.user.deviceToken) {
+          const notificationPayload = {
+            app_id: process.env.ONESIGNAL_APP_ID,
+            include_player_ids: [order.user.deviceToken],
+            headings: { en: "Order Shipped" },
+            contents: { en: `Your order #${order._id} has been shipped.` },
+            data: { orderId: order._id.toString(), status: 'Shipped' },
+          };
+
+
+          try {
+            const response = await axios.post('https://onesignal.com/api/v1/notifications', notificationPayload, {
+              headers: {
+                'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            console.log(`Shipped notification sent successfully for order: ${order._id}`, response.data);
+          } catch (error) {
+            console.error(`Error sending shipped notification for order: ${order._id}`, error.response?.data || error.message);
+          }
+        }
+
+
+        return order;
+      })
     );
 
-    if (orderUpdate.modifiedCount === 0) {
-      console.log('No orders were updated to Shipped');
-      return res.status(400).json({ message: 'Failed to update order status to Shipped' });
-    }
 
-    console.log('Orders updated to Shipped:', session.orders.map(order => order._id));
+    console.log("Orders updated to Shipped:", updatedOrders.map(order => order._id));
+
 
     res.status(200).json({ message: 'Delivery session started successfully', session });
   } catch (error) {
@@ -265,6 +350,8 @@ exports.startDeliverySession = async (req, res) => {
     res.status(500).json({ message: 'Error starting delivery session', error: error.message });
   }
 };
+
+
 
 exports.deleteDeliverySession = async (req, res) => {
   try {
@@ -399,7 +486,7 @@ exports.getOngoingSessionsByRider = async (req, res) => {
           },
           {
             path: 'user',
-            select: 'fname lname email deliveryAddress'
+            select: 'fname lname email phone deliveryAddress'
           }
         ]
       });
@@ -420,7 +507,7 @@ exports.getOngoingSessionsByRider = async (req, res) => {
           },
           {
             path: 'user',
-            select: 'fname lname email deliveryAddress'
+            select: 'fname lname email phone deliveryAddress'
           }
         ]
       });
@@ -441,7 +528,7 @@ exports.getOngoingSessionsByRider = async (req, res) => {
           },
           {
             path: 'user',
-            select: 'fname lname email deliveryAddress'
+            select: 'fname lname email phone deliveryAddress'
           }
         ]
       });
