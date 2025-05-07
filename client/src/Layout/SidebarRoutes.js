@@ -165,6 +165,24 @@ const routes = [
     ]
   },
   {
+    path: '', // Categories with submenu
+    icon: <TagIcon className={`${iconClasses} inline`}/>, // Tag icon for 'Categories'
+    name: 'Forecast',
+    submenu: [
+      {
+        path: '/admin/forecast/list',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Chart Bar icon for 'Analytics'
+        name: 'Forecast List',
+      },
+      {
+        path: '/admin/forecast/create',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Tag icon for 'New Category'
+        name: 'New Forecast',
+      },
+     
+    ]
+  },
+  {
     path: '', 
     icon: <TagIcon className={`${iconClasses} inline`}/>, // Tag icon for 'Categories'
     name: 'Rider',

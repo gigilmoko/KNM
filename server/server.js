@@ -21,6 +21,7 @@ const rider = require('./routes/rider');
 const truckRoute = require('./routes/truck');
 const deliverySession = require('./routes/deliverysession')
 const report = require('./routes/report');
+const forecast = require('./routes/forecast');
 
 const app = express();
 const PORT = process.env.PORT || 4002;
@@ -59,6 +60,7 @@ app.use('/api', feedbackevent);
 app.use('/api', rider);
 app.use('/api', truckRoute);
 app.use('/api', deliverySession);
+app.use('/api', forecast);
 app.use('/api/reports', report)
 
 const db = mongoose.connection;

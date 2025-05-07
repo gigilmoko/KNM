@@ -1,5 +1,6 @@
 const Order = require('../models/order');
 const Product = require('../models/product'); // Assuming a Product model exists
+const Forecast = require('../models/forecast');
 const moment = require('moment');
 
 const calculateMovingAverage = (data, period) => {
@@ -127,6 +128,114 @@ exports.getDemandForecast = async (req, res) => {
         });
     } catch (error) {
         console.error("Error fetching demand forecast:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+// Create a new forecast
+exports.createForecast = async (req, res) => {
+    console.log("create forecast called", req.body);
+    try {
+        const { productId, forecastedDemand, forecastDate } = req.body;
+
+        const monthYear = new Date(forecastDate).toISOString().slice(0, 7); // Extract YYYY-MM
+        const existingForecast = await Forecast.findOne({
+            productId,
+            forecastDate: { $gte: `${monthYear}-01`, $lt: `${monthYear}-31` },
+        });
+
+        if (existingForecast) {
+            return res.status(400).json({ success: false, message: "Forecast for this product and month already exists" });
+        }
+
+        const forecast = new Forecast({ productId, forecastedDemand, forecastDate });
+        await forecast.save();
+
+        res.status(201).json({ success: true, forecast });
+    } catch (error) {
+        console.error("Error creating forecast:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+// Update an existing forecast
+exports.updateForecast = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { productId, forecastedDemand, forecastDate } = req.body;
+
+        const monthYear = new Date(forecastDate).toISOString().slice(0, 7); // Extract YYYY-MM
+        const existingForecast = await Forecast.findOne({
+            _id: { $ne: id }, // Exclude the current forecast being updated
+            productId,
+            forecastDate: { $gte: `${monthYear}-01`, $lt: `${monthYear}-31` },
+        });
+
+        if (existingForecast) {
+            return res.status(400).json({ success: false, message: "Forecast for this product and month already exists" });
+        }
+
+        const forecast = await Forecast.findByIdAndUpdate(
+            id,
+            { productId, forecastedDemand, forecastDate },
+            { new: true }
+        );
+
+        if (!forecast) {
+            return res.status(404).json({ success: false, message: "Forecast not found" });
+        }
+
+        res.status(200).json({ success: true, forecast });
+    } catch (error) {
+        console.error("Error updating forecast:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+// Delete a forecast
+exports.deleteForecast = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const forecast = await Forecast.findByIdAndDelete(id);
+
+        if (!forecast) {
+            return res.status(404).json({ success: false, message: "Forecast not found" });
+        }
+
+        res.status(200).json({ success: true, message: "Forecast deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting forecast:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+// Get all forecasts
+exports.getAllForecasts = async (req, res) => {
+    try {
+        const forecasts = await Forecast.find().populate('productId');
+        res.status(200).json({ success: true, forecasts });
+    } catch (error) {
+        console.error("Error fetching forecasts:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+// Get a single forecast
+exports.getSingleForecast = async (req, res) => {
+    console.log("single forcast touched")
+    try {
+        const { id } = req.params;
+
+        const forecast = await Forecast.findById(id).populate('productId');
+
+        if (!forecast) {
+            return res.status(404).json({ success: false, message: "Forecast not found" });
+        }
+
+        res.status(200).json({ success: true, forecast });
+    } catch (error) {
+        console.error("Error fetching forecast:", error);
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };

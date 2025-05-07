@@ -63,6 +63,10 @@ import MemberReports from './Admin/Reports/MemberReports';
 import SingleEvent from './Public/SingleEvent';
 import Products from './Public/Products';
 import EventList from './Public/EventList';
+import ForecastList from './Admin/Forecast/ForecastList';
+import ForecastCreate from './Admin/Forecast/NewForecast';
+import ForecastEdit from './Admin/Forecast/UpdateForecast';
+import ForecastGraph from './Admin/Forecast/ForecastGraph';
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -111,6 +115,11 @@ function App() {
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
           {/* <Route path="/admin/forecast" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} /> */}
+          {/* Forecast */}
+          <Route path="/admin/forecast/list" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} />
+          <Route path="/admin/forecast/graph" element={<ProtectedRoute><ForecastGraph /></ProtectedRoute>} />
+          <Route path="/admin/forecast/create" element={<ProtectedRoute><ForecastCreate /></ProtectedRoute>} />
+          <Route path="/admin/forecast/edit/:id" element={<ProtectedRoute><ForecastEdit /></ProtectedRoute>} />
           {/* Rider */}
           <Route path="/admin/rider/list" element={<ProtectedRoute><RiderList /></ProtectedRoute>} />
           <Route path="/admin/rider/new" element={<ProtectedRoute><NewRider /></ProtectedRoute>} />
