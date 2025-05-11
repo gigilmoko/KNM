@@ -284,10 +284,8 @@ exports.getPendingTruck = async (req, res, next) => {
   };
 
 exports.riderAvailable = async (req, res) => {
-    console.log('Available');
     try {
-        const inUseValue = req.query.inUse === 'true'; // Convert query string to boolean
-        const riders = await Rider.find({ inUse: inUseValue });
+        const riders = await Rider.find(); // Fetch all riders
 
         res.status(200).json({
             success: true,

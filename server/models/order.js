@@ -6,7 +6,10 @@ const orderSchema = new mongoose.Schema({
         required: true,
         ref: "User",
     },
-
+    KNMOrderId:{
+        type: String,
+        required: true,
+    },
     orderProducts: [
         {
             product: {

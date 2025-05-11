@@ -11,10 +11,7 @@ const truckSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    inUse: {
-      type: Boolean,
-      default: false,  
-    },
+   
   },
   { timestamps: true }
 );

@@ -34,6 +34,10 @@ exports.createDeliverySession = async (req, res) => {
       return res.status(404).json({ message: 'Rider or Truck not found' });
     }
 
+    if (rider.inUse || truck.inUse) {
+      return res.status(400).json({ message: 'Rider or Truck is already in use' });
+    }
+
     // Ensure all orders have status 'Preparing' or 'Cancelled'
     const orders = await Order.find({
       _id: { $in: orderIds },
@@ -44,10 +48,10 @@ exports.createDeliverySession = async (req, res) => {
       return res.status(400).json({ message: 'One or more orders are not in Preparing or Cancelled status' });
     }
 
-    // Update order status to 'Shipped'
+    // Update orders to set assignedAlready to true
     await Order.updateMany(
       { _id: { $in: orderIds } },
-      { $set: { status: 'Shipped', assignedAlready: true } }
+      { $set: { assignedAlready: true } }
     );
 
     // Create the delivery session
@@ -55,7 +59,8 @@ exports.createDeliverySession = async (req, res) => {
       rider: riderId,
       truck: truckId,
       orders: orderIds,
-      status: 'Ongoing',
+      status: 'Undecided',
+      riderAccepted: 'Pending',
       startTime: null,
       endTime: null,
     });
@@ -97,6 +102,89 @@ exports.getSessionById = async (req, res) => {
       res.status(500).json({ message: 'Error fetching delivery session', error: error.message });
     }
   };
+
+exports.acceptWork = async (req, res) => {
+    try {
+        const { id } = req.params; // Get the session ID from the URL parameter
+        console.log('Received request to accept work for session ID:', id);
+
+        // Find the delivery session by its ID
+        const session = await DeliverySession.findById(id).populate('rider truck orders'); // Populate the related fields
+
+        console.log('Found session:', session);
+
+        if (!session) {
+            console.log('Session not found');
+            return res.status(404).json({ message: 'Delivery session not found' });
+        }
+
+        if (session.status !== 'Undecided') {
+            console.log('Session status is not Undecided. Current status:', session.status);
+            return res.status(404).json({ message: 'Delivery session already accepted or not in Undecided status' });
+        }
+
+        // Update the session
+        session.status = 'Ongoing';
+        session.riderAccepted = 'Accepted';
+
+        console.log('Updating session status to Ongoing and riderAccepted to Accepted');
+
+        // Set rider and truck inUse to true
+        const riderUpdate = await Rider.findByIdAndUpdate(session.rider._id, { inUse: true }, { new: true }).exec();
+        const truckUpdate = await Truck.findByIdAndUpdate(session.truck._id, { inUse: true }, { new: true }).exec();
+
+        // Check if rider update was successful
+        if (!riderUpdate) {
+            console.log(`Failed to update rider with ID ${session.rider._id}.`);
+            return res.status(400).json({ message: `Failed to update rider with ID ${session.rider._id}` });
+        }
+
+        // Check if truck update was successful
+        if (!truckUpdate) {
+            console.log(`Failed to update truck with ID ${session.truck._id}.`);
+            return res.status(400).json({ message: `Failed to update truck with ID ${session.truck._id}` });
+        }
+
+        console.log('Rider and truck inUse updated to true');
+
+        await session.save();
+
+        res.status(200).json({ message: 'Delivery session accepted', session });
+    } catch (error) {
+        console.error('Error accepting delivery session:', error);
+        res.status(500).json({ message: 'Error accepting delivery session', error: error.message });
+    }
+};
+  
+exports.declineWork = async (req, res) => {
+  try {
+    const { riderId, truckId } = req.body;
+    const { id } = req.params;  // Get the session ID from the URL parameter
+
+    // Find the delivery session by its ID
+    const session = await DeliverySession.findById(id);
+
+    if (!session || session.status !== 'Undecided') {
+      return res.status(404).json({ message: 'Delivery session not found or already declined/accepted' });
+    }
+
+    // Update the session status to 'Cancelled' and riderAccepted to 'Rejected'
+    session.status = 'Cancelled';
+    session.riderAccepted = 'Rejected';
+
+    // Update the orders to set assignedAlready to false (unassigning the orders)
+    await Order.updateMany(
+      { _id: { $in: session.orders } },
+      { $set: { assignedAlready: false } }
+    );
+
+    await session.save();
+
+    res.status(200).json({ message: 'Delivery session declined', session });
+  } catch (error) {
+    res.status(500).json({ message: 'Error declining delivery session', error: error.message });
+  }
+};
   
 exports.completeDeliverySession = async (req, res) => {
   try {
@@ -124,6 +212,14 @@ exports.completeDeliverySession = async (req, res) => {
 
     await session.save();
 
+
+    // Set rider and truck inUse to false
+    const riderUpdate = await Rider.findByIdAndUpdate(session.rider._id, { inUse: false }, { new: true }).exec();
+    const truckUpdate = await Truck.findByIdAndUpdate(session.truck._id, { inUse: false }, { new: true }).exec();
+   
+    if (!riderUpdate || !truckUpdate) {
+      return res.status(400).json({ message: 'Failed to update rider or truck inUse status' });
+    }
 
 
     // Update all orders to 'Delivered'
@@ -174,7 +270,6 @@ exports.completeDeliverySession = async (req, res) => {
     res.status(500).json({ message: 'Error completing delivery session', error: error.message });
   }
 };
-
 
 exports.startDeliverySession = async (req, res) => {
   try {
@@ -263,12 +358,6 @@ exports.deleteDeliverySession = async (req, res) => {
       return res.status(404).json({ message: 'Delivery session not found' });
     }
 
-    // Update order status to 'Cancelled'
-    await Order.updateMany(
-      { _id: { $in: session.orders } },
-      { $set: { status: 'Cancelled', assignedAlready: false } }
-    );
-
     res.status(200).json({ message: 'Delivery session deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting delivery session', error: error.message });
@@ -348,6 +437,30 @@ exports.getGroupedDeliverySessions = async (req, res) => {
   }
 };
 
+exports.getPendingSessionsByRider = async (req, res) => {
+  try {
+    const { riderId } = req.params;
+
+    const sessions = await DeliverySession.find({
+      rider: riderId,
+      riderAccepted: 'Pending',
+      status: 'Undecided'
+    }).populate('rider', 'fname lname email phone')
+      .populate('truck', 'model plateNo')
+      .populate('orders', 'status');
+
+    res.status(200).json({
+      success: true,
+      sessions
+    });
+  } catch (error) {
+    console.error('Error fetching pending sessions:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error'
+    });
+  }
+};
 
 exports.getOngoingSessionsByRider = async (req, res) => {
   try {

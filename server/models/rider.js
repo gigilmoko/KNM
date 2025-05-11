@@ -35,10 +35,7 @@ const riderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    inUse: {
-      type: Boolean,
-      default: false,  // False initially, true when assigned to a session
-    },
+  
     location: {
       latitude: { type: Number, default: 0 },
       longitude: { type: Number, default: 0 },

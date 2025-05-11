@@ -21,8 +21,8 @@ const deliverySessionSchema = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ['Undecided', 'Ongoing', 'Completed', 'Cancelled'],
-      default: 'Undecided',
+      enum: [ 'Ongoing', 'Completed', 'Cancelled'],
+      default: 'Ongoing',
     },
     riderAccepted: {
       type: String,

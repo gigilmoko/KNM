@@ -393,8 +393,8 @@ exports.deleteTruck = async (req, res, next) => {
 exports.truckAvailable = async (req, res) => {
     // console.log('Available Trucks');
     try {
-        const inUseValue = req.query.inUse === 'true'; // Convert query string to boolean
-        const trucks = await Truck.find({ inUse: inUseValue });
+        
+        const trucks = await Truck.find();
 
         res.status(200).json({
             success: true,

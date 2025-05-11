@@ -120,8 +120,17 @@ exports.createOrder = async (req, res, next) => {
     console.log("Shipping Charges:", shippingCharges);
     console.log("Total Amount:", totalPrice);
 
+    // Generate the next KNMOrderId
+    const lastOrder = await Order.findOne().sort({ createdAt: -1 }); // Get the latest order
+    let nextKNMOrderId = "KNM-0001"; // Default for the first order
+    if (lastOrder && lastOrder.KNMOrderId) {
+      const lastIdNumber = parseInt(lastOrder.KNMOrderId.split("-")[1], 10);
+      nextKNMOrderId = `KNM-${String(lastIdNumber + 1).padStart(4, "0")}`;
+    }
+
     const order = await Order.create({
       user: req.user._id,
+      KNMOrderId: nextKNMOrderId, // Assign the generated KNMOrderId
       orderProducts,
       paymentInfo,
       itemsPrice,
