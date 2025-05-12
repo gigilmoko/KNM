@@ -348,17 +348,14 @@ exports.getGroupedDeliverySessions = async (req, res) => {
   }
 };
 
-
 exports.getOngoingSessionsByRider = async (req, res) => {
   try {
     const { riderId } = req.params;
 
     // Fetch sessions categorized by their status
-  
     const ongoingSessions = await DeliverySession.find({
       rider: riderId,
- 
-      status: 'Ongoing'
+      status: 'Ongoing',
     })
       .populate('rider', 'fname lname email phone')
       .populate('truck', 'model plateNo')
@@ -367,27 +364,25 @@ exports.getOngoingSessionsByRider = async (req, res) => {
         populate: [
           {
             path: 'orderProducts.product',
-            select: 'name description price'
+            select: 'name description price',
           },
           {
             path: 'user',
-            select: 'fname lname email phone deliveryAddress'
-          }
-        ]
+            select: 'fname lname email phone deliveryAddress',
+          },
+        ],
+        select: 'KNMOrderId', // Include KNMOrderId in the populated orders
       });
 
-    
     res.status(200).json({
       success: true,
-     
       ongoingSessions,
-  
     });
   } catch (error) {
     console.error('Error fetching rider sessions:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal Server Error'
+      message: 'Internal Server Error',
     });
   }
 };

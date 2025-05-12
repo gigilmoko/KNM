@@ -110,7 +110,7 @@ function DeliveryList() {
                           TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
                       >
                           <div className="tabs">
-                              <button className={`tab ${selectedStatus === 'Undecided' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Undecided')}>Undecided</button>
+                      
                               <button className={`tab ${selectedStatus === 'Ongoing' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Ongoing')}>Ongoing</button>
                               <button className={`tab ${selectedStatus === 'Completed' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Completed')}>Completed</button>
                               <button className={`tab ${selectedStatus === 'Cancelled' ? 'tab-active' : ''}`} onClick={() => handleStatusChange('Cancelled')}>Cancelled</button>

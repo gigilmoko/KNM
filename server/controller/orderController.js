@@ -270,7 +270,6 @@ exports.getAdminOrdersMobile = async (req, res, next) => {
   }
 };
 
-
 exports.getMyOrders = async (req, res, next) => {
   try {
       // Fetch orders for the user and populate the user details, including the delivery address
