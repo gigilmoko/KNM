@@ -24,11 +24,6 @@ const deliverySessionSchema = new mongoose.Schema(
       enum: [ 'Ongoing', 'Completed', 'Cancelled'],
       default: 'Ongoing',
     },
-    riderAccepted: {
-      type: String,
-      enum: ['Accepted', 'Rejected', 'Pending'], 
-      default: 'Pending',
-    },
     startTime: {
         type: Date,
         default: null,

@@ -354,30 +354,10 @@ exports.getOngoingSessionsByRider = async (req, res) => {
     const { riderId } = req.params;
 
     // Fetch sessions categorized by their status
-    const pendingSessions = await DeliverySession.find({
-      rider: riderId,
-      riderAccepted: 'Pending',
-      status: 'Undecided'
-    })
-      .populate('rider', 'fname lname email phone')
-      .populate('truck', 'model plateNo')
-      .populate({
-        path: 'orders',
-        populate: [
-          {
-            path: 'orderProducts.product',
-            select: 'name description price'
-          },
-          {
-            path: 'user',
-            select: 'fname lname email phone deliveryAddress'
-          }
-        ]
-      });
-
+  
     const ongoingSessions = await DeliverySession.find({
       rider: riderId,
-      riderAccepted: 'Accepted',
+ 
       status: 'Ongoing'
     })
       .populate('rider', 'fname lname email phone')
@@ -396,32 +376,12 @@ exports.getOngoingSessionsByRider = async (req, res) => {
         ]
       });
 
-    const rejectedSessions = await DeliverySession.find({
-      rider: riderId,
-      riderAccepted: 'Rejected',
-      status: 'Cancelled'
-    })
-      .populate('rider', 'fname lname email phone')
-      .populate('truck', 'model plateNo')
-      .populate({
-        path: 'orders',
-        populate: [
-          {
-            path: 'orderProducts.product',
-            select: 'name description price'
-          },
-          {
-            path: 'user',
-            select: 'fname lname email phone deliveryAddress'
-          }
-        ]
-      });
-
+    
     res.status(200).json({
       success: true,
-      pendingSessions,
+     
       ongoingSessions,
-      rejectedSessions
+  
     });
   } catch (error) {
     console.error('Error fetching rider sessions:', error);
