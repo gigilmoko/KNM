@@ -42,3 +42,146 @@ exports.updateAllOrdersWithOrderId = async (req, res, next) => {
     });
   }
 };
+
+
+//New Create order na may autogeerate order id
+exports.createOrder = async (req, res, next) => {
+  console.log("createOrder touched");
+  console.log("Request Body:", JSON.stringify(req.body, null, 2));
+
+  const { orderProducts, paymentInfo, itemsPrice, shippingCharges, totalPrice } = req.body;
+
+  try {
+    if (!req.user || !req.user._id) {
+      console.error("Error: User information is missing");
+      return res.status(400).json({
+        success: false,
+        message: "User information is missing",
+      });
+    }
+
+    console.log("User ID:", req.user._id);
+
+    const user = await User.findById(req.user._id);
+    if (!user || !user.deliveryAddress || user.deliveryAddress.length === 0) {
+      console.error("Error: User address is missing");
+      return res.status(400).json({
+        success: false,
+        message: "User address is missing",
+      });
+    }
+
+    console.log("User address found:", user.deliveryAddress[0]);
+
+    if (typeof paymentInfo !== "string") {
+      console.error("Error: Invalid paymentInfo format, received:", typeof paymentInfo);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid paymentInfo format. Expected a string.",
+      });
+    }
+
+    for (const item of orderProducts) {
+      console.log(`Checking stock for product ID: ${item.product}`);
+      const product = await Product.findById(item.product);
+      if (!product) {
+        console.error(`Error: Product not found with ID: ${item.product}`);
+        return res.status(400).json({
+          success: false,
+          message: `Product with ID ${item.product} not found`,
+        });
+      }
+      if (product.stock < item.quantity) {
+        console.error(`Error: Insufficient stock for product ID: ${item.product}`);
+        return res.status(400).json({
+          success: false,
+          message: "Insufficient stock for one or more items",
+        });
+      }
+    }
+
+    console.log("Items Price:", itemsPrice);
+    console.log("Shipping Charges:", shippingCharges);
+    console.log("Total Amount:", totalPrice);
+
+    // Create order without KNMOrderId first (to get MongoDB ID)
+    const order = await Order.create({
+      user: req.user._id,
+      orderProducts,
+      paymentInfo,
+      itemsPrice,
+      shippingCharges,
+      totalPrice,
+      address: user.deliveryAddress[0],
+      createdAt: Date.now(),
+    });
+
+    // Generate KNMOrderId based on MongoDB ID
+    const idPortion = order._id.toString().substring(18, 24);
+    const KNMOrderId = `KNM-${idPortion}`;
+    
+    // Update the order with the new KNMOrderId
+    await Order.findByIdAndUpdate(
+      order._id,
+      { KNMOrderId },
+      { new: true }
+    );
+    
+    // Update our order object with the new KNMOrderId
+    order.KNMOrderId = KNMOrderId;
+
+    console.log("Created Order:", order);
+
+    for (const item of orderProducts) {
+      const product = await Product.findById(item.product);
+      product.stock -= item.quantity;
+      await product.save();
+    }
+
+    const paymongoToken = await new PaymongoToken({
+      orderId: order._id,
+      token: crypto.randomBytes(32).toString("hex"),
+      verificationTokenExpire: new Date(Date.now() + 2 * 60 * 1000),
+    }).save();
+
+    if (paymentInfo === "GCash") {
+      // ... rest of GCash payment processing ...
+      if (!process.env.BASE_URL) {
+        console.error("Error: BASE_URL environment variable is missing");
+        return res.status(500).json({
+          success: false,
+          message: "BASE_URL environment variable is not set",
+        });
+      }
+
+      const temporaryLink = `${process.env.BASE_URL}/paymongo-gcash/${paymongoToken.token}/${order._id}`;
+      console.log("Temporary Payment Link:", temporaryLink);
+
+      try {
+        const checkoutUrl = await handlePayMongo(order.orderProducts, shippingCharges, temporaryLink);
+        console.log("Generated Checkout URL:", checkoutUrl);
+        return res.json({ checkoutUrl });
+      } catch (error) {
+        console.error("Error generating checkout URL:", error);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+      }
+    }
+
+    console.log("Final Order:", order);
+    console.log("Generated Token:", paymongoToken);
+
+    // await sendOrderConfirmationEmail(order);
+
+    res.status(200).json({
+      success: true,
+      order,
+      message: "Order Success",
+    });
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create order",
+    });
+  }
+};
