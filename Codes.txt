@@ -1,0 +1,44 @@
+// ...Update all with order ID code... more efficient kasi unique and no limit
+exports.updateAllOrdersWithOrderId = async (req, res, next) => {
+  try {
+    // Fetch all orders
+    const orders = await Order.find({});
+    
+    let updatedCount = 0;
+    
+    // Update each order with a new KNMOrderId
+    for (const order of orders) {
+      // Skip orders that already have a KNMOrderId
+      if (order.KNMOrderId) {
+        continue;
+      }
+      
+      // Extract 6 characters from the MongoDB _id
+      const idPortion = order._id.toString().substring(18, 24);
+      
+      // Create the new KNMOrderId
+      const newOrderId = `KNM-${idPortion}`;
+      
+      // Update the order
+      await Order.findByIdAndUpdate(
+        order._id,
+        { KNMOrderId: newOrderId },
+        { new: true }
+      );
+      
+      updatedCount++;
+    }
+    
+    res.status(200).json({
+      success: true,
+      message: `Successfully updated ${updatedCount} orders with new KNMOrderId values`,
+    });
+  } catch (error) {
+    console.error("Error updating orders with KNMOrderId:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update orders",
+      error: error.message
+    });
+  }
+};
