@@ -171,7 +171,7 @@ function OrdersList() {
                     {filteredOrdersByStatus.length > 0 ? (
                       filteredOrdersByStatus.map((order, index) => (
                         <tr key={order._id}>
-                          <td>{order._id}</td>
+                          <td>{order.KNMOrderId}</td>
                           <td>{getUserNameById(order.user)}</td>
                           <td>
   {order.orderProducts.map((item, i) => (
