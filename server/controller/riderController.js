@@ -110,6 +110,7 @@ exports.getSingleRider = async (req, res, next) => {
 }
 
 exports.riderLogin = async (req, res, next) => {
+    console.log('Rider Login route hit');
     const { email, password } = req.body;
     console.log('Rider Login route hit');
     console.log('Email:', email);
