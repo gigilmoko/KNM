@@ -7,7 +7,9 @@ const cloudinary = require("cloudinary");
 const jwt = require('jsonwebtoken');
 const express = require('express');
 const axios = require('axios');
-
+const { createTransporter } = require('../config/mail');
+const ejs = require('ejs');
+const path = require('path');
 
 cloudinary.config({
   cloud_name: 'dglawxazg',
@@ -165,6 +167,67 @@ exports.googleLogin = async (req, res, next) => {
   }
 };
 
+// exports.loginUser = async (req, res, next) => {
+
+//   const { email, password, deviceToken } = req.body;
+//   console.log("Received email:", email);
+//   console.log("Received password:", password);
+//   console.log("Received deviceToken:", deviceToken);
+
+//   if (!email || !password) {
+//     return res.status(400).json({ error: 'Please enter email & password' });
+//   }
+
+//   try {
+//     const user = await User.findOne({ email }).select('+password');
+//     if (!user) {
+//       return res.status(401).json({ message: 'Invalid Email or Password' });
+//     }
+
+//     const isPasswordMatched = await user.comparePassword(password);
+//     if (!isPasswordMatched) {
+//       return res.status(401).json({ message: 'Invalid Email or Password' });
+//     }
+
+//     // Update OneSignal player tags and device token
+//     if (deviceToken) {
+//       try {
+//         await axios.put(
+//           `https://onesignal.com/api/v1/players/${deviceToken}`,
+//           {
+//             app_id: process.env.ONESIGNAL_APP_ID,
+//             tags: {
+//               role: user.role[0],
+//               userId: user._id.toString()
+//             }
+//           },
+//           {
+//             headers: {
+//               'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+//               'Content-Type': 'application/json'
+//             }
+//           }
+//         );
+
+//         user.deviceToken = deviceToken;
+//         await user.save();
+//         console.log('Updated player tags and device token:', { deviceToken, role: user.role[0] });
+//       } catch (oneSignalError) {
+//         console.error('OneSignal update error:', oneSignalError);
+//         // Continue with login even if OneSignal update fails
+//       }
+//     }
+//     console.log(user.role)
+
+//     sendToken(user, 200, res);
+//   } catch (error) {
+//     console.error("Error during login:", error);
+//     res.status(500).json({ message: 'Server error' });
+//   }
+// };
+
+//old
+
 exports.loginUser = async (req, res, next) => {
   const { email, password, deviceToken } = req.body;
   console.log("Received email:", email);
@@ -186,7 +249,56 @@ exports.loginUser = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid Email or Password' });
     }
 
-    // Update OneSignal player tags and device token
+    // Check if user is admin
+    console.log("User role:", user.role);
+    if (user.role.includes('admin')) {
+      console.log("Admin detected, sending verification code...");
+      
+      // Generate and send verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("Generated code:", code);
+      user.verificationCode = code;
+      user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+      await user.save();
+      console.log("Verification code saved to user");
+
+      // Send verification code via email
+      try {
+        console.log("Creating transporter...");
+        const transporter = createTransporter();
+        
+        console.log("Rendering email template...");
+        const emailTemplate = await ejs.renderFile(
+          path.join(__dirname, '../views/verificationemail.ejs'),
+          {
+            user: user,
+            verificationCode: code
+          }
+        );
+        
+        console.log("Sending email to:", user.email);
+        await transporter.sendMail({
+          from: process.env.EMAIL_FROM || 'noreply@yourapp.com',
+          to: user.email,
+          subject: 'Admin Login Verification Code',
+          html: emailTemplate
+        });
+
+        console.log("Email sent successfully!");
+        return res.status(200).json({
+          success: true,
+          requiresVerification: true,
+          message: 'Verification code sent to your email'
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        return res.status(500).json({ message: 'Failed to send verification code' });
+      }
+    } else {
+      console.log("User is not admin, proceeding with normal login...");
+    }
+
+    // Update OneSignal player tags and device token for non-admin users
     if (deviceToken) {
       try {
         await axios.put(
@@ -211,10 +323,8 @@ exports.loginUser = async (req, res, next) => {
         console.log('Updated player tags and device token:', { deviceToken, role: user.role[0] });
       } catch (oneSignalError) {
         console.error('OneSignal update error:', oneSignalError);
-        // Continue with login even if OneSignal update fails
       }
     }
-    console.log(user.role)
 
     sendToken(user, 200, res);
   } catch (error) {
@@ -223,7 +333,49 @@ exports.loginUser = async (req, res, next) => {
   }
 };
 
-//old
+// Add this new function to your authController.js
+exports.verifyAdminCode = async (req, res, next) => {
+  const { email, verificationCode } = req.body;
+  console.log("Admin verification attempt - Email:", email);
+  console.log("Admin verification attempt - Code:", verificationCode);
+
+  if (!email || !verificationCode) {
+    return res.status(400).json({ error: 'Please provide email and verification code' });
+  }
+
+  try {
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    // Check if user is admin
+    if (!user.role.includes('admin')) {
+      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    }
+
+    // Verify the code
+    if (user.verificationCode !== verificationCode || user.verificationCodeExpire < Date.now()) {
+      return res.status(401).json({ message: 'Invalid or expired verification code' });
+    }
+
+    // Clear verification code after successful verification
+    user.verificationCode = undefined;
+    user.verificationCodeExpire = undefined;
+    await user.save();
+
+    console.log("Admin verification successful for:", email);
+
+    // Send token for successful login
+    sendToken(user, 200, res);
+  } catch (error) {
+    console.error("Error during admin verification:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
 exports.registerUserMember = async (req, res, next) => {
   const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, memberId, googleLogin, imageMember } = req.body;
 
