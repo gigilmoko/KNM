@@ -10,6 +10,7 @@ import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
+import dayjs from "dayjs";
 
 function ForecastList() {
   const navigate = useNavigate();
@@ -22,6 +23,11 @@ function ForecastList() {
   const [showConfirm, setShowConfirm] = useState(false);
   const mainContentRef = useRef(null);
 
+  const monthOrder = [
+    "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december"
+  ];
+
   useEffect(() => {
     if (mainContentRef.current) {
       mainContentRef.current.scroll({
@@ -30,10 +36,12 @@ function ForecastList() {
       });
     }
     fetchForecasts();
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     applySearch(searchText);
+    // eslint-disable-next-line
   }, [searchText, forecasts]);
 
   useEffect(() => {
@@ -126,6 +134,24 @@ function ForecastList() {
     setFilteredForecasts(sortedForecasts);
   };
 
+  // Helper to get the latest forecast (by year and month)
+  const getLatestForecast = () => {
+    if (!forecasts.length) return null;
+    return [...forecasts].sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return monthOrder.indexOf(b.month?.toLowerCase()) - monthOrder.indexOf(a.month?.toLowerCase());
+    })[0];
+  };
+
+  // Check if latest forecast is behind current month
+  const isForecastBehind = () => {
+    const latest = getLatestForecast();
+    if (!latest) return false;
+    const now = dayjs();
+    const forecastDate = dayjs(`${latest.year}-${(monthOrder.indexOf(latest.month?.toLowerCase()) + 1).toString().padStart(2, "0")}-01`);
+    return forecastDate.isBefore(now.startOf("month"));
+  };
+
   return (
     <>
       <div className="drawer lg:drawer-open">
@@ -134,6 +160,17 @@ function ForecastList() {
         <div className="drawer-content flex flex-col">
           <Header />
           <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200" ref={mainContentRef}>
+            {/* Note on how to update */}
+            <div className="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+              <strong>How to update your PPI:</strong><br />
+              Visit <a href="https://psa.gov.ph/statistics/manufacturing/producer-price-survey" target="_blank" rel="noopener noreferrer" className="text-blue-700 underline">this link</a> and navigate to the bottom where attachments are placed. Download the attachment named <b>Table 1</b>. Upon opening the file, you will see the first table named <b>Manufacturing</b>. Copy the PPI value of the missing month and upload it in the <b>New Forecast Screen</b>.
+            </div>
+            {/* Warning if forecast is behind */}
+            {isForecastBehind() && (
+              <div className="mb-4 p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-900 rounded">
+                <b>Warning:</b> Your latest forecast is behind the current month. Update your PPI by visiting <a href="https://psa.gov.ph/statistics/manufacturing/producer-price-survey" target="_blank" rel="noopener noreferrer" className="underline text-yellow-900">this site</a>.
+              </div>
+            )}
             <TitleCard
               title="All Forecasts"
               topMargin="mt-2"
