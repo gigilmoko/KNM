@@ -188,7 +188,7 @@ exports.loginUser = async (req, res, next) => {
     }
 
     // Check if user is admin
-    // console.log("User role:", user.role);
+    console.log("User role:", user.role);
     // if (user.role.includes('admin')) {
     //   console.log("Admin detected, sending verification code...");
       
@@ -216,7 +216,7 @@ exports.loginUser = async (req, res, next) => {
         
     //     console.log("Sending email to:", user.email);
     //     await transporter.sendMail({
-    //       from: process.env.EMAIL_FROM || 'noreply@yourapp.com',
+    //       from: process.env.GMAIL_USER || 'noreply@yourapp.com',
     //       to: user.email,
     //       subject: 'Admin Login Verification Code',
     //       html: emailTemplate
