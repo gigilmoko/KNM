@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { HiChevronDown, HiChevronUp, HiStar } from 'react-icons/hi';
+import axios from 'axios';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
-import { HiArrowRight } from 'react-icons/hi';
-import axios from 'axios';
 
 const ProductFeedbackList = () => {
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedRows, setExpandedRows] = useState({});
 
   useEffect(() => {
     const token = sessionStorage.getItem('token');
@@ -23,56 +22,51 @@ const ProductFeedbackList = () => {
       },
     };
 
+    // Fetch all products
+    const fetchProducts = async () => {
+      try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/product/all`, config);
+        setProducts(data.products || []);
+      } catch (err) {
+        toast.error('Failed to load products.');
+        setLoading(false);
+      }
+    };
+
+    // Fetch all feedbacks
     const fetchFeedbacks = async () => {
       try {
         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/feedback/product-list`, config);
-        setFeedbacks(data.feedbacks);
+        setFeedbacks(data.feedbacks || []);
+        setLoading(false);
       } catch (err) {
         toast.error('Failed to load feedbacks.');
         setLoading(false);
       }
     };
 
+    fetchProducts();
     fetchFeedbacks();
   }, []);
 
-  useEffect(() => {
-    const fetchProductNames = async () => {
-      if (feedbacks.length > 0) {
-        try {
-          const productIds = [...new Set(feedbacks.map(({ productId }) => productId._id))];
-          const productPromises = productIds.map(id =>
-            axios.get(`${process.env.REACT_APP_API}/api/product/${id}`)
-          );
-          const productResponses = await Promise.all(productPromises);
-          const productData = productResponses.map((response) => response.data.product);
-          setProducts(productData);
-          setLoading(false);
-        } catch (err) {
-          toast.error('Failed to load products.');
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-      }
-    };
-
-    fetchProductNames();
-  }, [feedbacks]);
+  const getFeedbacksForProduct = (productId) => {
+    return feedbacks.filter(
+      (feedback) => feedback.productId && feedback.productId._id === productId
+    );
+  };
 
   const getAverageRating = (productId) => {
-    const productFeedbacks = feedbacks.filter((feedback) => feedback.productId._id === productId);
+    const productFeedbacks = getFeedbacksForProduct(productId);
     if (productFeedbacks.length === 0) return 0;
     const totalRating = productFeedbacks.reduce((acc, feedback) => acc + feedback.rating, 0);
     return (totalRating / productFeedbacks.length).toFixed(1);
   };
 
-  const getNumberOfReviews = (productId) => {
-    return feedbacks.filter((feedback) => feedback.productId._id === productId).length;
-  };
-
-  const handleNavigateToProductFeedback = (productId) => {
-    navigate(`/admin/product/feedback/list/${productId}`);
+  const toggleRow = (productId) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [productId]: !prev[productId],
+    }));
   };
 
   return (
@@ -82,46 +76,110 @@ const ProductFeedbackList = () => {
       <div className="drawer-content flex flex-col min-h-screen">
         <Header />
         <main className="flex-1 overflow-y-auto px-2 sm:px-6 bg-base-200">
-          <TitleCard title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Product Ratings</span>}>
+          <TitleCard title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Product Items, Ratings & Feedbacks</span>}>
             {loading ? (
               <p>Loading products...</p>
             ) : products.length === 0 ? (
               <p>No products available.</p>
             ) : (
-              <div className="flex flex-wrap gap-4 justify-center mt-2">
-                {products.map(({ _id, name, images }) => (
-                  <div
-                    key={_id}
-                    className="flex flex-col w-full sm:w-[350px] md:w-[320px] bg-white border border-[#ed003f] rounded-lg shadow-md hover:shadow-lg transition mb-4"
-                    style={{ minHeight: 180 }}
-                  >
-                    <div className="flex flex-col sm:flex-row items-center p-4">
-                      {images[0] && (
-                        <img
-                          src={images[0].url}
-                          alt={name}
-                          className="w-20 h-20 object-cover rounded-md border-2 border-[#ed003f] mb-2 sm:mb-0 sm:mr-4"
-                        />
-                      )}
-                      <div className="flex-1 w-full">
-                        <h3 className="text-base sm:text-lg font-bold text-[#ed003f] mb-1">{name}</h3>
-                        <p className="text-[#ed003f] text-xs sm:text-sm font-semibold mb-1">
-                          Average Rating: <span className="font-bold">{getAverageRating(_id)}</span>
-                        </p>
-                        <p className="text-gray-500 text-xs sm:text-sm">
-                          Number of Reviews: {getNumberOfReviews(_id)}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      className="flex items-center justify-center w-full border-t border-[#ed003f] py-2 text-[#ed003f] hover:bg-[#ed003f] hover:text-white transition rounded-b-lg"
-                      onClick={() => handleNavigateToProductFeedback(_id)}
-                    >
-                      <span className="text-xs font-semibold mr-1">View Feedback</span>
-                      <HiArrowRight className="text-lg" />
-                    </button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-[#ed003f] rounded-lg shadow">
+                  <thead>
+                    <tr className="bg-[#ed003f] text-white">
+                      <th className="py-2 px-4 text-left">Product</th>
+                      <th className="py-2 px-4 text-left">Image</th>
+                      <th className="py-2 px-4 text-left">Price</th>
+                      <th className="py-2 px-4 text-left">Average Rating</th>
+                      <th className="py-2 px-4 text-left">Reviews</th>
+                      <th className="py-2 px-4 text-left">Feedback</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((product) => {
+                      const productFeedbacks = getFeedbacksForProduct(product._id);
+                      const avgRating = getAverageRating(product._id);
+                      return (
+                        <React.Fragment key={product._id}>
+                          <tr className="border-b border-[#ed003f]">
+                            <td className="py-2 px-4 text-[#ed003f]">{product.name}</td>
+                            <td className="py-2 px-4">
+                              {product.images && product.images[0] && (
+                                <img
+                                  src={product.images[0].url}
+                                  alt={product.name}
+                                  className="w-12 h-12 object-cover rounded border-2 border-[#ed003f]"
+                                />
+                              )}
+                            </td>
+                            <td className="py-2 px-4 text-gray-700 font-semibold">
+                              ₱{product.price?.toLocaleString() || 'N/A'}
+                            </td>
+                            <td className="py-2 px-4">
+                              {avgRating > 0 ? (
+                                <span className="flex items-center">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <HiStar
+                                      key={star}
+                                      className={`inline-block text-yellow-400 ${star <= Math.round(avgRating) ? '' : 'opacity-30'}`}
+                                    />
+                                  ))}
+                                  <span className="ml-2 text-xs text-gray-700 font-semibold">{avgRating} / 5</span>
+                                </span>
+                              ) : (
+                                <span className="text-xs text-gray-400">No feedback yet</span>
+                              )}
+                            </td>
+                            <td className="py-2 px-4">{productFeedbacks.length}</td>
+                            <td className="py-2 px-4">
+                              <button
+                                className="flex items-center text-[#ed003f] font-semibold hover:underline"
+                                onClick={() => toggleRow(product._id)}
+                              >
+                                {expandedRows[product._id] ? (
+                                  <>
+                                    Hide <HiChevronUp className="ml-1" />
+                                  </>
+                                ) : (
+                                  <>
+                                    View <HiChevronDown className="ml-1" />
+                                  </>
+                                )}
+                              </button>
+                            </td>
+                          </tr>
+                          {expandedRows[product._id] && (
+                            <tr>
+                              <td colSpan={6} className="bg-red-50 px-4 py-3">
+                                <div className="font-semibold mb-2 text-[#ed003f]">Feedbacks</div>
+                                {productFeedbacks.length === 0 ? (
+                                  <div className="text-gray-400 text-sm">No feedback for this item yet.</div>
+                                ) : (
+                                  <ul className="space-y-2">
+                                    {productFeedbacks.map((fb, idx) => (
+                                      <li key={fb._id || idx} className="border-b border-gray-100 pb-2">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="font-semibold text-[#ed003f]">{fb.user?.fname || 'User'}</span>
+                                          {[1, 2, 3, 4, 5].map((star) => (
+                                            <HiStar
+                                              key={star}
+                                              className={`inline-block text-yellow-400 text-sm ${star <= fb.rating ? '' : 'opacity-30'}`}
+                                            />
+                                          ))}
+                                          <span className="ml-1 text-xs text-gray-500">{fb.rating} / 5</span>
+                                        </div>
+                                        <div className="text-gray-700 text-sm">{fb.comment || fb.feedback}</div>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </TitleCard>

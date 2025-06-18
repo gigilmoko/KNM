@@ -51,22 +51,21 @@ import SingleProduct from './Admin/Feedback/SingleProduct';
 import TruckList from './Admin/Truck/TruckList';
 import NewTruck from './Admin/Truck/NewTruck';
 import UpdateTruck from './Admin/Truck/UpdateTruck';
-import TruckOrder from './Admin/Truck/TruckOrder';
 import DeliveryList from './Admin/Delivery/DeliveryList';
 import NewDelivery from './Admin/Delivery/NewDelivery';
 import UpdateDelivery from './Admin/Delivery/UpdateDelivery';
 import RevenueReport from './Admin/Reports/RevenueReport';
 import OrderReports from './Admin/Reports/OrderReports';
 import UserReports from './Admin/Reports/UserReports';
-import MemberReports from './Admin/Reports/MemberReports';
-// import SingleEvent from './Admin/Feedback/SingleEvent';
 import SingleEvent from './Public/SingleEvent';
 import Products from './Public/Products';
 import EventList from './Public/EventList';
 import ForecastList from './Admin/Forecast/ForecastList';
 import ForecastCreate from './Admin/Forecast/NewForecast';
-import ForecastEdit from './Admin/Forecast/UpdateForecast';
+import UpdateForecast from './Admin/Forecast/UpdateForecast';
 import ForecastGraph from './Admin/Forecast/ForecastGraph';
+import PpiForecastLineGraph from './Admin/components/PPIForecastLineGraph';
+import ProductPriceForecastLineGraph from './Admin/components/ProductPriceForecastLineGraph';
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -96,6 +95,9 @@ function App() {
           <Route path="/products" element={<Products/>} />
           <Route path="/event/:id" element={<SingleEvent/>} />
           <Route path="/event-list" element={<EventList/>} />
+          <Route path="/ppi" element={<PpiForecastLineGraph />} />
+          <Route path="/price" element={<ProductPriceForecastLineGraph />} />
+          
           {/* Feedback */}
           <Route path="/feedback/new" element={<NewFeedback />} />
           {/* <Route path="/event/feedback/new" element={<NewFeedback />} />
@@ -114,12 +116,13 @@ function App() {
           {/* Admin */}
           <Route path="/admin/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
-          {/* <Route path="/admin/forecast" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} /> */}
           {/* Forecast */}
           <Route path="/admin/forecast/list" element={<ProtectedRoute><ForecastList /></ProtectedRoute>} />
-          <Route path="/admin/forecast/graph" element={<ProtectedRoute><ForecastGraph /></ProtectedRoute>} />
           <Route path="/admin/forecast/create" element={<ProtectedRoute><ForecastCreate /></ProtectedRoute>} />
-          <Route path="/admin/forecast/edit/:id" element={<ProtectedRoute><ForecastEdit /></ProtectedRoute>} />
+          <Route path="/admin/forecast/edit/:id" element={<ProtectedRoute><UpdateForecast /></ProtectedRoute>} />
+          <Route path="/admin/forecast/ppi" element={<ProtectedRoute><PpiForecastLineGraph /></ProtectedRoute>} />
+          <Route path="/admin/forecast/price" element={<ProtectedRoute><ProductPriceForecastLineGraph /></ProtectedRoute>} />
+          <Route path="/admin/forecast/graph" element={<ProtectedRoute><ForecastGraph /></ProtectedRoute>} />
           {/* Rider */}
           <Route path="/admin/rider/list" element={<ProtectedRoute><RiderList /></ProtectedRoute>} />
           <Route path="/admin/rider/new" element={<ProtectedRoute><NewRider /></ProtectedRoute>} />

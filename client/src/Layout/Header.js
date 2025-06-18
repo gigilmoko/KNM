@@ -4,8 +4,6 @@ import BellIcon from '@heroicons/react/24/outline/BellIcon';
 import Bars3Icon from '@heroicons/react/24/outline/Bars3Icon';
 import MoonIcon from '@heroicons/react/24/outline/MoonIcon';
 import SunIcon from '@heroicons/react/24/outline/SunIcon';
-import { openRightDrawer } from './common/rightDrawerSlice';
-import { RIGHT_DRAWER_TYPES } from '../utils/globalConstantUtil';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { themeChange } from 'theme-change';
@@ -60,10 +58,6 @@ function Header() {
     }
   };
 
-  const openNotification = () => {
-    dispatch(openRightDrawer({ header: "Notifications", bodyType: RIGHT_DRAWER_TYPES.NOTIFICATION }));
-  };
-
   const logoutHandler = async () => {
     try {
       await axios.get(`${process.env.REACT_APP_API}/api/logout`);
@@ -111,21 +105,6 @@ function Header() {
               <MoonIcon className="w-6 h-6 text-gray-700" />
             )}
           </button>
-
-          {/* Notifications */}
-          <button
-            className="relative p-2 rounded-full hover:bg-[#fff0f4] dark:hover:bg-[#2a0d16] transition"
-            aria-label="Notifications"
-            onClick={openNotification}
-          >
-            <BellIcon className="h-6 w-6 text-[#df1f47]" />
-            {unreadNotifications > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#df1f47] text-white text-xs rounded-full px-1.5 py-0.5 animate-pulse">
-                {unreadNotifications}
-              </span>
-            )}
-          </button>
-
           {/* User Dropdown */}
           <div className="relative group">
             <button

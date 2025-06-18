@@ -1,98 +1,183 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { toast, ToastContainer } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { HiChevronDown, HiChevronUp, HiStar } from 'react-icons/hi';
+import axios from 'axios';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
 import Header from '../../Layout/Header';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
-import axios from 'axios';
-import { HiArrowRight } from 'react-icons/hi';
 
 const EventFeedbackList = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
+  const [feedbacks, setFeedbacks] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [expandedRows, setExpandedRows] = useState({});
 
   useEffect(() => {
-    const fetchFeedbacks = async () => {
+    const token = sessionStorage.getItem('token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    // Fetch all feedback events (with average rating and event details)
+    const fetchEvents = async () => {
       try {
-        const token = sessionStorage.getItem('token');
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        const response = await axios.get(`${process.env.REACT_APP_API}/api/event/feedback/all`, config);
-        setEvents(response.data.data);
-      } catch (error) {
-        toast.error('Failed to load event feedbacks');
-        console.error('Error fetching event feedbacks:', error.response ? error.response.data : error);
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/event/feedback/all`, config);
+        setEvents(data.data || []);
+      } catch (err) {
+        toast.error('Failed to load events.');
       }
     };
-    fetchFeedbacks();
-  }, [dispatch]);
 
-  const formatDate = (startDate, endDate) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const sameDay = start.toLocaleDateString() === end.toLocaleDateString();
-    return sameDay
-      ? `${start.toLocaleDateString()}, ${start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-      : `${start.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} - ${end.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}`;
+    // Fetch all feedbacks for all events (for dropdown details)
+    const fetchAllFeedbacks = async () => {
+      try {
+        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/event/feedback/all`, config);
+        // For each event, fetch its feedbacks
+        const feedbackMap = {};
+        await Promise.all(
+          (data.data || []).map(async (event) => {
+            try {
+              const res = await axios.get(`${process.env.REACT_APP_API}/api/event/feedback/${event.eventId}`, config);
+              feedbackMap[event.eventId] = res.data.data || [];
+            } catch {
+              feedbackMap[event.eventId] = [];
+            }
+          })
+        );
+        setFeedbacks(feedbackMap);
+        setLoading(false);
+      } catch (err) {
+        toast.error('Failed to load feedbacks.');
+        setLoading(false);
+      }
+    };
+
+    fetchEvents().then(fetchAllFeedbacks);
+  }, []);
+
+  const toggleRow = (eventId) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [eventId]: !prev[eventId],
+    }));
   };
 
   return (
-    <>
-      <div className="drawer lg:drawer-open">
-        <ToastContainer />
-        <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-2 sm:px-6 bg-base-200">
-            <TitleCard title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Event Feedback Ratings Distribution</span>}>
-              <div className="flex flex-wrap gap-4 justify-center mt-2">
-                {events.map(({ eventId, title, image, averageRating, startDate, endDate }) => (
-                  <div
-                    key={eventId}
-                    className="flex flex-col w-full sm:w-[350px] md:w-[320px] bg-white border border-[#ed003f] rounded-lg shadow-md hover:shadow-lg transition mb-4"
-                    style={{ minHeight: 180 }}
-                  >
-                    <div className="flex flex-col sm:flex-row items-center p-4">
-                      <img
-                        src={image || '/assets/noimage.png'}
-                        alt={title || 'Event Image'}
-                        className="w-20 h-20 object-cover rounded-md border-2 border-[#ed003f] mb-2 sm:mb-0 sm:mr-4"
-                      />
-                      <div className="flex-1 w-full">
-                        <h3 className="text-base sm:text-lg font-bold text-[#ed003f] mb-1">{title || 'Untitled Event'}</h3>
-                        <p className="text-[#ed003f] text-xs sm:text-sm font-semibold mb-1">
-                          Average Rating: <span className="font-bold">{averageRating}</span>
-                        </p>
-                        <p className="text-gray-500 text-xs sm:text-sm">
-                          {startDate && endDate ? formatDate(startDate, endDate) : 'No Date Available'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      className="flex items-center justify-center w-full border-t border-[#ed003f] py-2 text-[#ed003f] hover:bg-[#ed003f] hover:text-white transition rounded-b-lg"
-                      onClick={() => navigate(`/admin/event/feedback/list/${eventId}`)}
-                    >
-                      <span className="text-xs font-semibold mr-1">View Feedback</span>
-                      <HiArrowRight className="text-lg" />
-                    </button>
-                  </div>
-                ))}
+    <div className="drawer lg:drawer-open">
+      <ToastContainer />
+      <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
+      <div className="drawer-content flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-1 overflow-y-auto px-2 sm:px-6 bg-base-200">
+          <TitleCard title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Event Items, Ratings & Feedbacks</span>}>
+            {loading ? (
+              <p>Loading events...</p>
+            ) : events.length === 0 ? (
+              <p>No events available.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full bg-white border border-[#ed003f] rounded-lg shadow">
+                  <thead>
+                    <tr className="bg-[#ed003f] text-white">
+                      <th className="py-2 px-4 text-left">Event</th>
+                      <th className="py-2 px-4 text-left">Image</th>
+                      <th className="py-2 px-4 text-left">Date</th>
+                      <th className="py-2 px-4 text-left">Average Rating</th>
+                      <th className="py-2 px-4 text-left">Feedback</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {events.map((event) => (
+                      <React.Fragment key={event.eventId}>
+                        <tr className="border-b border-[#ed003f]">
+                          <td className="py-2 px-4 text-[#ed003f]">{event.title}</td>
+                          <td className="py-2 px-4">
+                            <img
+                              src={event.image || '/assets/noimage.png'}
+                              alt={event.title}
+                              className="w-12 h-12 object-cover rounded border-2 border-[#ed003f]"
+                            />
+                          </td>
+                          <td className="py-2 px-4">
+                            {event.startDate ? new Date(event.startDate).toLocaleDateString() : 'N/A'}
+                          </td>
+                          <td className="py-2 px-4">
+                            <span className="flex items-center">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <HiStar
+                                  key={star}
+                                  className={`inline-block text-yellow-400 ${star <= Math.round(event.averageRating) ? '' : 'opacity-30'}`}
+                                />
+                              ))}
+                              <span className="ml-2 text-xs text-gray-700 font-semibold">
+                                {event.averageRating ? event.averageRating.toFixed(1) : '0'} / 5
+                              </span>
+                            </span>
+                          </td>
+                          <td className="py-2 px-4">
+                            <button
+                              className="flex items-center text-[#ed003f] font-semibold hover:underline"
+                              onClick={() => toggleRow(event.eventId)}
+                            >
+                              {expandedRows[event.eventId] ? (
+                                <>
+                                  Hide <HiChevronUp className="ml-1" />
+                                </>
+                              ) : (
+                                <>
+                                  View <HiChevronDown className="ml-1" />
+                                </>
+                              )}
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedRows[event.eventId] && (
+                          <tr>
+                            <td colSpan={5} className="bg-red-50 px-4 py-3">
+                              <div className="font-semibold mb-2 text-[#ed003f]">Feedbacks</div>
+                              {feedbacks[event.eventId] && feedbacks[event.eventId].length > 0 ? (
+                                <ul className="space-y-2">
+                                  {feedbacks[event.eventId].map((fb, idx) => (
+                                    <li key={fb._id || idx} className="border-b border-gray-100 pb-2">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-semibold text-[#ed003f]">
+                                          {fb.userId?.fname || 'User'}
+                                        </span>
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <HiStar
+                                            key={star}
+                                            className={`inline-block text-yellow-400 text-sm ${star <= fb.rating ? '' : 'opacity-30'}`}
+                                          />
+                                        ))}
+                                        <span className="ml-1 text-xs text-gray-500">{fb.rating} / 5</span>
+                                      </div>
+                                      <div className="text-gray-700 text-sm">{fb.description}</div>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <div className="text-gray-400 text-sm">No feedback for this event yet.</div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </TitleCard>
-          </main>
-        </div>
-        <LeftSidebar />
+            )}
+          </TitleCard>
+        </main>
       </div>
+      <LeftSidebar />
       <RightSidebar />
       <ModalLayout />
-    </>
+    </div>
   );
 };
 

@@ -150,7 +150,7 @@ const routes = [
       {
         path: '/admin/feedback/list',
         icon: <ChartBarIcon className={submenuIconClasses}/>, // Chart Bar icon for 'Analytics'
-        name: 'Feedback List',
+        name: 'Application Feedback ',
       },
       {
         path: '/admin/event/feedback/list',
@@ -173,6 +173,11 @@ const routes = [
         path: '/admin/forecast/list',
         icon: <ChartBarIcon className={submenuIconClasses}/>, // Chart Bar icon for 'Analytics'
         name: 'Forecast List',
+      },
+      {
+        path: '/admin/forecast/graph',
+        icon: <ChartBarIcon className={submenuIconClasses}/>, // Chart Bar icon for 'Analytics'
+        name: 'Forecast Graph',
       },
       {
         path: '/admin/forecast/create',
