@@ -18,7 +18,7 @@ const Model = () => {
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
     loader.load(
-      "/v1.glb",
+      "/showrrom.glb",
       (gltf) => {
         gltf.scene.traverse((child) => {
           if (child.isMesh) {
