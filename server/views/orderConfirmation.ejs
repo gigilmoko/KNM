@@ -1,0 +1,298 @@
+<!-- filepath: c:\Users\Jayson\Downloads\KNM - Order\KNM\views\orderConfirmation.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KNM Order Confirmation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333333;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 0;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .header {
+      background-color: #df1f47;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .logo {
+      max-width: 180px;
+      height: auto;
+    }
+    
+    .content {
+      padding: 32px 24px;
+    }
+    
+    h1 {
+      color: #df1f47;
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    
+    h2 {
+      color: #333333;
+      font-size: 20px;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #eeeeee;
+      padding-bottom: 8px;
+    }
+    
+    p {
+      margin: 0 0 16px;
+    }
+    
+    .order-details {
+      background-color: #f9f9f9;
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+    }
+    
+    .order-detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eeeeee;
+    }
+    
+    .order-detail-row:last-child {
+      border-bottom: none;
+    }
+    
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    
+    .product-table th {
+      background-color: #f8f8f8;
+      text-align: left;
+      padding: 12px;
+      font-weight: 600;
+      color: #df1f47;
+    }
+    
+    .product-table td {
+      padding: 12px;
+      border-bottom: 1px solid #eeeeee;
+    }
+    
+    .product-image {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    .product-name {
+      font-weight: 500;
+    }
+    
+    .price {
+      text-align: right;
+      font-weight: 500;
+      color: #df1f47;
+    }
+    
+    .total-row {
+      font-weight: 600;
+      background-color: #f8f8f8;
+    }
+    
+    .address-box {
+      background-color: #f9f9f9;
+      padding: 16px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      border-left: 4px solid #df1f47;
+    }
+    
+    .footer {
+      background-color: #f8f8f8;
+      padding: 24px;
+      text-align: center;
+      color: #777777;
+      font-size: 14px;
+    }
+    
+    .social-icons {
+      margin-top: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .social-icons a {
+      display: inline-block;
+      margin: 0 8px;
+    }
+    
+    .social-icon {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      background-color: #df1f47;
+      color: #ffffff;
+      padding: 12px 24px;
+      margin: 16px 0;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    @media only screen and (max-width: 480px) {
+      .container {
+        width: 100%;
+        border-radius: 0;
+      }
+      
+      .content {
+        padding: 24px 16px;
+      }
+      
+      h1 {
+        font-size: 22px;
+      }
+      
+      .product-image {
+        width: 48px;
+        height: 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <!-- KNM Logo -->
+      <img src="https://res.cloudinary.com/dglawxazg/image/upload/v1741112980/image_2025-03-05_022855838-removebg-preview_thwgac.png" alt="KNM Logo" class="logo">
+    </div>
+    
+    <div class="content">
+      <h1>Thank you for your order!</h1>
+      
+      <p>Hello <%= user.fname %>,</p>
+      
+      <p>Your order has been successfully placed and is now being processed. Here's a summary of your purchase:</p>
+      
+      <div class="order-details">
+        <div class="order-detail-row">
+          <strong>Order Number:</strong>
+          <span><%= order.KNMOrderId %></span>
+        </div>
+        <div class="order-detail-row">
+          <strong>Order Date:</strong>
+          <span><%= new Date(order.createdAt).toLocaleString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }) %></span>
+        </div>
+        <div class="order-detail-row">
+          <strong>Payment Method:</strong>
+          <span><%= order.paymentInfo %></span>
+        </div>
+      </div>
+      
+      <h2>Order Summary</h2>
+      
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% order.orderProducts.forEach(item => { %>
+            <tr>
+              <td style="display: flex; align-items: center; gap: 12px;">
+                <% if (item.product && item.product.images && item.product.images.length > 0 && item.product.images[0].url) { %>
+                  <!-- Use Cloudinary URL directly -->
+                  <img 
+                    src="<%= item.product.images[0].url %>" 
+                    alt="<%= item.product.name %>" 
+                    class="product-image"
+                    onerror="this.src='https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'"
+                  >
+                <% } else { %>
+                  <!-- Use default Cloudinary placeholder -->
+                  <img 
+                    src="https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png" 
+                    alt="Product Image" 
+                    class="product-image"
+                  >
+                <% } %>
+                <span class="product-name"><%= item.product ? item.product.name : 'Product' %></span>
+              </td>
+              <td><%= item.quantity %></td>
+              <td class="price">₱<%= item.price.toFixed(2) %></td>
+            </tr>
+          <% }); %>
+          <tr>
+            <td colspan="2">Subtotal</td>
+            <td class="price">₱<%= order.itemsPrice.toFixed(2) %></td>
+          </tr>
+          <tr>
+            <td colspan="2">Shipping</td>
+            <td class="price">₱<%= order.shippingCharges.toFixed(2) %></td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="2"><strong>Total</strong></td>
+            <td class="price">₱<%= order.totalPrice.toFixed(2) %></td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <h2>Delivery Address</h2>
+      
+      <div class="address-box">
+        <p>
+          <%= order.address.houseNo %> <%= order.address.streetName %><br>
+          <%= order.address.barangay %><br>
+          <%= order.address.city %><br>
+        </p>
+      </div>
+      
+      <p>We'll update you when your order is out for delivery. If you have any questions, please don't hesitate to contact us.</p>
+      
+      <p>Thank you for shopping with KNM!</p>
+      
+      <p>Best regards,<br>The KNM Team</p>
+    </div>
+    
+    <div class="footer">
+      <div class="social-icons">
+
+      <p>© <%= new Date().getFullYear() %> KNM. All rights reserved.</p>
+      <p>Manila, Philippines</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -22,7 +22,7 @@ const markPendingOrdersAsDelivered = async () => {
 
 schedule.scheduleJob('0 0 * * *', markPendingOrdersAsDelivered);
 
-// Function to create a new delivery session
+// Function to create a new delivery session sa
 exports.createDeliverySession = async (req, res) => {
   try {
     const { riderId, truckId, orderIds } = req.body;
