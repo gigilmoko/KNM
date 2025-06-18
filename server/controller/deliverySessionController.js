@@ -243,7 +243,7 @@ exports.getSessions = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Error fetching delivery sessions', error: error.message });
     }
-  };
+};
 
 exports.getSessionById = async (req, res) => {
     try {
@@ -260,7 +260,7 @@ exports.getSessionById = async (req, res) => {
     } catch (error) {
       res.status(500).json({ message: 'Error fetching delivery session', error: error.message });
     }
-  };
+};
   
 exports.completeDeliverySession = async (req, res) => {
   try {
@@ -440,7 +440,7 @@ exports.deleteDeliverySession = async (req, res) => {
 
 exports.getGroupedDeliverySessions = async (req, res) => {
   try {
-    const { status } = req.query; // Get the status from the query parameter
+    const { status } = req.query;
 
     const groupedSessions = await DeliverySession.aggregate([
       {
@@ -450,7 +450,7 @@ exports.getGroupedDeliverySessions = async (req, res) => {
       },
       {
         $lookup: {
-          from: "riders", // Replace with your actual Rider collection name
+          from: "riders",
           localField: "rider",
           foreignField: "_id",
           as: "riderDetails",
@@ -458,7 +458,7 @@ exports.getGroupedDeliverySessions = async (req, res) => {
       },
       {
         $lookup: {
-          from: "trucks", // Replace with your actual Truck collection name
+          from: "trucks", 
           localField: "truck",
           foreignField: "_id",
           as: "truckDetails",
@@ -466,7 +466,7 @@ exports.getGroupedDeliverySessions = async (req, res) => {
       },
       {
         $lookup: {
-          from: "orders", // Replace with your actual Order collection name
+          from: "orders",
           localField: "orders",
           foreignField: "_id",
           as: "orderDetails",

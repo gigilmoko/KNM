@@ -39,7 +39,7 @@ function CreateCategory() {
             return false;
         }
         if (!descriptionRegex.test(categoryData.description.trim())) {
-            toast.error('Description can be up to 500 characters!');
+            toast.error('Description must be between 5 and 500 characters!');
             return false;
         }
         return true;
@@ -85,64 +85,68 @@ function CreateCategory() {
             toast.success('Category created successfully!');
             setTimeout(() => {
                 navigate('/admin/category');
-            }, 3000);
+            }, 2000);
         } catch (error) {
-            console.error('Failed to create category', error);
             toast.error('Failed to create category');
         }
     };
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p className="text-red-500">{error}</p>;
-
     return (
         <>
+            <ToastContainer />
             <div className="drawer lg:drawer-open">
-                <ToastContainer />
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200" ref={mainContentRef}>
-                        <TitleCard title="Create New Category" topMargin="mt-2">
-                            <div className="grid grid-cols-1 gap-6">
+                    <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200" ref={mainContentRef}>
+                        <div className="max-w-xl w-full mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-8 mt-4">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#ed003f]">
+                                New Category
+                            </h2>
+                            <form
+                                className="grid grid-cols-1 gap-4 sm:gap-6"
+                                onSubmit={e => { e.preventDefault(); createCategory(); }}
+                                autoComplete="off"
+                            >
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Category Name</label>
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Category Name</label>
                                     <input
                                         type="text"
                                         name="name"
                                         value={categoryData.name}
                                         onChange={handleInputChange}
-                                        className="input input-bordered w-full"
+                                        className="input input-bordered w-full text-sm"
                                         placeholder="Enter category name"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Description</label>
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
                                     <textarea
                                         name="description"
                                         value={categoryData.description}
                                         onChange={handleInputChange}
-                                        className="textarea textarea-bordered w-full"
+                                        className="textarea textarea-bordered w-full text-sm"
                                         placeholder="Enter category description"
                                     />
                                 </div>
-                                <div className="mt-4">
+                                <div className="mt-2 sm:mt-4">
                                     <button
-                                        className="btn btn-primary"
-                                        onClick={createCategory}
+                                        type="submit"
+                                        className="btn w-full text-base font-semibold bg-[#ed003f] text-white border-none hover:bg-red-700 transition"
                                     >
                                         Create Category
                                     </button>
                                 </div>
-                            </div>
-                        </TitleCard>
+                            </form>
+                        </div>
+                        <div className="h-16"></div>
                     </main>
                 </div>
                 <LeftSidebar />
+                <RightSidebar />
+                <NotificationContainer />
+                <ModalLayout />
             </div>
-            <RightSidebar />
-            <NotificationContainer />
-            <ModalLayout />
         </>
     );
 }

@@ -1,23 +1,28 @@
-function DashboardStats({title, icon, value, description, colorIndex}){
+function DashboardStats({ title, icon, value, description }) {
+  // Always use red for icon and value
+  const COLORS = ["#df1f47", "#df1f47"];
 
-    const COLORS = ["primary", "primary"]
+  const getDescStyle = () => {
+    if (description.includes("↗︎")) return "font-bold text-green-700 dark:text-green-300";
+    else if (description.includes("↙")) return "font-bold text-rose-500 dark:text-red-400";
+    else return "text-gray-500 dark:text-gray-400";
+  };
 
-    const getDescStyle = () => {
-        if(description.includes("↗︎"))return "font-bold text-green-700 dark:text-green-300"
-        else if(description.includes("↙"))return "font-bold text-rose-500 dark:text-red-400"
-        else return ""
-    }
-
-    return(
-        <div className="stats shadow">
-            <div className="stat">
-                <div className={`stat-figure dark:text-slate-300 text-${COLORS[colorIndex%2]}`}>{icon}</div>
-                <div className="stat-title dark:text-slate-300">{title}</div>
-                <div className={`stat-value dark:text-slate-300 text-${COLORS[colorIndex%2]}`}>{value}</div>
-                <div className={"stat-desc  " + getDescStyle()}>{description}</div>
-            </div>
+  return (
+    <div className="w-full">
+      <div className="flex flex-col bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-5 h-full transition-all duration-300">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#fff0f4]">
+            <span className="text-2xl" style={{ color: COLORS[0] }}>{icon}</span>
+          </div>
+          <div className="text-right">
+            <div className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-300">{title}</div>
+            <div className="text-2xl sm:text-3xl font-bold" style={{ color: COLORS[0] }}>{value}</div>
+          </div>
         </div>
-    )
+      </div>
+    </div>
+  );
 }
 
-export default DashboardStats
+export default DashboardStats;

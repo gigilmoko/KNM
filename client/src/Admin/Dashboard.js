@@ -28,7 +28,7 @@ const Dashboard = () => {
   const [pendingOrders, setPendingOrders] = useState("0");
   const [deliveredOrders, setDeliveredOrders] = useState("0");
   const [applyingMembers, setApplyingMembers] = useState("0");
-  const [user, setUser] = useState(null); // Define user state
+  const [user, setUser] = useState(null);
 
   const getProfile = async () => {
     const config = {
@@ -58,7 +58,6 @@ const Dashboard = () => {
         setApplyingMembers("0");
       }
     } catch (error) {
-      console.error('Error fetching applying members count:', error);
       setApplyingMembers("0");
     }
   };
@@ -82,7 +81,6 @@ const Dashboard = () => {
         setPendingOrders("0");
       }
     } catch (error) {
-      console.error('Error fetching order status counts:', error);
       setDeliveredOrders("0");
       setPendingOrders("0");
     }
@@ -105,7 +103,6 @@ const Dashboard = () => {
           setTotalCustomers("0");
         }
       } catch (error) {
-        console.error('Error fetching total customers:', error);
         setTotalCustomers("0");
       }
     };
@@ -124,7 +121,6 @@ const Dashboard = () => {
           setTotalSales("$0");
         }
       } catch (error) {
-        console.error('Error fetching total sales:', error);
         setTotalSales("$0");
       }
     };
@@ -143,7 +139,6 @@ const Dashboard = () => {
           setOrdersCatered("0");
         }
       } catch (error) {
-        console.error('Error fetching orders catered:', error);
         setOrdersCatered("0");
       }
     };
@@ -162,7 +157,6 @@ const Dashboard = () => {
           setTotalUsers("0");
         }
       } catch (error) {
-        console.error('Error fetching total users:', error);
         setTotalUsers("0");
       }
     };
@@ -181,7 +175,6 @@ const Dashboard = () => {
           setTotalMembers("0");
         }
       } catch (error) {
-        console.error('Error fetching total members:', error);
         setTotalMembers("0");
       }
     };
@@ -195,15 +188,16 @@ const Dashboard = () => {
     fetchApplyingMembers();
   }, []);
 
+  // Removed description from statsData
   const statsData = [
-    { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8' />, description: "Current month" },
-    { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Pending Orders", value: pendingOrders, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Delivered Orders", value: deliveredOrders, icon: <CircleStackIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Total Customers", value: totalCustomers, icon: <UserGroupIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Total Users", value: totalUsers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Total Members", value: totalMembers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
-    { title: "Applying Members", value: applyingMembers, icon: <UsersIcon className='w-8 h-8' />, description: "Lifetime" },
+    { title: "Total Sales", value: totalSales, icon: <CreditCardIcon className='w-8 h-8 text-[#df1f47]' /> },
+    { title: "Orders Catered", value: ordersCatered, icon: <CircleStackIcon className='w-8 h-8 text-[#df1f47]' /> },
+    { title: "Pending Orders", value: pendingOrders, icon: <CircleStackIcon className='w-8 h-8 text-[#df1f47]' /> },
+    { title: "Delivered Orders", value: deliveredOrders, icon: <CircleStackIcon className='w-8 h-8 text-[#df1f47]' /> },
+    { title: "Total Customers", value: totalCustomers, icon: <UserGroupIcon className='w-8 h-8 text-[#df1f47]' /> },
+    { title: "Total Users", value: totalUsers, icon: <UsersIcon className='w-8 h-8 text-[#df1f47]' /> },
+    { title: "Total Members", value: totalMembers, icon: <UsersIcon className='w-8 h-8 text-[#df1f47]' /> },
+    { title: "Applying Members", value: applyingMembers, icon: <UsersIcon className='w-8 h-8 text-[#df1f47]' /> },
   ];
 
   const updateDashboardPeriod = (newRange) => {
@@ -211,22 +205,34 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="drawer lg:drawer-open">
+    <div className="drawer lg:drawer-open min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200">
+        <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200">
           <DashboardTopBar updateDashboardPeriod={updateDashboardPeriod} />
-          <div className="grid lg:grid-cols-4 mt-2 md:grid-cols-2 grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mt-2">
             {statsData.map((d, k) => (
               <DashboardStats key={k} {...d} colorIndex={k} />
             ))}
           </div>
-
-          {/** ---------------------- Different charts ------------------------- */}
-          <div className="grid lg:grid-cols-2 mt-4 grid-cols-1 gap-6">
-            <LineChart />
-            <BarChart />
+          {/* Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mt-6">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border border-[#df1f47]">
+              <LineChart
+                lineColor="#df1f47"
+                gridColor="#fde8ee"
+                labelColor="#df1f47"
+                pointColor="#df1f47"
+              />
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 border border-[#df1f47]">
+              <BarChart
+                barColor="#df1f47"
+                gridColor="#fde8ee"
+                labelColor="#df1f47"
+              />
+            </div>
           </div>
         </main>
       </div>

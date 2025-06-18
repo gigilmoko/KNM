@@ -72,7 +72,6 @@ exports.avatarUpdate = async (req, res) => {
 
 // Exported function to fetch user and member data where conditions match
 exports.fetchUserMemberMatch = async (req, res) => {
-  console.log('fetchUserMemberMatch endpoint hit'); // Log when the endpoint is accessed
   try {
       const { memberId } = req.query; // Get memberId from request query
 
@@ -167,67 +166,6 @@ exports.googleLogin = async (req, res, next) => {
   }
 };
 
-// exports.loginUser = async (req, res, next) => {
-
-//   const { email, password, deviceToken } = req.body;
-//   console.log("Received email:", email);
-//   console.log("Received password:", password);
-//   console.log("Received deviceToken:", deviceToken);
-
-//   if (!email || !password) {
-//     return res.status(400).json({ error: 'Please enter email & password' });
-//   }
-
-//   try {
-//     const user = await User.findOne({ email }).select('+password');
-//     if (!user) {
-//       return res.status(401).json({ message: 'Invalid Email or Password' });
-//     }
-
-//     const isPasswordMatched = await user.comparePassword(password);
-//     if (!isPasswordMatched) {
-//       return res.status(401).json({ message: 'Invalid Email or Password' });
-//     }
-
-//     // Update OneSignal player tags and device token
-//     if (deviceToken) {
-//       try {
-//         await axios.put(
-//           `https://onesignal.com/api/v1/players/${deviceToken}`,
-//           {
-//             app_id: process.env.ONESIGNAL_APP_ID,
-//             tags: {
-//               role: user.role[0],
-//               userId: user._id.toString()
-//             }
-//           },
-//           {
-//             headers: {
-//               'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
-//               'Content-Type': 'application/json'
-//             }
-//           }
-//         );
-
-//         user.deviceToken = deviceToken;
-//         await user.save();
-//         console.log('Updated player tags and device token:', { deviceToken, role: user.role[0] });
-//       } catch (oneSignalError) {
-//         console.error('OneSignal update error:', oneSignalError);
-//         // Continue with login even if OneSignal update fails
-//       }
-//     }
-//     console.log(user.role)
-
-//     sendToken(user, 200, res);
-//   } catch (error) {
-//     console.error("Error during login:", error);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
-
-//old
-
 exports.loginUser = async (req, res, next) => {
   const { email, password, deviceToken } = req.body;
   console.log("Received email:", email);
@@ -250,53 +188,53 @@ exports.loginUser = async (req, res, next) => {
     }
 
     // Check if user is admin
-    console.log("User role:", user.role);
-    if (user.role.includes('admin')) {
-      console.log("Admin detected, sending verification code...");
+    // console.log("User role:", user.role);
+    // if (user.role.includes('admin')) {
+    //   console.log("Admin detected, sending verification code...");
       
-      // Generate and send verification code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log("Generated code:", code);
-      user.verificationCode = code;
-      user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
-      await user.save();
-      console.log("Verification code saved to user");
+    //   // Generate and send verification code
+    //   const code = Math.floor(100000 + Math.random() * 900000).toString();
+    //   console.log("Generated code:", code);
+    //   user.verificationCode = code;
+    //   user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    //   await user.save();
+    //   console.log("Verification code saved to user");
 
-      // Send verification code via email
-      try {
-        console.log("Creating transporter...");
-        const transporter = createTransporter();
+    //   // Send verification code via email
+    //   try {
+    //     console.log("Creating transporter...");
+    //     const transporter = createTransporter();
         
-        console.log("Rendering email template...");
-        const emailTemplate = await ejs.renderFile(
-          path.join(__dirname, '../views/verificationemail.ejs'),
-          {
-            user: user,
-            verificationCode: code
-          }
-        );
+    //     console.log("Rendering email template...");
+    //     const emailTemplate = await ejs.renderFile(
+    //       path.join(__dirname, '../views/verificationemail.ejs'),
+    //       {
+    //         user: user,
+    //         verificationCode: code
+    //       }
+    //     );
         
-        console.log("Sending email to:", user.email);
-        await transporter.sendMail({
-          from: process.env.EMAIL_FROM || 'noreply@yourapp.com',
-          to: user.email,
-          subject: 'Admin Login Verification Code',
-          html: emailTemplate
-        });
+    //     console.log("Sending email to:", user.email);
+    //     await transporter.sendMail({
+    //       from: process.env.EMAIL_FROM || 'noreply@yourapp.com',
+    //       to: user.email,
+    //       subject: 'Admin Login Verification Code',
+    //       html: emailTemplate
+    //     });
 
-        console.log("Email sent successfully!");
-        return res.status(200).json({
-          success: true,
-          requiresVerification: true,
-          message: 'Verification code sent to your email'
-        });
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        return res.status(500).json({ message: 'Failed to send verification code' });
-      }
-    } else {
-      console.log("User is not admin, proceeding with normal login...");
-    }
+    //     console.log("Email sent successfully!");
+    //     return res.status(200).json({
+    //       success: true,
+    //       requiresVerification: true,
+    //       message: 'Verification code sent to your email'
+    //     });
+    //   } catch (emailError) {
+    //     console.error('Email sending failed:', emailError);
+    //     return res.status(500).json({ message: 'Failed to send verification code' });
+    //   }
+    // } else {
+    //   console.log("User is not admin, proceeding with normal login...");
+    // }
 
     // Update OneSignal player tags and device token for non-admin users
     if (deviceToken) {

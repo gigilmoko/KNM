@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import XMarkIcon from '@heroicons/react/24/solid/XMarkIcon';
-import TrashIcon from '@heroicons/react/24/solid/TrashIcon'; // Import TrashIcon from Heroicons
+import TrashIcon from '@heroicons/react/24/solid/TrashIcon';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import NotificationBodyRightDrawer from '../Layout/common/components/NotificationBodyRightDrawer';
@@ -10,108 +10,114 @@ import CalendarEventsBodyRightDrawer from '../Admin/Calendar/CalendarEventsBodyR
 
 function RightSidebar() {
   const { isOpen, bodyType, extraObject, header } = useSelector(state => state.rightDrawer);
-  const [loading, setLoading] = useState(false); // For delete action
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
-  // Function to close the drawer
   const close = (e) => {
     dispatch(closeRightDrawer(e));
   };
 
-  // Function to delete all notifications
   const deleteAllNotifications = async () => {
     const config = {
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('token')}`, // Using sessionStorage for token
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
       },
     };
-
     try {
-      setLoading(true); // Start loading before the request
-      await axios.delete(`${process.env.REACT_APP_API}/api/notifications`, config); // API call to delete notifications
-      setLoading(false); // Stop loading after the request
-      
+      setLoading(true);
+      await axios.delete(`${process.env.REACT_APP_API}/api/notifications`, config);
+      setLoading(false);
     } catch (error) {
-      console.error('Failed to delete notifications:', error);
-      setLoading(false); // Stop loading even in case of an error
+      setLoading(false);
     }
   };
 
-  // Fetch profile data to authenticate user (getProfile method)
   const getProfile = async () => {
     const config = {
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('token')}`, // Using sessionStorage for token
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
       },
     };
-
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config); // Assuming `/api/me` returns user data
-      if (data && data.user) {
-        console.log('Fetched User ID:', data.user._id); // Log user ID to check if it's null or valid
-        // Handle profile data (e.g., set user state or do something with the returned data)
-      } else {
-        console.log('User data is missing:', data);
-      }
-    } catch (error) {
-      console.error('Failed to load profile:', error);
-    }
+      await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+    } catch (error) {}
   };
 
-  // Use effect to load profile on component mount
   useEffect(() => {
-    getProfile(); // Call getProfile when component mounts
+    getProfile();
+    // eslint-disable-next-line
   }, []);
 
   return (
     <div
       className={
-        "fixed overflow-hidden z-20 bg-gray-900 bg-opacity-25 inset-0 transform ease-in-out " +
+        "fixed z-40 inset-0 flex items-end md:items-center justify-end " +
         (isOpen
-          ? "transition-opacity opacity-100 duration-500 translate-x-0 "
-          : "transition-all delay-500 opacity-0 translate-x-full")
+          ? "transition-opacity opacity-100 duration-500"
+          : "transition-all delay-500 opacity-0 pointer-events-none")
       }
+      style={{ background: isOpen ? 'rgba(30, 41, 59, 0.25)' : 'transparent' }}
     >
-      <section
+      {/* Drawer */}
+      <aside
         className={
-          "w-80 md:w-96 right-0 absolute bg-base-100 h-full shadow-xl delay-400 duration-500 ease-in-out transition-all transform " +
+          "w-full max-w-[95vw] sm:max-w-[400px] md:max-w-[430px] h-[90vh] md:h-full bg-white dark:bg-gray-900 shadow-2xl rounded-t-2xl md:rounded-l-2xl md:rounded-t-none flex flex-col transition-all duration-500 ease-in-out " +
           (isOpen ? "translate-x-0" : "translate-x-full")
         }
+        style={{
+          boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.25)",
+          borderLeft: "1px solid #f3f4f6",
+        }}
       >
-        <div className="relative pb-5 flex flex-col h-full">
-          {/* Header */}
-          <div className="navbar flex pl-4 pr-4 shadow-md justify-between">
-            <div className="flex items-center">
-              <button className="float-left btn btn-circle btn-outline btn-sm" onClick={() => close()}>
-                <XMarkIcon className="h-5 w-5" />
-              </button>
-              <span className="ml-2 font-bold text-xl">{header}</span>
-            </div>
-            {/* Conditionally render trash icon if header is "Notifications" */}
-            {header === "Notifications" && (
-              <button className="btn btn-circle btn-outline btn-sm" onClick={deleteAllNotifications} disabled={loading}>
-                <TrashIcon className="h-5 w-5" />
-                {loading && <span className="ml-2">Deleting...</span>} {/* Optional loading indicator */}
-              </button>
-            )}
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-10">
+          <div className="flex items-center gap-2">
+            <button
+              className="btn btn-circle btn-outline btn-sm border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
+              onClick={close}
+              aria-label="Close"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+            <span className="ml-2 font-semibold text-lg md:text-xl tracking-wide text-[#df1f47]">{header}</span>
           </div>
+          {header === "Notifications" && (
+            <button
+              className="btn btn-circle btn-outline btn-sm border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center"
+              onClick={deleteAllNotifications}
+              disabled={loading}
+              aria-label="Delete All"
+            >
+              <TrashIcon className="h-5 w-5" />
+              {loading && <span className="ml-2 text-xs">Deleting...</span>}
+            </button>
+          )}
+        </div>
 
-          {/* Content */}
-          <div className="overflow-y-scroll pl-4 pr-4">
-            <div className="flex flex-col w-full">
-              {/* Loading drawer body according to different drawer type */}
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto px-4 py-4 bg-white dark:bg-gray-900 rounded-b-2xl md:rounded-bl-2xl">
+          <div className="flex flex-col w-full">
+            {
               {
-                {
-                  [RIGHT_DRAWER_TYPES.NOTIFICATION]: <NotificationBodyRightDrawer {...extraObject} closeRightDrawer={close} />,
-                  [RIGHT_DRAWER_TYPES.CALENDAR_EVENTS]: <CalendarEventsBodyRightDrawer {...extraObject} closeRightDrawer={close} />,
-                  [RIGHT_DRAWER_TYPES.DEFAULT]: <div></div>,
-                }[bodyType]
-              }
-            </div>
+                [RIGHT_DRAWER_TYPES.NOTIFICATION]: (
+                  <NotificationBodyRightDrawer {...extraObject} closeRightDrawer={close} />
+                ),
+                [RIGHT_DRAWER_TYPES.CALENDAR_EVENTS]: (
+                  <CalendarEventsBodyRightDrawer {...extraObject} closeRightDrawer={close} />
+                ),
+                [RIGHT_DRAWER_TYPES.DEFAULT]: <div></div>,
+              }[bodyType]
+            }
           </div>
         </div>
-      </section>
-      <section className="w-screen h-full cursor-pointer" onClick={() => close()}></section>
+      </aside>
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 z-30"
+        style={{ background: 'rgba(30, 41, 59, 0.25)' }}
+        onClick={close}
+        aria-label="Close drawer overlay"
+      ></div>
     </div>
   );
 }

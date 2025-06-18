@@ -49,9 +49,8 @@ function NewTruck() {
                 }
             );
             toast.success('Truck created successfully!');
-            setTimeout(() => navigate('/admin/truck/list'), 3000);
+            setTimeout(() => navigate('/admin/truck/list'), 2000);
         } catch (error) {
-            console.error(error);
             toast.error('Failed to create truck.');
         }
     };
@@ -61,13 +60,16 @@ function NewTruck() {
             <ToastContainer />
             <div className="drawer lg:drawer-open">
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto p-6 bg-base-200">
-                        <TitleCard title="Create New Truck">
+                    <main className="flex-1 overflow-y-auto p-2 sm:p-6 bg-base-200">
+                        <div className="max-w-lg w-full mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-8">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: '#ed003f' }}>
+                                Create New Truck
+                            </h2>
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
-                                    <label>Truck Model</label>
+                                    <label className="font-semibold text-[#ed003f]">Truck Model</label>
                                     <input
                                         type="text"
                                         name="model"
@@ -77,7 +79,7 @@ function NewTruck() {
                                     />
                                 </div>
                                 <div>
-                                    <label>Plate Number</label>
+                                    <label className="font-semibold text-[#ed003f]">Plate Number</label>
                                     <input
                                         type="text"
                                         name="plateNo"
@@ -87,12 +89,17 @@ function NewTruck() {
                                     />
                                 </div>
                                 <div className="mt-4">
-                                    <button className="btn btn-primary" onClick={createTruck}>
+                                    <button
+                                        className="btn w-full"
+                                        style={{ backgroundColor: '#ed003f', color: '#fff', border: 'none' }}
+                                        onClick={createTruck}
+                                    >
                                         Create Truck
                                     </button>
                                 </div>
                             </div>
-                        </TitleCard>
+                        </div>
+                        <div className="h-16"></div>
                     </main>
                 </div>
                 <LeftSidebar />

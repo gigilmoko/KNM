@@ -24,10 +24,9 @@ function UpdateRider() {
         phone: '',
         avatar: 'default_avatar.png',
     });
-    const [avatarImage, setAvatarImage] = useState('default_avatar.png'); // Avatar preview
+    const [avatarImage, setAvatarImage] = useState('default_avatar.png');
 
     useEffect(() => {
-        console.log('Rider ID:', riderId); // Log riderId to make sure it's being passed correctly
         const fetchRider = async () => {
             try {
                 const token = sessionStorage.getItem('token');
@@ -36,7 +35,6 @@ function UpdateRider() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                console.log('Rider data:', response.data); // Log the response data
                 setRiderData({
                     fname: response.data.rider.fname || '',
                     lname: response.data.rider.lname || '',
@@ -47,12 +45,12 @@ function UpdateRider() {
                 });
                 setAvatarImage(response.data.rider.avatar || 'default_avatar.png');
             } catch (error) {
-                console.error('Failed to fetch rider data:', error);
                 toast.error('Failed to load rider details.');
             }
         };
         fetchRider();
     }, [riderId]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setRiderData({ ...riderData, [name]: value });
@@ -67,7 +65,7 @@ function UpdateRider() {
 
             try {
                 const response = await axios.post(
-                    'https://api.cloudinary.com/v1_1/dglawxazg/image/upload', // Replace with your Cloudinary URL
+                    'https://api.cloudinary.com/v1_1/dglawxazg/image/upload',
                     formData,
                     {
                         headers: {
@@ -76,11 +74,10 @@ function UpdateRider() {
                     }
                 );
                 const imageUrl = response.data.secure_url;
-                setAvatarImage(imageUrl); // Update avatar image preview
+                setAvatarImage(imageUrl);
                 setRiderData((prev) => ({ ...prev, avatar: imageUrl }));
                 toast.success('Avatar uploaded successfully!');
             } catch (error) {
-                console.error('Failed to upload avatar', error);
                 toast.error('Failed to upload avatar. Please try again.');
             }
         }
@@ -118,9 +115,8 @@ function UpdateRider() {
                 }
             );
             toast.success('Rider updated successfully!');
-            setTimeout(() => navigate('/admin/rider/list'), 3000);
+            setTimeout(() => navigate('/admin/rider/list'), 2000);
         } catch (error) {
-            console.error('Failed to update rider:', error);
             toast.error('Failed to update rider. Please try again.');
         }
     };
@@ -130,13 +126,16 @@ function UpdateRider() {
             <ToastContainer />
             <div className="drawer lg:drawer-open">
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto p-6 bg-base-200">
-                        <TitleCard title="Update Rider">
+                    <main className="flex-1 overflow-y-auto p-2 sm:p-6 bg-base-200">
+                        <div className="max-w-lg w-full mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-8">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: '#ed003f' }}>
+                                Update Rider
+                            </h2>
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
-                                    <label>First Name</label>
+                                    <label className="font-semibold text-[#ed003f]">First Name</label>
                                     <input
                                         type="text"
                                         name="fname"
@@ -146,7 +145,7 @@ function UpdateRider() {
                                     />
                                 </div>
                                 <div>
-                                    <label>Last Name</label>
+                                    <label className="font-semibold text-[#ed003f]">Last Name</label>
                                     <input
                                         type="text"
                                         name="lname"
@@ -156,7 +155,7 @@ function UpdateRider() {
                                     />
                                 </div>
                                 <div>
-                                    <label>Middle Initial</label>
+                                    <label className="font-semibold text-[#ed003f]">Middle Initial</label>
                                     <input
                                         type="text"
                                         name="middlei"
@@ -166,7 +165,7 @@ function UpdateRider() {
                                     />
                                 </div>
                                 <div>
-                                    <label>Email</label>
+                                    <label className="font-semibold text-[#ed003f]">Email</label>
                                     <input
                                         type="email"
                                         name="email"
@@ -176,7 +175,7 @@ function UpdateRider() {
                                     />
                                 </div>
                                 <div>
-                                    <label>Phone</label>
+                                    <label className="font-semibold text-[#ed003f]">Phone</label>
                                     <input
                                         type="text"
                                         name="phone"
@@ -186,7 +185,7 @@ function UpdateRider() {
                                     />
                                 </div>
                                 <div>
-                                    <label>Avatar</label>
+                                    <label className="font-semibold text-[#ed003f]">Avatar</label>
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -196,16 +195,21 @@ function UpdateRider() {
                                     <img
                                         src={avatarImage || 'default_avatar.png'}
                                         alt="Avatar Preview"
-                                        className="mt-2 w-24 h-24 rounded-full"
+                                        className="mt-2 w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-[#ed003f] object-cover"
                                     />
                                 </div>
                                 <div className="mt-4">
-                                    <button className="btn btn-primary" onClick={updateRider}>
+                                    <button
+                                        className="btn w-full"
+                                        style={{ backgroundColor: '#ed003f', color: '#fff', border: 'none' }}
+                                        onClick={updateRider}
+                                    >
                                         Update Rider
                                     </button>
                                 </div>
                             </div>
-                        </TitleCard>
+                        </div>
+                        <div className="h-16"></div>
                     </main>
                 </div>
                 <LeftSidebar />

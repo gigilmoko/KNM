@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import Header from '../../Layout/Header';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
@@ -29,26 +29,51 @@ const UserReports = () => {
     fetchUserReports();
   }, []);
 
-  const generatePDF = async () => {
+  const generatePDF = () => {
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Title: Kababaihan ng Maynila (centered, red)
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('User Reports', 14, 20);
+    doc.setTextColor('#ed003f');
+    const titleText = 'Kababaihan ng Maynila';
+    const titleX = (pageWidth - doc.getTextWidth(titleText)) / 2;
+    doc.text(titleText, titleX, 20);
 
-    const tableColumn = ['User ID', 'Name', 'Email', 'Phone', 'Address'];
-    const tableRows = [];
+    // Subtitle: User Reports (centered, red)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(15);
+    const subText = 'User Reports';
+    const subX = (pageWidth - doc.getTextWidth(subText)) / 2;
+    doc.text(subText, subX, 30);
 
-    users.forEach(user => {
-      const name = `${user.fname} ${user.lname}`;
-      const address = Array.isArray(user.address)
-        ? user.address.map(addr => `${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`).join(', ')
-        : user.address;
-      tableRows.push([user._id, name, user.email, user.phone, address]);
-    });
+    // Table data
+    const tableColumn = ['User ID', 'Name', 'Email', 'Phone'];
+    const tableRows = users.map(user => [
+      user._id,
+      `${user.fname} ${user.lname}`,
+      user.email,
+      user.phone
+    ]);
 
-    doc.autoTable({
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
-      startY: 40
+      startY: 40,
+      headStyles: {
+        fillColor: [237, 0, 63],
+        textColor: 255
+      },
+      styles: {
+        fontSize: 10,
+        cellPadding: 3
+      },
+      columnStyles: {
+        1: { cellWidth: 50 },
+        2: { cellWidth: 60 },
+        3: { cellWidth: 40 }
+      }
     });
 
     doc.save('User_Reports.pdf');
@@ -58,33 +83,38 @@ const UserReports = () => {
     <>
       <div className="drawer lg:drawer-open">
         <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col">
+        <div className="drawer-content flex flex-col min-h-screen">
           <Header />
-          <main className="flex-1 p-6 bg-base-200">
-            <TitleCard title="User Reports" TopSideButtons={
-              <button className="btn btn-primary" onClick={generatePDF}>
-                Download PDF
-              </button>
-            }>
-              <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-                <table className="table w-full mt-6">
+          <main className="flex-1 p-2 sm:p-6 bg-base-200">
+            <TitleCard
+              title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>User Report</span>}
+              TopSideButtons={
+                <button 
+                  className="btn"
+                  style={{ backgroundColor: '#ed003f', borderColor: '#ed003f', color: '#ffffff' }}
+                  onClick={generatePDF}
+                >
+                  Download PDF
+                </button>
+              }
+            >
+              <div className="overflow-x-auto">
+                <table className="table w-full mt-6 text-xs sm:text-sm">
                   <thead>
                     <tr>
-                      <th>User ID</th>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Address</th>
+                      <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>User ID</th>
+                      <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>Name</th>
+                      <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>Email</th>
+                      <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>Phone</th>
                     </tr>
                   </thead>
                   <tbody>
                     {users.map(user => (
                       <tr key={user._id}>
-                        <td>{user._id}</td>
-                        <td>{`${user.fname} ${user.lname}`}</td>
-                        <td>{user.email}</td>
-                        <td>{user.phone}</td>
-                        <td>{Array.isArray(user.address) ? user.address.map(addr => `${addr.houseNo}, ${addr.streetName}, ${addr.barangay}, ${addr.city}`).join(', ') : user.address}</td>
+                        <td className="text-center">{user._id}</td>
+                        <td className="text-center">{`${user.fname} ${user.lname}`}</td>
+                        <td className="text-center">{user.email}</td>
+                        <td className="text-center">{user.phone}</td>
                       </tr>
                     ))}
                   </tbody>

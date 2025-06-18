@@ -23,7 +23,6 @@ function NewDelivery() {
     const [sortBy, setSortBy] = useState('');
     const [sortOrder, setSortOrder] = useState('asc');
 
-    // Fetch data for riders, trucks, and orders
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -102,7 +101,7 @@ function NewDelivery() {
                 }
             );
             toast.success('Delivery session created successfully!');
-            setTimeout(() => navigate('/admin/delivery/list'), 3000);
+            setTimeout(() => navigate('/admin/delivery/list'), 2000);
         } catch (error) {
             console.error(error);
             toast.error('Failed to create delivery session.');
@@ -112,10 +111,7 @@ function NewDelivery() {
     const handleAddOrder = (orderId) => {
         const orderToAdd = orders.find(order => order._id === orderId);
         if (orderToAdd && !addedOrders.some(order => order._id === orderId)) {
-            // Add to the addedOrders array
             setAddedOrders((prev) => [...prev, orderToAdd]);
-            
-            // Remove from available orders
             setOrders((prev) => prev.filter((order) => order._id !== orderId));
         }
     };
@@ -123,10 +119,7 @@ function NewDelivery() {
     const handleRemoveOrder = (orderId) => {
         const orderToRemove = addedOrders.find(order => order._id === orderId);
         if (orderToRemove) {
-            // Remove from addedOrders array
             setAddedOrders((prev) => prev.filter((order) => order._id !== orderId));
-    
-            // Add back the removed order to available orders
             setOrders((prev) => [...prev, orderToRemove]);
         }
     };
@@ -140,8 +133,10 @@ function NewDelivery() {
     const sortedOrders = [...orders].sort((a, b) => {
         if (sortBy === 'totalPrice') {
             return sortOrder === 'asc' ? a.totalPrice - b.totalPrice : b.totalPrice - a.totalPrice;
-        } else {
+        } else if (sortBy === '_id') {
             return sortOrder === 'asc' ? a._id.localeCompare(b._id) : b._id.localeCompare(a._id);
+        } else {
+            return 0;
         }
     });
 
@@ -150,14 +145,16 @@ function NewDelivery() {
             <ToastContainer />
             <div className="drawer lg:drawer-open">
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto p-6 bg-base-200">
-                        <TitleCard title="Create New Delivery Session">
-                            <div className="grid grid-cols-1 gap-4">
+                    <main className="flex-1 overflow-y-auto p-2 sm:p-6 bg-base-200">
+                        <TitleCard 
+                            title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Create New Delivery</span>}
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Rider Dropdown */}
                                 <div>
-                                    <label>Rider</label>
+                                    <label className="block mb-1 font-semibold text-[#ed003f]">Rider</label>
                                     <select
                                         name="riderId"
                                         value={deliveryData.riderId}
@@ -175,7 +172,7 @@ function NewDelivery() {
 
                                 {/* Truck Dropdown */}
                                 <div>
-                                    <label>Truck</label>
+                                    <label className="block mb-1 font-semibold text-[#ed003f]">Truck</label>
                                     <select
                                         name="truckId"
                                         value={deliveryData.truckId}
@@ -190,44 +187,54 @@ function NewDelivery() {
                                         ))}
                                     </select>
                                 </div>
+                            </div>
 
+                            {/* Responsive Orders Section */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                                 {/* Available Orders Table */}
                                 <div>
-                                    <label>Available Orders</label>
-                                    <div className="border p-4 rounded-md mb-4 overflow-x-auto">
-                                        <table className="table w-full">
+                                    <label className="block mb-2 font-bold text-[#ed003f] text-base">
+                                        Available Orders
+                                    </label>
+                                    <div className="border p-2 sm:p-4 rounded-md mb-4 overflow-x-auto">
+                                        <table className="table w-full text-xs sm:text-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>
                                                         <button onClick={() => handleSort('totalPrice')}>
                                                             Total Price {sortBy === 'totalPrice' && (sortOrder === 'asc' ? '↑' : '↓')}
                                                         </button>
                                                     </th>
-                                                    <th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>
                                                         <button onClick={() => handleSort('_id')}>
                                                             Order ID {sortBy === '_id' && (sortOrder === 'asc' ? '↑' : '↓')}
                                                         </button>
                                                     </th>
-                                                    <th>Status</th>
-                                                    <th>Actions</th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Status</th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {sortedOrders.map((order) => (
+                                                {sortedOrders.length > 0 ? sortedOrders.map((order) => (
                                                     <tr key={order._id}>
                                                         <td>{order.totalPrice}</td>
-                                                        <td>{order._id}</td>
+                                                        <td className="break-all">{order._id}</td>
                                                         <td>{order.status}</td>
                                                         <td>
                                                             <button
-                                                                className="btn btn-sm btn-primary"
+                                                                className="btn btn-xs sm:btn-sm"
+                                                                style={{ backgroundColor: 'transparent', color: '#ed003f', border: '1px solid #ed003f' }}
                                                                 onClick={() => handleAddOrder(order._id)}
                                                             >
                                                                 Add
                                                             </button>
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                )) : (
+                                                    <tr>
+                                                        <td colSpan={4} className="text-center">No available orders</td>
+                                                    </tr>
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
@@ -235,44 +242,55 @@ function NewDelivery() {
 
                                 {/* Added Orders Table */}
                                 <div>
-                                    <label>Added Orders</label>
-                                    <div className="border p-4 rounded-md mb-4 overflow-x-auto">
-                                        <table className="table w-full">
+                                    <label className="block mb-2 font-bold text-[#ed003f] text-base">
+                                        Added Orders
+                                    </label>
+                                    <div className="border p-2 sm:p-4 rounded-md mb-4 overflow-x-auto">
+                                        <table className="table w-full text-xs sm:text-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Order ID</th>
-                                                    <th>Total Price</th>
-                                                    <th>Status</th>
-                                                    <th>Actions</th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Order ID</th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Total Price</th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Status</th>
+                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {addedOrders.map((order) => (
+                                                {addedOrders.length > 0 ? addedOrders.map((order) => (
                                                     <tr key={order._id}>
-                                                        <td>{order._id}</td>
+                                                        <td className="break-all">{order._id}</td>
                                                         <td>{order.totalPrice}</td>
                                                         <td>{order.status}</td>
                                                         <td>
                                                             <button
-                                                                className="btn btn-sm btn-danger"
+                                                                className="btn btn-xs sm:btn-sm"
+                                                                style={{ backgroundColor: '#ed003f', color: '#fff', border: 'none' }}
                                                                 onClick={() => handleRemoveOrder(order._id)}
                                                             >
                                                                 Remove
                                                             </button>
                                                         </td>
                                                     </tr>
-                                                ))}
+                                                )) : (
+                                                    <tr>
+                                                        <td colSpan={4} className="text-center">No orders added</td>
+                                                    </tr>
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Create Delivery Button */}
-                                <div className="mt-4">
-                                    <button className="btn btn-primary" onClick={createDeliverySession}>
-                                        Create Delivery Session
-                                    </button>
-                                </div>
+                            {/* Create Delivery Button */}
+                            <div className="mt-4 flex justify-end">
+                                <button
+                                    className="btn w-full sm:w-auto"
+                                    style={{ backgroundColor: '#ed003f', color: '#fff', border: 'none' }}
+                                    onClick={createDeliverySession}
+                                >
+                                    Create Delivery Session
+                                </button>
                             </div>
                         </TitleCard>
                     </main>

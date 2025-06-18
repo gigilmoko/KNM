@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-
 import Header from '../Layout/HeaderPublic';
 
 const EventGallery = () => {
@@ -11,24 +10,18 @@ const EventGallery = () => {
   const featuredEvents = [
     {
       _id: '1',
-      title: 'Music Festival 2023',
-      location: 'Central Park, NY',
-      date: '2023-11-15',
-      image: 'https://res.cloudinary.com/dglawxazg/image/upload/v1741119999/event2_mloxqk.jpg',
+      title: 'End-of-Year Dividend Distribution for Kababaihan ng Maynila Members',
+      image: 'https://res.cloudinary.com/dceswjquk/image/upload/v1750175044/Event3_v2wk1y.jpg',
     },
     {
       _id: '2',
-      title: 'Art Exhibition',
-      location: 'Downtown Gallery, LA',
-      date: '2023-12-01',
-      image: 'https://res.cloudinary.com/dglawxazg/image/upload/v1743763463/vibrant-art-exhibition-stockcake_ynn3aj.jpg',
+      title: 'Liwanag ng Kababaihan: Parol-Making Project ',
+      image: 'https://res.cloudinary.com/dceswjquk/image/upload/v1750175046/Event1_sz7aiq.jpg',
     },
     {
       _id: '3',
-      title: 'Tech Conference',
-      location: 'Silicon Valley, CA',
-      date: '2024-01-20',
-      image: 'https://res.cloudinary.com/dglawxazg/image/upload/v1743763457/images_1_daeglf.jpg',
+      title: 'L39th Anniversary of Kababaihan ng Maynila',
+      image: 'https://res.cloudinary.com/dceswjquk/image/upload/v1750175047/Event2_gbnda5.png',
     },
   ];
 
@@ -40,62 +33,60 @@ const EventGallery = () => {
   }, []);
 
   return (
-    <div className={`${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+    <div className={`${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black'} py-12`}>
       {location.pathname !== '/' && <Header />}
 
-      <div className="text-center  bg-transparent">
-        <h2 className="text-4xl font-bold uppercase font-poppins text-[#df1f47]">
+      <div className="text-center bg-transparent px-2 sm:px-4">
+        <h2 className="text-3xl sm:text-4xl font-bold uppercase font-poppins text-[#df1f47]">
           Featured Events
         </h2>
-
-        <p className="text-lg mt-2">
+        <p className="text-base sm:text-lg mt-2 max-w-xl mx-auto">
           Stay updated with the latest events happening near you.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto px-2 sm:px-4 mt-8">
           {featuredEvents.map((event) => (
             <div
-              className={`rounded-lg overflow-hidden shadow-md transform transition-transform duration-300 hover:scale-105 ${
+              className={`rounded-2xl overflow-hidden shadow-md transform transition-transform duration-300 hover:scale-105 ${
                 theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'
-              }`}
+              } flex flex-col`}
               key={event._id}
             >
-              <div className="relative">
+              <div className="relative group">
                 <img
                   src={event.image || 'placeholder.jpg'}
                   alt={event.title}
-                  className="w-full aspect-square object-cover"
+                  className="w-full aspect-[4/3] object-cover"
                 />
-                <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 transition-opacity duration-300 hover:opacity-100">
+                <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
-                    className="bg-white text-black border border-black px-4 py-2 text-sm rounded hover:bg-black hover:text-white"
-                    onClick={() => navigate(`/blog?eventId=${event._id}`)} // Pass correct eventId
+                    className="bg-white text-[#df1f47] border border-[#df1f47] px-4 py-2 text-sm rounded hover:bg-[#df1f47] hover:text-white transition"
+                    onClick={() => navigate(`/blog?eventId=${event._id}`)}
                   >
                     View
                   </button>
                 </div>
               </div>
-              <div className="p-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span>{event.location || 'Unknown Location'}</span>
-                  <span className="text-right font-bold text-[#df1f47]">
-                    {new Date(event.date).toDateString()}
-                  </span>
-                </div>
-                <div className="text-xl font-bold text-[#df1f47] font-poppins text-left">
+              <div className="p-4 flex-1 flex flex-col justify-center">
+                <div
+                  className="text-base sm:text-lg md:text-xl text-[#df1f47] font-poppins text-left break-words"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                    minHeight: '2.8em',
+                    lineHeight: '1.4em',
+                    wordBreak: 'break-word',
+                    fontWeight: 'normal', // Ensure not bold
+                  }}
+                >
                   {event.title}
                 </div>
               </div>
             </div>
           ))}
         </div>
-
-        {/* <button
-          className="mt-8 px-6 py-3 text-lg font-bold text-white bg-[#df1f47] rounded-full shadow-md hover:bg-[#bf1a3d] transition duration-300"
-          onClick={() => navigate('/event-list')}
-        >
-          View All Events
-        </button> */}
       </div>
     </div>
   );

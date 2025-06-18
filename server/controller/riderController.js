@@ -81,7 +81,7 @@ exports.deleteRider = async (req, res, next) => {
 }
 
 exports.getSingleRider = async (req, res, next) => {
-    console.log('Get Single Rider route hit');
+    // console.log('Get Single Rider route hit');
     const { id } = req.params;
 
     // Validate the ID format

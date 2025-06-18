@@ -18,30 +18,22 @@ const SingleEvent = () => {
   const [userNames, setUserNames] = useState({});
 
   useEffect(() => {
-    console.log('Event ID:', eventId);
-
     const fetchEventDetails = async () => {
-        try {
-          const token = sessionStorage.getItem("token");
-          const eventUrl = `${process.env.REACT_APP_API}/api/calendar/event/${eventId}`;
-          const { data } = await axios.get(eventUrl, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-      
-          console.log('Fetched event details:', data);
-      
-          // Change from `data.event` to `data.data` (based on your API response)
-          if (data && data.data) {
-            setEvent(data.data);
-          } else {
-            toast.error('Event not found.');
-          }
-        } catch (err) {
-          toast.error('Failed to load event details.');
-          console.error('Error:', err.response || err.message);
+      try {
+        const token = sessionStorage.getItem("token");
+        const eventUrl = `${process.env.REACT_APP_API}/api/calendar/event/${eventId}`;
+        const { data } = await axios.get(eventUrl, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (data && data.data) {
+          setEvent(data.data);
+        } else {
+          toast.error('Event not found.');
         }
-      };
-      
+      } catch (err) {
+        toast.error('Failed to load event details.');
+      }
+    };
 
     const fetchFeedbacks = async () => {
       try {
@@ -50,7 +42,6 @@ const SingleEvent = () => {
         const { data } = await axios.get(feedbackUrl, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log('Fetched feedbacks:', data);
         if (data.data) {
           setFeedbacks(data.data);
           fetchUserNames(data.data);
@@ -59,7 +50,6 @@ const SingleEvent = () => {
         }
       } catch (err) {
         toast.error('Failed to load feedbacks.');
-        console.error('Error:', err.response || err.message);
       }
     };
 
@@ -67,6 +57,7 @@ const SingleEvent = () => {
       fetchEventDetails();
       fetchFeedbacks();
     }
+    // eslint-disable-next-line
   }, [eventId]);
 
   const fetchUserNames = async (feedbackList) => {
@@ -80,12 +71,10 @@ const SingleEvent = () => {
           const { data } = await axios.get(`${process.env.REACT_APP_API}/api/get-user/${id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          console.log('Fetched user:', data);
           if (data.success) {
             names[id] = `${data.user.fname} ${data.user.middlei}. ${data.user.lname}`.trim();
           }
         } catch (err) {
-          console.error(`Error fetching user ${id}:`, err.message);
           names[id] = 'Unknown User';
         }
       }
@@ -111,50 +100,90 @@ const SingleEvent = () => {
       {
         label: 'Number of Reviews',
         data: ratingDistribution,
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
+        backgroundColor: [
+          'rgba(237, 0, 63, 0.9)',
+          'rgba(237, 0, 63, 0.7)',
+          'rgba(237, 0, 63, 0.5)',
+          'rgba(237, 0, 63, 0.3)',
+          'rgba(237, 0, 63, 0.15)',
+        ],
+        borderColor: [
+          'rgba(237, 0, 63, 1)',
+          'rgba(237, 0, 63, 1)',
+          'rgba(237, 0, 63, 1)',
+          'rgba(237, 0, 63, 1)',
+          'rgba(237, 0, 63, 1)',
+        ],
+        borderWidth: 2,
       },
     ],
+  };
+
+  const barOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+        labels: {
+          color: '#ed003f'
+        }
+      },
+      title: {
+        display: false,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: '#ed003f', font: { weight: 'bold' } },
+        grid: { color: 'rgba(237,0,63,0.1)' }
+      },
+      y: {
+        beginAtZero: true,
+        ticks: { color: '#ed003f', font: { weight: 'bold' } },
+        grid: { color: 'rgba(237,0,63,0.1)' }
+      }
+    },
+    maintainAspectRatio: false,
   };
 
   return (
     <div className="drawer lg:drawer-open">
       <ToastContainer />
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 overflow-y-auto px-6 bg-base-200">
-          <TitleCard title="Event Details">
-            <div className="flex flex-col lg:flex-row space-x-6">
+        <main className="flex-1 overflow-y-auto px-2 sm:px-6 bg-base-200">
+          <TitleCard title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Event Details</span>}>
+            <div className="flex flex-col lg:flex-row gap-6">
               <div className="flex-1 mb-6 lg:mb-0">
                 {event ? (
                   <div>
-                    <h2 className="text-2xl font-bold">{event.title || 'No Title Available'}</h2>
-                    <p><strong>Description:</strong> {event.description || 'No description available'}</p>
-                    <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
+                    <h2 className="text-xl sm:text-2xl font-bold text-[#ed003f] mb-2">{event.title || 'No Title Available'}</h2>
+                    <p className="mb-1"><span className="font-semibold text-[#ed003f]">Description:</span> {event.description || 'No description available'}</p>
+                    <p className="mb-1"><span className="font-semibold text-[#ed003f]">Date:</span> {event.date ? new Date(event.date).toLocaleDateString() : 'N/A'}</p>
+                    <p className="mb-1"><span className="font-semibold text-[#ed003f]">Average Rating:</span> {averageRating}</p>
                   </div>
                 ) : (
                   <p>Loading event details...</p>
                 )}
               </div>
               <div className="w-full lg:w-1/3">
-                <h3 className="text-xl font-semibold">Rating Distribution</h3>
-                <div className="h-64">
-                  <Bar data={barChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+                <h3 className="text-lg font-semibold text-[#ed003f] mb-2">Rating Distribution</h3>
+                <div className="h-56 sm:h-64 bg-white rounded-lg p-2 border border-[#ed003f]">
+                  <Bar data={barChartData} options={barOptions} />
                 </div>
               </div>
             </div>
           </TitleCard>
 
-          <TitleCard title="Event Feedback">
+          <TitleCard title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Event Feedback</span>}>
             {feedbacks.length > 0 ? (
               <ul className="space-y-4">
                 {feedbacks.map((feedback) => (
-                  <li key={feedback._id} className="p-4 border rounded-md shadow-md">
-                    <p><strong>{userNames[feedback.userId] || 'Loading...'}</strong></p>
-                    <p>{feedback.description}</p>
-                    <p className="text-gray-500">Rating: {feedback.rating}</p>
+                  <li key={feedback._id} className="p-4 border border-[#ed003f] rounded-md shadow-md bg-white">
+                    <p className="font-semibold text-[#ed003f]">{userNames[feedback.userId] || 'Loading...'}</p>
+                    <p className="mb-1">{feedback.description}</p>
+                    <p className="text-xs text-[#ed003f]">Rating: <span className="font-bold">{feedback.rating}</span></p>
                   </li>
                 ))}
               </ul>

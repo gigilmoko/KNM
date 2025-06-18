@@ -12,9 +12,9 @@ function EventCreateForm() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState(""); // Changed
+  const [endTime, setEndTime] = useState("");     // Changed
   const [success, setSuccess] = useState("");
   const [image, setImage] = useState(null);
   const [audience, setAudience] = useState("all");
@@ -23,30 +23,28 @@ function EventCreateForm() {
   const [currentUserRole, setCurrentUserRole] = useState("");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
- 
+
   const getProfile = async () => {
     const config = {
-        headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
     };
     try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-        setUser(data.user);
-        setLoading(false);
+      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+      setUser(data.user);
+      setLoading(false);
     } catch (error) {
-        setError('Failed to load profile.');
-        setLoading(false);
+      setError('Failed to load profile.');
+      setLoading(false);
     }
-};
+  };
 
   useEffect(() => {
     getProfile();
     const today = new Date().toISOString().split("T")[0];
     setDate(today);
-
-    // Get current user role (you might want to get this from sessionStorage or an API)
-    const role = sessionStorage.getItem('role'); // or get from API
+    const role = sessionStorage.getItem('role');
     setCurrentUserRole(role);
   }, []);
 
@@ -65,7 +63,6 @@ function EventCreateForm() {
         setImage(response.data.secure_url);
         toast.success("Image uploaded successfully!");
       } catch (error) {
-        console.error("Image upload failed:", error);
         setError("Failed to upload image. Please try again.");
       }
     }
@@ -74,10 +71,14 @@ function EventCreateForm() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
 
-    if (!title || !description || !startDate) {
+    if (!title || !description || !date || !startTime) {
       toast.error("Please fill in all required fields.");
       return;
     }
+
+    // Combine date and time into ISO strings for backend compatibility
+    const startDate = `${date}T${startTime}`;
+    const endDate = endTime ? `${date}T${endTime}` : "";
 
     const eventData = {
       title,
@@ -96,26 +97,23 @@ function EventCreateForm() {
         `${process.env.REACT_APP_API}/api/calendar/event`,
         eventData, {
           headers: {
-              Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
-      }
+        }
       );
       if (response.data.success) {
         const targetAudience = response.data.audience;
-        if (targetAudience === "all" || (targetAudience === "members" && currentUserRole === "member")) {
-          toast.success(`Event created successfully for ${targetAudience}!`);
-        }
+        toast.success(`Event created successfully for ${targetAudience}!`);
         setTitle("");
         setDescription("");
-        setStartDate("");
-        setEndDate("");
-        setAudience("all"); // Reset audience to default
+        setStartTime("");
+        setEndTime("");
+        setAudience("all");
         setLocation("");
         setImage(null);
-        setTimeout(() => navigate("/admin/calendar/"), 3000);
+        setTimeout(() => navigate("/admin/calendar/"), 1500);
       }
     } catch (err) {
-      console.error("Error creating event:", err);
       toast.error("Failed to create event. Please try again.");
     }
   };
@@ -124,71 +122,75 @@ function EventCreateForm() {
     <div className="drawer lg:drawer-open">
       <ToastContainer />
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200">
-          <TitleCard title="Create New Event" topMargin="mt-2">
-            <div className="w-full bg-base-100 p-4 rounded-lg">
-              <form onSubmit={handleFormSubmit} className="space-y-4">
-                <div className="form-control">
-                  <label className="label">Title</label>
+        <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200">
+          <TitleCard
+            title={<span className="text-[#ed003f] font-bold">Create New Event</span>}
+            topMargin="mt-2"
+          >
+            <div className="w-full bg-base-100 p-4 sm:p-8 rounded-lg">
+              <form onSubmit={handleFormSubmit} className="grid grid-cols-1 gap-4 sm:gap-6" autoComplete="off">
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Title</label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="input input-bordered w-full"
+                    className="input input-bordered w-full text-sm"
                     required
                   />
                 </div>
 
-                <div className="form-control">
-                  <label className="label">Description</label>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="textarea textarea-bordered w-full"
+                    className="textarea textarea-bordered w-full text-sm"
                     required
                   />
                 </div>
 
-                <div className="form-control">
-                  <label className="label">Start Date</label>
-                  <input
-                    type="datetime-local"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="input input-bordered w-full"
-                    required
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label">End Date</label>
-                  <input
-                    type="datetime-local"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="input input-bordered w-full"
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label">Event Date</label>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Event Date</label>
                   <input
                     type="date"
                     value={date}
-                    readOnly
-                    className="input input-bordered w-full"
+                    onChange={e => setDate(e.target.value)}
+                    className="input input-bordered w-full text-sm"
                     required
                   />
                 </div>
 
-                <div className="form-control">
-                  <label className="label">Audience</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="input input-bordered w-full text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End Time</label>
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="input input-bordered w-full text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Audience</label>
                   <select
                     value={audience}
                     onChange={(e) => setAudience(e.target.value)}
-                    className="select select-bordered w-full"
+                    className="select select-bordered w-full text-sm"
                     required
                   >
                     <option value="all">All</option>
@@ -196,30 +198,40 @@ function EventCreateForm() {
                   </select>
                 </div>
 
-                <div className="form-control">
-                  <label className="label">Location</label>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Location</label>
                   <input
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="input input-bordered w-full"
+                    className="input input-bordered w-full text-sm"
                     placeholder="Enter event location"
                     required
                   />
                 </div>
 
-                <div className="form-control">
-                  <label className="label">Event Image (Optional)</label>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Event Image (Optional)</label>
                   <input
                     type="file"
                     onChange={handleImageChange}
-                    className="input input-bordered w-full"
+                    className="file-input file-input-bordered w-full text-sm"
                     accept="image/*"
+                    style={{
+                      background: 'transparent',
+                      border: '1px solid #ed003f',
+                      color: '#ed003f',
+                      boxShadow: 'none'
+                    }}
                   />
+                  {image && <img src={image} alt="Event" className="mt-2 w-24 h-24 sm:w-32 sm:h-32 object-cover rounded" />}
                 </div>
 
-                <div className="form-control mt-4">
-                  <button type="submit" className="btn btn-primary w-full">
+                <div className="mt-2 sm:mt-4">
+                  <button
+                    type="submit"
+                    className="btn w-full text-base font-semibold bg-[#ed003f] text-white border-none hover:bg-red-700 transition"
+                  >
                     Create Event
                   </button>
                 </div>

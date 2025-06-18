@@ -8,11 +8,8 @@ import ModalLayout from "../../Layout/ModalLayout";
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import Header from "../../Layout/Header";
-import { toast, ToastContainer } from 'react-toastify'; // Importing toast
+import { toast, ToastContainer } from 'react-toastify';
 
-const CLOUDINARY_API_KEY = '655852923368639';
-
-// Your Cloudinary config (replace with actual config)
 const cloudinaryUpload = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -26,36 +23,41 @@ const cloudinaryUpload = async (file) => {
     }
 };
 
-// Cloudinary deletion function
 const cloudinaryDelete = async (public_id) => {
     try {
-        const response = await axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${public_id}`);
-        console.log('Image deleted from Cloudinary:', response.data);
+        await axios.delete(`${process.env.REACT_APP_API}/api/product/delete-image/${public_id}`);
     } catch (error) {
         console.error('Error deleting image from Cloudinary:', error);
     }
 };
 
-const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;  // Letters, numbers, spaces, 5-100 characters
-const priceRegex = /^\d+(\.\d{1,2})?$/;      // Numbers with up to 2 decimal places
-const stockRegex = /^\d{1,5}$/;              // Integer value with up to 5 digits
+const nameRegex = /^[A-Za-z0-9\s]{5,100}$/;
+const priceRegex = /^\d+(\.\d{1,2})?$/;
+const stockRegex = /^\d{1,5}$/;
 
 function UpdateProduct() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { id } = useParams(); // Get the product ID from URL parameters
+    const { id } = useParams();
     const [productData, setProductData] = useState({
         name: "",
         description: "",
         price: 0,
         category: "",
         stock: 0,
-        images: [] // Will hold URLs and public_ids
+        images: []
     });
     const [categories, setCategories] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        getProfile();
+        fetchCategories();
+        fetchProductDetails();
+        // eslint-disable-next-line
+    }, []);
 
     const getProfile = async () => {
         const config = {
@@ -73,39 +75,31 @@ function UpdateProduct() {
         }
     };
 
-    useEffect(() => {
-        getProfile();
-        fetchCategories();
-        fetchProductDetails();
-    }, []);
-
     const fetchCategories = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API}/api/category/all`);
             if (response.data && Array.isArray(response.data.categories)) {
                 setCategories(response.data.categories);
             } else {
-                console.error('Data fetched is not an array:', response.data);
+                setCategories([]);
             }
         } catch (error) {
-            console.error('Failed to fetch categories', error);
+            setCategories([]);
         }
     };
 
     const fetchProductDetails = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_API}/api/product/${id}`);
-            console.log("Fetched product details:", response.data);
-            
             if (response.data && response.data.success) {
-                const { product } = response.data; // Destructure product from the response
+                const { product } = response.data;
                 setProductData({
                     name: product.name || "",
                     description: product.description || "",
                     price: product.price || 0,
-                    category: product.category || "",
+                    category: product.category?._id || product.category || "",
                     stock: product.stock || 0,
-                    images: Array.isArray(product.images) ? product.images : [] // Ensure it's an array
+                    images: Array.isArray(product.images) ? product.images : []
                 });
             }
         } catch (error) {
@@ -123,38 +117,24 @@ function UpdateProduct() {
 
     const handleImageChange = async (e) => {
         const files = Array.from(e.target.files);
-        console.log("Files selected:", files);
-
         const uploadedImages = await Promise.all(
             files.map(async (file) => {
                 const result = await cloudinaryUpload(file);
-                console.log("Uploaded image:", result);
                 return result;
             })
         );
-
         const validImages = uploadedImages.filter(img => img !== null);
-        console.log("Valid images after filtering:", validImages);
-
-        setProductData((prevData) => {
-            const updatedImages = [...prevData.images, ...validImages.map(img => ({ url: img.url, public_id: img.public_id }))];
-            console.log("Updated productData with images:", updatedImages);
-            return {
-                ...prevData,
-                images: updatedImages,
-            };
-        });
+        setProductData((prevData) => ({
+            ...prevData,
+            images: [...prevData.images, ...validImages.map(img => ({ url: img.url, public_id: img.public_id }))]
+        }));
     };
 
     const handleImageRemove = async (index) => {
         const imageToRemove = productData.images[index];
-        console.log('Deleting image with public_id:', imageToRemove.public_id);
-
         await cloudinaryDelete(imageToRemove.public_id);
-        
         setProductData((prevData) => {
             const updatedImages = prevData.images.filter((_, i) => i !== index);
-            console.log('Image successfully deleted from state:', imageToRemove.public_id);
             return {
                 ...prevData,
                 images: updatedImages,
@@ -188,157 +168,152 @@ function UpdateProduct() {
             const token = sessionStorage.getItem("token");
             const productWithUser = { ...jsonData, user: user?._id };
 
-            const response = await axios.put(`${process.env.REACT_APP_API}/api/product/update/${id}`, productWithUser, {
+            await axios.put(`${process.env.REACT_APP_API}/api/product/update/${id}`, productWithUser, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
-            console.log("Response:", response.data);
             toast.success('Product updated successfully!');
             setTimeout(() => {
                 navigate('/admin/products');
-            }, 3000);
+            }, 2000);
         } catch (error) {
-            console.error('Error updating product:', error);
             toast.error(error.response?.data?.message || 'Failed to update product');
         }
     };
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p className="text-red-500">{error}</p>;
-
     return (
         <>
+            <ToastContainer />
             <div className="drawer lg:drawer-open">
-                <ToastContainer/>
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200">
-                        <h2 className="text-2xl font-bold mb-4">Update Product</h2>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Product Name */}
-                            <div>
-                                <label className="label">
-                                    <span className="label-text">Product Name</span>
-                                </label>
-                                <input 
-                                    type="text" 
-                                    name="name" 
-                                    value={productData.name} 
-                                    onChange={handleChange} 
-                                    placeholder="Enter product name" 
-                                    required 
-                                    className="input input-bordered w-full" 
-                                />
-                            </div>
-                            
-                            {/* Description */}
-                            <div>
-                                <label className="label">
-                                    <span className="label-text">Description</span>
-                                </label>
-                                <textarea
-                                    name="description" 
-                                    value={productData.description} 
-                                    onChange={handleChange} 
-                                    placeholder="Enter product description" 
-                                    required 
-                                    className="textarea textarea-bordered w-full" 
-                                />
-                            </div>
-
-                            {/* Price */}
-                            <div>
-                                <label className="label">
-                                    <span className="label-text">Price</span>
-                                </label>
-                                <input 
-                                    type="number" 
-                                    name="price" 
-                                    value={productData.price} 
-                                    onChange={handleChange} 
-                                    placeholder="Enter product price" 
-                                    min="0" 
-                                    step="0.01"
-                                    required 
-                                    className="input input-bordered w-full" 
-                                />
-                            </div>
-
-                            {/* Stock */}
-                            <div>
-                                <label className="label">
-                                    <span className="label-text">Stock</span>
-                                </label>
-                                <input 
-                                    type="number" 
-                                    name="stock" 
-                                    value={productData.stock} 
-                                    onChange={handleChange} 
-                                    placeholder="Enter stock quantity" 
-                                    min="0"
-                                    required 
-                                    className="input input-bordered w-full" 
-                                />
-                            </div>
-
-                            {/* Category */}
-                            <div>
-                                <label className="label">
-                                    <span className="label-text">Category</span>
-                                </label>
-                                <select 
-                                    name="category" 
-                                    value={productData.category} 
-                                    onChange={handleChange} 
-                                    required 
-                                    className="select select-bordered w-full">
-                                    <option value="">Select a category</option>
-                                    {categories.map(category => (
-                                        <option key={category._id} value={category._id}>{category.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Images */}
-                            <div>
-                                <label className="label">
-                                    <span className="label-text">Images</span>
-                                </label>
-                                <input 
-                                    type="file" 
-                                    multiple 
-                                    onChange={handleImageChange} 
-                                    className="input input-bordered w-full" 
-                                />
-                            </div>
-                            
-                            {/* Display uploaded images */}
-                            <div className="flex flex-wrap mt-4">
-                                {Array.isArray(productData.images) && productData.images.map((image, index) => (
-                                    <div key={index} className="relative mt-2">
-                                        <img src={image.url} alt={`Product image ${index + 1}`} className="w-full h-auto" />
-                                        <button 
-                                            type="button" 
-                                            onClick={() => handleImageRemove(index)} // Call handleImageRemove with the index
-                                            className="absolute top-2 right-2 btn btn-circle btn-sm btn-error"
-                                        >
-                                            X
-                                        </button>
+                    <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200">
+                        <div className="max-w-2xl w-full mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-8 mt-4">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#ed003f]">
+                                Update Product
+                            </h2>
+                            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:gap-6" autoComplete="off">
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                                    <input 
+                                        type="text" 
+                                        name="name" 
+                                        value={productData.name} 
+                                        onChange={handleChange} 
+                                        placeholder="Enter product name" 
+                                        required 
+                                        className="input input-bordered w-full text-sm" 
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <textarea
+                                        name="description" 
+                                        value={productData.description} 
+                                        onChange={handleChange} 
+                                        placeholder="Enter product description" 
+                                        required 
+                                        className="textarea textarea-bordered w-full text-sm" 
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Price</label>
+                                        <input 
+                                            type="number" 
+                                            name="price" 
+                                            value={productData.price} 
+                                            onChange={handleChange} 
+                                            placeholder="Enter product price" 
+                                            min="0" 
+                                            step="0.01"
+                                            required 
+                                            className="input input-bordered w-full text-sm" 
+                                        />
                                     </div>
-                                ))}
-                            </div>
-
-                            <button type="submit" className="btn btn-primary">Update Product</button>
-                        </form>
+                                    <div>
+                                        <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Stock</label>
+                                        <input 
+                                            type="number" 
+                                            name="stock" 
+                                            value={productData.stock} 
+                                            onChange={handleChange} 
+                                            placeholder="Enter stock quantity" 
+                                            min="0"
+                                            required 
+                                            className="input input-bordered w-full text-sm" 
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select 
+                                        name="category" 
+                                        value={productData.category} 
+                                        onChange={handleChange} 
+                                        required 
+                                        className="select select-bordered w-full text-sm"
+                                    >
+                                        <option value="">Select a category</option>
+                                        {categories.map(category => (
+                                            <option key={category._id} value={category._id}>{category.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Images</label>
+                                    <input 
+                                        type="file" 
+                                        multiple 
+                                        onChange={handleImageChange} 
+                                        className="file-input file-input-bordered w-full text-sm"
+                                        style={{
+                                            background: 'transparent',
+                                            border: '1px solid #ed003f',
+                                            color: '#ed003f',
+                                            boxShadow: 'none'
+                                        }}
+                                    />
+                                    <div className="flex flex-wrap mt-2">
+                                        {Array.isArray(productData.images) && productData.images.map((image, index) => (
+                                            <div key={index} className="relative mt-2 mr-2" style={{ width: '90px', height: '90px' }}>
+                                                <img
+                                                    src={image.url}
+                                                    alt={`Product image ${index + 1}`}
+                                                    className="w-full h-full object-cover rounded"
+                                                    style={{ minWidth: '90px', minHeight: '90px', maxWidth: '90px', maxHeight: '90px' }}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleImageRemove(index)}
+                                                    className="absolute top-0 right-0 bg-white text-[#ed003f] hover:text-red-700 rounded-full p-1 shadow focus:outline-none"
+                                                    style={{ zIndex: 2, fontSize: '1.2rem', lineHeight: '1.2rem' }}
+                                                >
+                                                    ×
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <button
+                                    type="submit"
+                                    className="btn w-full text-base font-semibold bg-[#ed003f] text-white border-none hover:bg-red-700 transition"
+                                >
+                                    Update Product
+                                </button>
+                            </form>
+                        </div>
+                        <div className="h-16"></div>
                     </main>
-                    <RightSidebar />
                 </div>
                 <LeftSidebar />
+                <RightSidebar />
+                <NotificationContainer />
+                <ModalLayout />
             </div>
-            <NotificationContainer />
         </>
     );
 }

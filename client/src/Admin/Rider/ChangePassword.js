@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
@@ -9,11 +9,11 @@ import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
 
-const passwordRegex = /^[A-Za-z0-9!@#$%^&*]{8,}$/; // Password must be at least 6 characters
+const passwordRegex = /^[A-Za-z0-9!@#$%^&*]{8,}$/; // Password must be at least 8 characters
 
 function UpdatePassword() {
     const navigate = useNavigate();
-    const { riderId } = useParams(); // Get riderId from the URL
+    const { riderId } = useParams();
     const [passwordData, setPasswordData] = useState({
         oldPassword: '',
         newPassword: '',
@@ -27,7 +27,7 @@ function UpdatePassword() {
 
     const validateForm = () => {
         if (!passwordRegex.test(passwordData.newPassword)) {
-            toast.error('New password must be at least 6 characters.');
+            toast.error('New password must be at least 8 characters.');
             return false;
         }
         if (passwordData.newPassword !== passwordData.confirmPassword) {
@@ -43,19 +43,12 @@ function UpdatePassword() {
 
     const updatePassword = async () => {
         if (!validateForm()) return;
-    
+
         try {
             const token = sessionStorage.getItem('token');
-    
-            // Log the data being sent
-            console.log('Sending data:', {
-                oldPassword: passwordData.oldPassword,
-                newPassword: passwordData.newPassword,
-            });
-    
             await axios.put(
                 `${process.env.REACT_APP_API}/api/rider/update/password/${riderId}`,
-                { oldPassword: passwordData.oldPassword, newPassword: passwordData.newPassword },  // Corrected field name here
+                { oldPassword: passwordData.oldPassword, newPassword: passwordData.newPassword },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,
@@ -64,26 +57,27 @@ function UpdatePassword() {
                 }
             );
             toast.success('Password updated successfully!');
-            setTimeout(() => navigate('/admin/rider/list'), 3000);
+            setTimeout(() => navigate('/admin/rider/list'), 2000);
         } catch (error) {
-            console.error(error);
             toast.error('Failed to update password.');
         }
     };
-    
 
     return (
         <>
             <ToastContainer />
             <div className="drawer lg:drawer-open">
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto p-6 bg-base-200">
-                        <TitleCard title="Update Password">
+                    <main className="flex-1 overflow-y-auto p-2 sm:p-6 bg-base-200">
+                        <div className="max-w-lg w-full mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-8">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: '#ed003f' }}>
+                                Change Rider Password
+                            </h2>
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
-                                    <label>Old Password</label>
+                                    <label className="font-semibold text-[#ed003f]">Old Password</label>
                                     <input
                                         type="password"
                                         name="oldPassword"
@@ -93,7 +87,7 @@ function UpdatePassword() {
                                     />
                                 </div>
                                 <div>
-                                    <label>New Password</label>
+                                    <label className="font-semibold text-[#ed003f]">New Password</label>
                                     <input
                                         type="password"
                                         name="newPassword"
@@ -103,7 +97,7 @@ function UpdatePassword() {
                                     />
                                 </div>
                                 <div>
-                                    <label>Confirm New Password</label>
+                                    <label className="font-semibold text-[#ed003f]">Confirm New Password</label>
                                     <input
                                         type="password"
                                         name="confirmPassword"
@@ -113,12 +107,16 @@ function UpdatePassword() {
                                     />
                                 </div>
                                 <div className="mt-4">
-                                    <button className="btn btn-primary" onClick={updatePassword}>
+                                    <button
+                                        className="btn w-full"
+                                        style={{ backgroundColor: '#ed003f', color: '#fff', border: 'none' }}
+                                        onClick={updatePassword}>
                                         Update Password
                                     </button>
                                 </div>
                             </div>
-                        </TitleCard>
+                        </div>
+                        <div className="h-16"></div>
                     </main>
                 </div>
                 <LeftSidebar />

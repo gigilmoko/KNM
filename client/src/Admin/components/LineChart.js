@@ -33,8 +33,11 @@ function LineChart() {
       fill: true,
       label: 'Users',
       data: [],
-      borderColor: 'rgb(53, 162, 235)',
-      backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      borderColor: '#df1f47',
+      backgroundColor: 'rgba(223, 31, 71, 0.15)',
+      pointBackgroundColor: '#df1f47',
+      pointBorderColor: '#df1f47',
+      tension: 0.4,
     }],
   });
   const [activeTab, setActiveTab] = useState('monthly');
@@ -44,125 +47,152 @@ function LineChart() {
     plugins: {
       legend: {
         position: 'top',
+        labels: {
+          color: '#df1f47',
+          font: { weight: 'bold' }
+        }
+      },
+      tooltip: {
+        backgroundColor: '#df1f47',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: '#fff0f4',
+        borderWidth: 1,
+        padding: 12,
       },
     },
+    scales: {
+      x: {
+        grid: { color: '#fde8ee' },
+        ticks: { color: '#df1f47', font: { weight: 'bold' } }
+      },
+      y: {
+        grid: { color: '#fde8ee' },
+        ticks: { color: '#df1f47', font: { weight: 'bold' } }
+      }
+    },
+    maintainAspectRatio: false,
   };
 
   const getProfile = async () => {
     const config = {
-        headers: {
-            'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
     };
     try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-        console.log(data.user); // Log user data if needed
+      await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
     } catch (error) {
-        console.error('Failed to load profile.');
+      // ignore
     }
-};
+  };
 
-const fetchData = async (type) => {
-  let endpoint;
-  if (type === 'monthly') {
-    endpoint = '/api/analytics/users/allmonths';
-  } else if (type === 'weekly') {
-    endpoint = '/api/analytics/users/weekly';
-  } else if (type === 'daily') {
-    endpoint = '/api/analytics/users/daily';
-  }
+  const fetchData = async (type) => {
+    let endpoint;
+    if (type === 'monthly') {
+      endpoint = '/api/analytics/users/allmonths';
+    } else if (type === 'weekly') {
+      endpoint = '/api/analytics/users/weekly';
+    } else if (type === 'daily') {
+      endpoint = '/api/analytics/users/daily';
+    }
 
-  try {
-    const token = sessionStorage.getItem("token");
-    const response = await axios.get(`${process.env.REACT_APP_API}${endpoint}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      const token = sessionStorage.getItem("token");
+      const response = await axios.get(`${process.env.REACT_APP_API}${endpoint}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    console.log("Fetched data:", response.data); // Log full response
+      let labels = [];
+      let data = [];
 
-    // Default labels and data
-    let labels = [];
-    let data = [];
-
-    if (response.data.success) {
-      if (type === 'monthly') {
-        response.data.data.forEach(item => {
-          const month = new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'long' });
-          labels.push(month);
-          data.push(item.count);
-        });
-      } else if (type === 'weekly') {
-        const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-        const weeklyData = {};
-
-        daysOfWeek.forEach(day => {
-          weeklyData[day] = 0;
-        });
-
-        response.data.data.forEach(item => {
-          if (weeklyData[item.day] !== undefined) {
-            weeklyData[item.day] = item.count;
-          }
-        });
-
-        labels = daysOfWeek;
-        data = daysOfWeek.map(day => weeklyData[day]);
-      } else if (type === 'daily') {
-        response.data.data.forEach(item => {
-          labels.push(item.interval); // Use interval as label
-          data.push(item.count);
-        });
+      if (response.data.success) {
+        if (type === 'monthly') {
+          response.data.data.forEach(item => {
+            const month = new Date(item._id.year, item._id.month - 1).toLocaleString('default', { month: 'long' });
+            labels.push(month);
+            data.push(item.count);
+          });
+        } else if (type === 'weekly') {
+          const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+          const weeklyData = {};
+          daysOfWeek.forEach(day => { weeklyData[day] = 0; });
+          response.data.data.forEach(item => {
+            if (weeklyData[item.day] !== undefined) {
+              weeklyData[item.day] = item.count;
+            }
+          });
+          labels = daysOfWeek;
+          data = daysOfWeek.map(day => weeklyData[day]);
+        } else if (type === 'daily') {
+          response.data.data.forEach(item => {
+            labels.push(item.interval);
+            data.push(item.count);
+          });
+        }
       }
-    } else {
-      console.error("Invalid data format: ", response.data);
+
+      setChartData({
+        labels,
+        datasets: [{
+          fill: true,
+          label: 'Users',
+          data,
+          borderColor: '#df1f47',
+          backgroundColor: 'rgba(223, 31, 71, 0.15)',
+          pointBackgroundColor: '#df1f47',
+          pointBorderColor: '#df1f47',
+          tension: 0.4,
+        }],
+      });
+    } catch (error) {
+      // ignore
     }
-
-    setChartData({
-      labels,
-      datasets: [{
-        fill: true,
-        label: 'Users',
-        data,
-        borderColor: 'rgb(53, 162, 235)',
-        backgroundColor: 'rgba(53, 162, 235, 0.5)',
-      }],
-    });
-  } catch (error) {
-    console.error("Error fetching data: ", error);
-  }
-};
-
+  };
 
   useEffect(() => {
     getProfile();
     fetchData(activeTab);
-  }, [activeTab]); // Fetch data when activeTab changes
+    // eslint-disable-next-line
+  }, [activeTab]);
 
   return (
     <TitleCard title={"Number of Users"}>
-      <div className="flex justify-center space-x-4 mb-4">
+      <div className="flex justify-center flex-wrap gap-2 sm:gap-4 mb-4">
         <button
-          className={`btn btn-primary ${activeTab === 'monthly' ? 'border-2 border-blue-500' : ''}`}
+          className={`btn rounded-full px-4 py-2 text-sm sm:text-base font-semibold transition-all duration-200 ${
+            activeTab === 'monthly'
+              ? "bg-[#df1f47] text-white border-2 border-[#df1f47] shadow"
+              : "bg-white text-[#df1f47] border-2 border-[#df1f47] hover:bg-[#fff0f4]"
+          }`}
           onClick={() => setActiveTab('monthly')}
         >
           Monthly
         </button>
         <button
-          className={`btn btn-primary ${activeTab === 'weekly' ? 'border-2 border-blue-500' : ''}`}
+          className={`btn rounded-full px-4 py-2 text-sm sm:text-base font-semibold transition-all duration-200 ${
+            activeTab === 'weekly'
+              ? "bg-[#df1f47] text-white border-2 border-[#df1f47] shadow"
+              : "bg-white text-[#df1f47] border-2 border-[#df1f47] hover:bg-[#fff0f4]"
+          }`}
           onClick={() => setActiveTab('weekly')}
         >
           Weekly
         </button>
         <button
-          className={`btn btn-primary ${activeTab === 'daily' ? 'border-2 border-blue-500' : ''}`}
+          className={`btn rounded-full px-4 py-2 text-sm sm:text-base font-semibold transition-all duration-200 ${
+            activeTab === 'daily'
+              ? "bg-[#df1f47] text-white border-2 border-[#df1f47] shadow"
+              : "bg-white text-[#df1f47] border-2 border-[#df1f47] hover:bg-[#fff0f4]"
+          }`}
           onClick={() => setActiveTab('daily')}
         >
           Daily
         </button>
       </div>
-      <div id="lineChart">
+      <div id="lineChart" className="w-full h-[300px] sm:h-[400px] md:h-[420px]">
         <Line ref={chartRef} data={chartData} options={options} />
       </div>
     </TitleCard>

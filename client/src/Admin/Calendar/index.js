@@ -3,21 +3,21 @@ import ChevronLeftIcon from "@heroicons/react/24/solid/ChevronLeftIcon";
 import ChevronRightIcon from "@heroicons/react/24/solid/ChevronRightIcon";
 import moment from "moment";
 import axios from "axios";
-import { CALENDAR_EVENT_STYLE, getRandomEventColorClass } from "./util"; // Ensure correct path
+import { CALENDAR_EVENT_STYLE, getRandomEventColorClass } from "./util";
 import Header from '../../Layout/Header';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 import { RIGHT_DRAWER_TYPES } from "../../utils/globalConstantUtil";
-import { useDispatch } from 'react-redux'
+import { useDispatch } from 'react-redux';
 import { openRightDrawer } from "../../Layout/common/rightDrawerSlice";
 
 const THEME_BG = CALENDAR_EVENT_STYLE;
 
-function CalendarView({ addNewEvent }) {
+function CalendarView() {
   const today = moment().startOf('day');
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const weekdays = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   const colStartClasses = [
     "",
@@ -39,20 +39,15 @@ function CalendarView({ addNewEvent }) {
   useEffect(() => {
     const fetchEvents = async () => {
       const apiUrl = `${process.env.REACT_APP_API}/api/calendar/events`;
-      console.log('API URL:', apiUrl);
-
       try {
         const response = await axios.get(apiUrl);
-        console.log('Fetched Data:', response.data);
         setEvents(response.data.data || []);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching events:', error);
         setError('Failed to load events.');
         setLoading(false);
       }
     };
-
     fetchEvents();
   }, []);
 
@@ -67,8 +62,9 @@ function CalendarView({ addNewEvent }) {
     }
     return days;
   };
+
   const handleAddNewEvent = () => {
-    navigate('/admin/calendar/new'); // Replace with your route for adding a new event
+    navigate('/admin/calendar/new');
   };
 
   const getEventsForCurrentDate = (date) => {
@@ -88,12 +84,11 @@ function CalendarView({ addNewEvent }) {
     openDayDetail({ filteredEvents, title: moment(date).format("D MMM YYYY") });
   };
 
-  const openDayDetail = ({filteredEvents, title}) => {
-    dispatch(openRightDrawer({header : title, bodyType : RIGHT_DRAWER_TYPES.CALENDAR_EVENTS, extraObject : {filteredEvents}}))
-}
+  const openDayDetail = ({ filteredEvents, title }) => {
+    dispatch(openRightDrawer({ header: title, bodyType: RIGHT_DRAWER_TYPES.CALENDAR_EVENTS, extraObject: { filteredEvents } }));
+  };
 
   const isToday = (date) => moment(date).isSame(moment(), 'day');
-
   const isDifferentMonth = (date) => moment(date).month() !== moment(firstDayOfMonth).month();
 
   const getPrevMonth = () => {
@@ -117,56 +112,86 @@ function CalendarView({ addNewEvent }) {
   return (
     <div className="drawer lg:drawer-open">
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 overflow-y-auto p-4 bg-base-100">
-          <div className="w-full bg-base-100 p-4 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex justify-normal gap-2 sm:gap-4">
-                <p className="font-semibold text-xl w-48">
-                  {moment(firstDayOfMonth).format("MMMM yyyy").toString()}<span className="text-xs ml-2"></span>
+        <main className="flex-1 overflow-y-auto p-2 sm:p-4 bg-base-100">
+          <div className="w-full bg-base-100 p-2 sm:p-4 rounded-lg">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                <p className="font-semibold text-lg sm:text-xl w-auto text-[#ed003f]">
+                  {moment(firstDayOfMonth).format("MMMM yyyy")}
                 </p>
-
-                <button className="btn btn-square btn-sm btn-ghost" onClick={getPrevMonth}>
+                <button className="btn btn-square btn-xs sm:btn-sm btn-ghost text-[#ed003f]" onClick={getPrevMonth}>
                   <ChevronLeftIcon className="w-5 h-5" />
                 </button>
-                <button className="btn btn-sm btn-ghost normal-case" onClick={getCurrentMonth}>
+                <button className="btn btn-xs sm:btn-sm btn-ghost normal-case text-[#ed003f] border border-[#ed003f] hover:bg-[#ed003f] hover:text-white transition" onClick={getCurrentMonth}>
                   Current Month
                 </button>
-                <button className="btn btn-square btn-sm btn-ghost" onClick={getNextMonth}>
+                <button className="btn btn-square btn-xs sm:btn-sm btn-ghost text-[#ed003f]" onClick={getNextMonth}>
                   <ChevronRightIcon className="w-5 h-5" />
                 </button>
               </div>
               <div>
-                <button className="btn btn-sm btn-ghost btn-outline normal-case" onClick={handleAddNewEvent}>Add New Event</button>
+                <button
+                  className="btn btn-xs sm:btn-sm bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition normal-case"
+                  onClick={handleAddNewEvent}
+                >
+                  Add New Event
+                </button>
               </div>
             </div>
             <div className="my-4 divider" />
-            <div className="grid grid-cols-7 gap-6 sm:gap-12 place-items-center">
+            <div className="grid grid-cols-7 gap-2 sm:gap-6 place-items-center">
               {weekdays.map((day, key) => (
-                <div className="text-xs capitalize" key={key}>
+                <div className="text-xs capitalize font-semibold text-[#ed003f]" key={key}>
                   {day}
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-7 mt-1 place-items-center">
-              {allDaysInMonth().map((day, idx) => (
-                <div key={idx} className={`${colStartClasses[moment(day).day()]} border border-solid w-full h-28`}>
-                  <p className={`inline-block flex items-center justify-center h-8 w-8 rounded-full mx-1 mt-1 text-sm cursor-pointer hover:bg-base-300 ${isToday(day) ? "bg-blue-100 dark:bg-blue-400 dark:hover:bg-base-300 dark:text-white" : ""} ${isDifferentMonth(day) ? "text-slate-400 dark:text-slate-600" : ""}`} onClick={() => addNewEvent(day)}>
-                    {moment(day).format("D")}
-                  </p>
-                  {getEventsForCurrentDate(day).map((e, k) => (
-                    <p key={k} onClick={() => openAllEventsDetail(day, e.theme)} className={`text-xs px-2 mt-1 truncate ${e.theme === "MORE" ? THEME_BG[e.theme] : getRandomEventColorClass()}`}>
-                      {e.title}
+            <div className="grid grid-cols-7 mt-1 place-items-center gap-1 sm:gap-2">
+              {allDaysInMonth().map((day, idx) => {
+                const eventsForDay = getEventsForCurrentDate(day);
+                return (
+                  <div
+                    key={idx}
+                    className={`${colStartClasses[moment(day).day()]} border border-solid w-full h-20 sm:h-28 rounded-md bg-white shadow-sm transition`}
+                  >
+                    <p
+                      className={`inline-block flex items-center justify-center h-8 w-8 rounded-full mx-1 mt-1 text-sm transition
+                        ${isToday(day) ? "bg-[#ed003f] text-white" : ""}
+                        ${isDifferentMonth(day) ? "text-slate-400 dark:text-slate-600" : "text-[#ed003f]"}
+                        ${eventsForDay.length > 0 ? "cursor-pointer hover:bg-[#ed003f] hover:text-white" : ""}
+                      `}
+                      style={eventsForDay.length === 0 ? { pointerEvents: "none" } : {}}
+                      onClick={eventsForDay.length > 0 ? () => openDayDetail({
+                        filteredEvents: events.filter((e) => moment(day).isSame(moment(e.startDate), 'day')),
+                        title: moment(day).format("D MMM YYYY")
+                      }) : undefined}
+                    >
+                      {moment(day).format("D")}
                     </p>
-                  ))}
-                </div>
-              ))}
+                    {eventsForDay.map((e, k) => (
+                      <p
+                        key={k}
+                        onClick={() => openAllEventsDetail(day, e.theme)}
+                        className={`text-xs px-2 mt-1 truncate rounded cursor-pointer
+                          ${e.theme === "MORE"
+                            ? "bg-[#ed003f] text-white font-semibold"
+                            : getRandomEventColorClass()
+                          }`}
+                        style={{ maxWidth: "90%" }}
+                      >
+                        {e.title}
+                      </p>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
 
-            {loading && <p className="text-center">Loading...</p>}
-            {error && <p className="text-center text-red-500">{error}</p>}
+            {loading && <p className="text-center mt-4">Loading...</p>}
+            {error && <p className="text-center text-red-500 mt-4">{error}</p>}
           </div>
         </main>
       </div>
