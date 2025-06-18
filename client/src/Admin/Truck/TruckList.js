@@ -12,6 +12,7 @@ import Header from "../../Layout/Header";
 import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
+import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import { toast, ToastContainer } from 'react-toastify';
 
 function TruckList() {
@@ -23,8 +24,13 @@ function TruckList() {
     const [searchText, setSearchText] = useState("");
     const mainContentRef = useRef(null);
 
+    // Modal state for delete confirmation
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [truckToDelete, setTruckToDelete] = useState(null);
+    const [truckToDeleteIndex, setTruckToDeleteIndex] = useState(null);
+
     useEffect(() => {
-        mainContentRef.current.scroll({
+        mainContentRef.current?.scroll({
             top: 0,
             behavior: "smooth"
         });
@@ -51,40 +57,51 @@ function TruckList() {
                     Authorization: `Bearer ${token}`,
                 },
             });
-    
-            console.log('Fetched trucks:', response.data.trucks);
-    
+
             setTrucks(response.data.trucks || []);
+            setFilteredTrucks(response.data.trucks || []);
         } catch (error) {
-            console.error('Error fetching trucks:', error);
+            setTrucks([]);
+            setFilteredTrucks([]);
         }
     };
 
     const applySearch = (value) => {
         const lowercasedValue = value.toLowerCase();
-        const filtered = trucks.filter(truck => 
+        const filtered = trucks.filter(truck =>
             truck.model.toLowerCase().includes(lowercasedValue) ||
             truck.plateNo.toLowerCase().includes(lowercasedValue)
         );
         setFilteredTrucks(filtered);
     };
 
-    const deleteCurrentTruck = async (id, index) => {
+    const handleEdit = (truckId) => {
+        navigate(`/admin/truck/edit/${truckId}`);
+    };
+
+    const confirmDeleteTruck = (id, index) => {
+        setTruckToDelete(id);
+        setTruckToDeleteIndex(index);
+        setShowDeleteModal(true);
+    };
+
+    const deleteCurrentTruck = async () => {
         try {
             const token = sessionStorage.getItem("token");
-            await axios.delete(`${process.env.REACT_APP_API}/api/truck/delete/${id}`, {
+            await axios.delete(`${process.env.REACT_APP_API}/api/truck/delete/${truckToDelete}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
             });
-            setTrucks(trucks.filter((_, i) => i !== index));
-            setFilteredTrucks(filteredTrucks.filter((_, i) => i !== index));
+            setTrucks(trucks.filter((_, i) => i !== truckToDeleteIndex));
+            setFilteredTrucks(filteredTrucks.filter((_, i) => i !== truckToDeleteIndex));
             toast.success('Truck deleted successfully!');
-            window.location.reload(); // Reload the page to reflect the changes
         } catch (error) {
-            console.error('Failed to delete truck', error);
             toast.error('Failed to delete truck');
         }
+        setShowDeleteModal(false);
+        setTruckToDelete(null);
+        setTruckToDeleteIndex(null);
     };
 
     return (
@@ -92,44 +109,54 @@ function TruckList() {
             <div className="drawer lg:drawer-open">
                 <ToastContainer />
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200" ref={mainContentRef}>
+                    <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-2 sm:px-6 bg-base-200" ref={mainContentRef}>
                         <TitleCard
-                            title="All Trucks"
+                            title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>All Trucks</span>}
                             topMargin="mt-2"
-                            TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
+                            TopSideButtons={
+                                <SearchBar
+                                    searchText={searchText}
+                                    styleClass="mr-4"
+                                    setSearchText={setSearchText}
+                                    inputProps={{
+                                        style: { borderColor: '#ed003f', borderWidth: '2px' }
+                                    }}
+                                />
+                            }
                         >
                             <div className="overflow-x-auto w-full">
-                                <table className="table w-full">
+                                <table className="table w-full text-xs sm:text-sm">
                                     <thead>
                                         <tr>
-                                            <th>Model</th>
-                                            <th>Plate Number</th>
-                                            <th>Edit</th>
-                                            <th>Delete</th>
+                                            <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Model</th>
+                                            <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Plate Number</th>
+                                            <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Edit</th>
+                                            <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Delete</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {filteredTrucks.length > 0 ? (
-                                            filteredTrucks.map((truck) => (
+                                            filteredTrucks.map((truck, index) => (
                                                 <tr key={truck._id}>
                                                     <td>{truck.model}</td>
                                                     <td>{truck.plateNo}</td>
                                                     <td>
                                                         <button
-                                                            className="btn btn-xs btn-primary"
-                                                            onClick={() => navigate(`/admin/truck/edit/${truck._id}`)}
+                                                            className="btn btn-square btn-ghost"
+                                                            onClick={() => handleEdit(truck._id)}
+                                                            type="button"
                                                         >
-                                                            Edit
+                                                            <PencilIcon className="w-5 h-5 text-[#ed003f]" />
                                                         </button>
                                                     </td>
                                                     <td>
                                                         <button
                                                             className="btn btn-square btn-ghost"
-                                                            onClick={() => deleteCurrentTruck(truck._id)}
+                                                            onClick={() => confirmDeleteTruck(truck._id, index)}
                                                         >
-                                                            <TrashIcon className="w-5" />
+                                                            <TrashIcon className="w-5 h-5 text-[#ed003f]" />
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -151,6 +178,31 @@ function TruckList() {
             <RightSidebar />
             <NotificationContainer />
             <ModalLayout />
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+                    <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full">
+                        <h2 className="text-lg font-bold mb-4 text-[#ed003f]">Confirm Deletion</h2>
+                        <p className="mb-6">Are you sure you want to delete this truck?</p>
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                className="btn"
+                                onClick={() => setShowDeleteModal(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                className="btn"
+                                style={{ backgroundColor: '#ed003f', color: '#fff', border: 'none' }}
+                                onClick={deleteCurrentTruck}
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

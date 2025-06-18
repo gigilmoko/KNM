@@ -1,24 +1,23 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../Layout/Header';
-import TitleCard from '../../Layout/components/Cards/TitleCard';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
 
 function UpdateTruck() {
-    const navigate = useNavigate();
     const { truckId } = useParams();
+    const navigate = useNavigate();
     const [truckData, setTruckData] = useState({
         model: '',
         plateNo: '',
     });
 
     useEffect(() => {
-        const fetchTruckData = async () => {
+        const fetchTruck = async () => {
             try {
                 const token = sessionStorage.getItem('token');
                 const response = await axios.get(`${process.env.REACT_APP_API}/api/truck/${truckId}`, {
@@ -26,15 +25,15 @@ function UpdateTruck() {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                setTruckData(response.data.truck); // Update state with fetched data
-                console.log('Fetched truck data:', response.data.truck);  // Verify the data
+                setTruckData({
+                    model: response.data.truck.model || '',
+                    plateNo: response.data.truck.plateNo || '',
+                });
             } catch (error) {
-                console.error(error);
-                toast.error('Failed to fetch truck data.');
+                toast.error('Failed to load truck details.');
             }
         };
-
-        fetchTruckData();
+        fetchTruck();
     }, [truckId]);
 
     const handleInputChange = (e) => {
@@ -70,9 +69,8 @@ function UpdateTruck() {
                 }
             );
             toast.success('Truck updated successfully!');
-            setTimeout(() => navigate('/admin/truck/list'), 3000);
+            setTimeout(() => navigate('/admin/truck/list'), 2000);
         } catch (error) {
-            console.error(error);
             toast.error('Failed to update truck.');
         }
     };
@@ -82,38 +80,46 @@ function UpdateTruck() {
             <ToastContainer />
             <div className="drawer lg:drawer-open">
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-                <div className="drawer-content flex flex-col">
+                <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto p-6 bg-base-200">
-                        <TitleCard title="Update Truck">
+                    <main className="flex-1 overflow-y-auto p-2 sm:p-6 bg-base-200">
+                        <div className="max-w-lg w-full mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-8">
+                            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: '#ed003f' }}>
+                                Update Truck
+                            </h2>
                             <div className="grid grid-cols-1 gap-4">
                                 <div>
-                                    <label>Truck Model</label>
+                                    <label className="font-semibold text-[#ed003f]">Truck Model</label>
                                     <input
                                         type="text"
                                         name="model"
-                                        value={truckData.model} // Access directly
+                                        value={truckData.model}
                                         onChange={handleInputChange}
                                         className="input input-bordered w-full"
                                     />
                                 </div>
                                 <div>
-                                    <label>Plate Number</label>
+                                    <label className="font-semibold text-[#ed003f]">Plate Number</label>
                                     <input
                                         type="text"
                                         name="plateNo"
-                                        value={truckData.plateNo} // Access directly
+                                        value={truckData.plateNo}
                                         onChange={handleInputChange}
                                         className="input input-bordered w-full"
                                     />
                                 </div>
                                 <div className="mt-4">
-                                    <button className="btn btn-primary" onClick={updateTruck}>
+                                    <button
+                                        className="btn w-full"
+                                        style={{ backgroundColor: '#ed003f', color: '#fff', border: 'none' }}
+                                        onClick={updateTruck}
+                                    >
                                         Update Truck
                                     </button>
                                 </div>
                             </div>
-                        </TitleCard>
+                        </div>
+                        <div className="h-16"></div>
                     </main>
                 </div>
                 <LeftSidebar />

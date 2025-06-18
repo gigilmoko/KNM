@@ -27,7 +27,6 @@ const CalendarInterested = () => {
         setError('Failed to fetch users');
       }
     };
-
     fetchUsers();
   }, []);
 
@@ -60,6 +59,24 @@ const CalendarInterested = () => {
     }
   }, [id, users]);
 
+  useEffect(() => {
+    if (searchText.trim() === "") {
+      setFilteredUsers(users.filter(u => u.isAttended !== undefined));
+    } else {
+      const lower = searchText.toLowerCase();
+      setFilteredUsers(
+        users
+          .filter(u => u.isAttended !== undefined)
+          .filter(user =>
+            `${user.fname} ${user.lname}`.toLowerCase().includes(lower) ||
+            (user.email && user.email.toLowerCase().includes(lower)) ||
+            (user.role && user.role.toLowerCase().includes(lower)) ||
+            (user.phone && user.phone.toLowerCase().includes(lower))
+          )
+      );
+    }
+  }, [searchText, users]);
+
   const changeAttendance = async (userId, isAttended) => {
     try {
       const token = sessionStorage.getItem('token');
@@ -78,56 +95,62 @@ const CalendarInterested = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  // if (loading) return <div className="flex justify-center items-center h-64">Loading...</div>;
+  if (error) return <div className="flex justify-center items-center h-64 text-red-600">{error}</div>;
 
   return (
     <div className="drawer lg:drawer-open">
       <ToastContainer />
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 overflow-y-auto md:pt-4 pt-4 px-6 bg-base-200">
+        <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200">
           <TitleCard
-            title="Users Interested in This Event"
+            title={<span className="text-[#ed003f] font-bold">Users Interested in This Event</span>}
             topMargin="mt-2"
-            TopSideButtons={<SearchBar searchText={searchText} styleClass="mr-4" setSearchText={setSearchText} />}
+            TopSideButtons={
+              <SearchBar searchText={searchText} styleClass="mr-0 sm:mr-4" setSearchText={setSearchText} />
+            }
           >
             <div>
               {filteredUsers.length > 0 ? (
                 <div className="overflow-x-auto w-full">
-                  <table className="table w-full">
+                  <table className="table w-full min-w-[600px]">
                     <thead>
                       <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Phone</th>
-                        <th>Attendance</th>
+                        <th className="text-[#ed003f] text-xs sm:text-sm">Name</th>
+                        <th className="text-[#ed003f] text-xs sm:text-sm">Email</th>
+                        <th className="text-[#ed003f] text-xs sm:text-sm">Role</th>
+                        <th className="text-[#ed003f] text-xs sm:text-sm">Phone</th>
+                        <th className="text-[#ed003f] text-xs sm:text-sm">Attendance</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredUsers.map((user) => (
-                        <tr key={user._id}>
+                        <tr key={user._id} className="hover:bg-[#fff0f4] transition">
                           <td>
                             <div className="flex items-center space-x-3">
                               <div className="avatar">
-                                <div className="mask mask-squircle w-12 h-12">
-                                  <img src={user.avatar} alt={`${user.fname} ${user.lname}`} />
+                                <div className="mask mask-squircle w-10 h-10 sm:w-12 sm:h-12">
+                                  <img src={user.avatar && user.avatar !== "default_avatar.png" ? user.avatar : "/noimage.png"} alt={`${user.fname} ${user.lname}`} />
                                 </div>
                               </div>
                               <div>
-                                <div className="font-bold">{`${user.fname} ${user.middlei ? `${user.middlei}. ` : ''}${user.lname}`}</div>
-                                <div className="text-sm opacity-50">{user.role}</div>
+                                <div className="font-bold text-xs sm:text-base">{`${user.fname} ${user.middlei ? `${user.middlei}. ` : ''}${user.lname}`}</div>
+                                <div className="text-xs text-gray-400">{user.role}</div>
                               </div>
                             </div>
                           </td>
-                          <td>{user.email}</td>
-                          <td>{user.role}</td>
-                          <td>{user.phone || 'N/A'}</td>
+                          <td className="text-xs sm:text-base">{user.email}</td>
+                          <td className="text-xs sm:text-base">{user.role}</td>
+                          <td className="text-xs sm:text-base">{user.phone || 'N/A'}</td>
                           <td>
                             <button
-                              className={`btn btn-sm ${user.isAttended ? 'btn-success' : 'btn-error'}`}
+                              className={`btn btn-xs sm:btn-sm font-bold border-none transition ${
+                                user.isAttended
+                                  ? 'bg-[#ed003f] text-white hover:bg-red-700'
+                                  : 'bg-gray-200 text-[#ed003f] hover:bg-[#fff0f4]'
+                              }`}
                               onClick={() => changeAttendance(user._id, user.isAttended)}
                             >
                               {user.isAttended ? 'Attended' : 'Did Not Attend'}
@@ -139,7 +162,7 @@ const CalendarInterested = () => {
                   </table>
                 </div>
               ) : (
-                <p>No users are interested in this event.</p>
+                <p className="text-center text-gray-500 py-8">No users are interested in this event.</p>
               )}
             </div>
           </TitleCard>

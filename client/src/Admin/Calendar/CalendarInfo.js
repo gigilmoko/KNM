@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from "react-router-dom";
 import axios from 'axios';
 import Header from "../../Layout/Header";
 import LeftSidebar from "../../Layout/LeftSidebar";
@@ -11,7 +10,7 @@ const CalendarInfo = () => {
   const [eventData, setEventData] = useState(null);
   const [user, setUser] = useState(null);
   const [isInterested, setIsInterested] = useState(false);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const currentTheme = localStorage.getItem("theme") || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light");
 
@@ -19,16 +18,11 @@ const CalendarInfo = () => {
     const fetchEvent = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API}/api/calendar/event/${id}`);
-        
-        console.log('Fetched Event Data:', response.data); // Log the event data being fetched
-        
         if (response.data && response.data.success) {
           setEventData(response.data.data);
-        } else {
-          console.error('Event not found or failed to fetch');
         }
       } catch (error) {
-        console.error('Error fetching event:', error);
+        // ignore
       }
     };
 
@@ -38,31 +32,18 @@ const CalendarInfo = () => {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         }
       };
-
       try {
         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-        
-        console.log('Fetched User Profile:', data);
-        
         setUser(data.user);
-      
         const interestResponse = await axios.get(`${process.env.REACT_APP_API}/api/interested/${data.user._id}/${id}`, config);
-        
-        console.log('Fetched Interest Status:', interestResponse.data);
-        
-        // Directly set the interested state based on the fetched interest status
         if (interestResponse.data && interestResponse.data.interest) {
           setIsInterested(interestResponse.data.interest.interested);
-          console.log('User is interested in the event:', interestResponse.data.interest.interested);
-        } else {
-          console.log('Interest data is missing or user not found');
         }
       } catch (error) {
-        console.error('Error fetching profile or interest status:', error);
+        // ignore
       }
     };
-    
-    console.log('Fetching event and profile data...');
+
     fetchEvent();
     getProfile();
   }, [id]);
@@ -72,15 +53,11 @@ const CalendarInfo = () => {
       toast.error('User not found. Please log in to express interest in the event.');
       return;
     }
-
     const notificationData = {
       userId: user._id,
       eventId: id,
       interested: true,
     };
-
-    console.log('Notification Data:', notificationData); // Log notification data before making the request
-
     try {
       const config = {
         headers: {
@@ -88,9 +65,6 @@ const CalendarInfo = () => {
         }
       };
       const response = await axios.post(`${process.env.REACT_APP_API}/api/interested`, notificationData, config);
-
-      console.log('Notification Response:', response.data); // Log the response from the notification request
-
       if (response.data && response.data.success) {
         toast.success('You will be notified about this event!');
         setIsInterested(true);
@@ -98,7 +72,6 @@ const CalendarInfo = () => {
         toast.error('Failed to express interest in the event.');
       }
     } catch (error) {
-      console.error('Error expressing interest:', error); // Log error details
       toast.error('An error occurred while trying to notify you.');
     }
   };
@@ -110,11 +83,11 @@ const CalendarInfo = () => {
   return (
     <div className="drawer lg:drawer-open">
       <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 overflow-y-auto md:pt-4 pt-4 bg-base-200" style={{ height: '100vh' }}>
+        <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200">
           <div
-            className="relative h-1/2"
+            className="relative w-full h-48 sm:h-64 md:h-80 rounded-lg overflow-hidden mb-4"
             style={{
               backgroundImage: eventData ? `url(${eventData.image})` : 'none',
               backgroundSize: 'cover',
@@ -123,20 +96,22 @@ const CalendarInfo = () => {
             }}
           >
             <div className="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-30">
-              <h2 className="text-2xl font-semibold text-white">{eventData ? eventData.title : 'Loading...'}</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white text-center px-2">
+                {eventData ? eventData.title : 'Loading...'}
+              </h2>
             </div>
           </div>
 
-          <div className="h-1/2 p-6">
+          <div className="max-w-2xl w-full mx-auto p-4 sm:p-8">
             {eventData ? (
               <div className={`p-4 rounded shadow-md ${currentTheme === "dark" ? 'bg-[#1D232A] text-white' : 'bg-white text-gray-800'}`}>
-                <p className={`${currentTheme === "dark" ? 'text-white' : 'text-gray-600'}`}>
+                <p className={`${currentTheme === "dark" ? 'text-white' : 'text-gray-600'} text-xs sm:text-sm`}>
                   Date Published: {new Date(eventData.date).toLocaleDateString()}
                 </p>
-                <p className={`${currentTheme === "dark" ? 'text-white' : 'text-gray-700'} mb-7 mt-7`}>
+                <p className={`${currentTheme === "dark" ? 'text-white' : 'text-gray-700'} mb-7 mt-7 text-sm sm:text-base`}>
                   {eventData.description}
                 </p>
-                <p className={`${currentTheme === "dark" ? 'text-white' : 'text-gray-600'} text-right`}>
+                <p className={`${currentTheme === "dark" ? 'text-white' : 'text-gray-600'} text-right text-xs sm:text-sm`}>
                   Event Time: {new Date(eventData.startDate).toLocaleString()} {new Date(eventData.startDate).getTime() !== new Date(eventData.endDate).getTime() ? `- ${new Date(eventData.endDate).toLocaleString()}` : ''}
                 </p>
               </div>
@@ -147,7 +122,7 @@ const CalendarInfo = () => {
             <div className="mt-6 mb-6">
               <button
                 onClick={handleGetNotified}
-                className={`w-full py-2 rounded ${currentTheme === "dark" ? 'bg-white text-black' : 'bg-blue-600 text-white'}`}
+                className={`w-full py-2 rounded text-base font-semibold bg-[#ed003f] text-white border-none hover:bg-red-700 transition`}
                 disabled={isInterested}
               >
                 {isInterested ? "Already Interested" : "Get Notified!"}
@@ -157,13 +132,12 @@ const CalendarInfo = () => {
               <div className="mt-4">
                 <button
                   onClick={handleListInterested}
-                  className={`w-full py-2 rounded ${currentTheme === "dark" ? 'bg-green-600 text-white' : 'bg-green-500 text-white'}`}
+                  className="w-full py-2 rounded text-base font-semibold bg-[#ed003f] text-white border-none hover:bg-red-700 transition"
                 >
                   List of Interested
                 </button>
               </div>
             )}
-          
           </div>
         </main>
       </div>

@@ -11,114 +11,156 @@ import axios from 'axios';
 import { themeChange } from 'theme-change';
 
 function Header() {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const { pageTitle } = useSelector(state => state.header);
-    const [currentTheme, setCurrentTheme] = useState(localStorage.getItem("theme"));
-    const [user, setUser] = useState(null);
-    const [unreadNotifications, setUnreadNotifications] = useState(0); // Unread notifications state
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { pageTitle } = useSelector(state => state.header);
+  const [currentTheme, setCurrentTheme] = useState(localStorage.getItem("theme"));
+  const [user, setUser] = useState(null);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
-    useEffect(() => {
-        themeChange(false);
-        if (currentTheme === null) {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                setCurrentTheme("dark");
-            } else {
-                setCurrentTheme("light");
-            }
-        }
-        getProfile();
-        getUnreadNotifications(); // Fetch unread notifications count on component mount
-    }, [currentTheme]);
+  useEffect(() => {
+    themeChange(false);
+    if (currentTheme === null) {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setCurrentTheme("dark");
+      } else {
+        setCurrentTheme("light");
+      }
+    }
+    getProfile();
+    getUnreadNotifications();
+    // eslint-disable-next-line
+  }, [currentTheme]);
 
-    const getProfile = async () => {
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
-            setUser(data.user);
-        } catch (error) {
-            console.error('Failed to load profile.');
-        }
+  const getProfile = async () => {
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
     };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/me`, config);
+      setUser(data.user);
+    } catch (error) {
+      console.error('Failed to load profile.');
+    }
+  };
 
-    const getUnreadNotifications = async () => {
-        const config = {
-            headers: {
-                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications/unread-count`, config);
-            setUnreadNotifications(data.unreadCount);
-        } catch (error) {
-            console.error('Error fetching unread notifications count', error);
-        }
+  const getUnreadNotifications = async () => {
+    const config = {
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
     };
+    try {
+      const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications/unread-count`, config);
+      setUnreadNotifications(data.unreadCount);
+    } catch (error) {
+      console.error('Error fetching unread notifications count', error);
+    }
+  };
 
-    const openNotification = () => {
-        dispatch(openRightDrawer({ header: "Notifications", bodyType: RIGHT_DRAWER_TYPES.NOTIFICATION }));
-    };
+  const openNotification = () => {
+    dispatch(openRightDrawer({ header: "Notifications", bodyType: RIGHT_DRAWER_TYPES.NOTIFICATION }));
+  };
 
-    const logoutHandler = async () => {
-        try {
-            await axios.get(`${process.env.REACT_APP_API}/api/logout`);
-            sessionStorage.clear();
-            navigate('/login');
-            window.location.reload();
-        } catch (error) {
-            console.error('An error occurred while logging out', error);
-        }
-    };
+  const logoutHandler = async () => {
+    try {
+      await axios.get(`${process.env.REACT_APP_API}/api/logout`);
+      sessionStorage.clear();
+      navigate('/login');
+      window.location.reload();
+    } catch (error) {
+      console.error('An error occurred while logging out', error);
+    }
+  };
 
-    const handleThemeToggle = () => {
-        const newTheme = currentTheme === "dark" ? "light" : "dark";
-        setCurrentTheme(newTheme);
-        localStorage.setItem("theme", newTheme);
-        window.location.reload(); // Reload the page to apply the new theme
-    };
+  const handleThemeToggle = () => {
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    setCurrentTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    window.location.reload();
+  };
 
-    return (
-        <div className="navbar sticky top-0 bg-base-100 z-10 shadow-md">
-            <div className="flex-1 flex items-center">
-                <label htmlFor="left-sidebar-drawer" className="btn btn-primary drawer-button lg:hidden">
-                    <Bars3Icon className="h-5 w-5" />
-                </label>
-                <h1 className="text-2xl font-semibold ml-2">{pageTitle}</h1>
-            </div>
-            <div className="flex-none flex items-center space-x-4 ml-auto">
-                <label className="swap">
-                    <input type="checkbox" onClick={handleThemeToggle} />
-                    <SunIcon data-set-theme="light" className={"fill-current w-6 h-6 " + (currentTheme === "dark" ? "swap-on" : "swap-off")} />
-                    <MoonIcon data-set-theme="dark" className={"fill-current w-6 h-6 " + (currentTheme === "light" ? "swap-on" : "swap-off")} />
-                </label>
-                <button className="btn btn-ghost btn-circle" onClick={() => openNotification()}>
-                    <div className="indicator">
-                        <BellIcon className="h-6 w-6" />
-                        {unreadNotifications > 0 ? <span className="indicator-item badge badge-secondary badge-sm">{unreadNotifications}</span> : null}
-                    </div>
-                </button>
-                <div>
-                    <div className="dropdown dropdown-end">
-                        <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
-                            <div className="w-10 rounded-full mr-2">
-                                <img src={user ? user.avatar : "https://placeimg.com/80/80/people"} alt="profile" />
-                            </div>
-                        </label>
-                        <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
-                            <li><Link to={'/profile'}>Profile</Link></li>
-                            <div className="divider mt-0 mb-0"></div>
-                            <li><a onClick={logoutHandler}>Logout</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <span>{user ? `${user.fname} ` : 'Loading...'}</span>
+  return (
+    <header className="sticky top-0 z-30 bg-white dark:bg-gray-900 shadow-md transition-colors">
+      <nav className="container mx-auto flex items-center justify-between px-2 sm:px-4 py-2">
+        {/* Left: Sidebar & Title */}
+        <div className="flex items-center gap-2">
+          <button
+            className="lg:hidden p-2 rounded-md hover:bg-[#fff0f4] dark:hover:bg-[#2a0d16] transition"
+            aria-label="Open sidebar"
+            onClick={() => document.getElementById('left-sidebar-drawer').click()}
+          >
+            <Bars3Icon className="h-6 w-6 text-[#df1f47]" />
+          </button>
+          <h1 className="text-lg sm:text-2xl font-bold text-[#df1f47] truncate max-w-[160px] sm:max-w-xs">{pageTitle}</h1>
         </div>
-    );
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-1 sm:gap-3">
+          {/* Theme Toggle */}
+          <button
+            className="p-2 rounded-full hover:bg-[#fff0f4] dark:hover:bg-[#2a0d16] transition"
+            aria-label="Toggle theme"
+            onClick={handleThemeToggle}
+          >
+            {currentTheme === "dark" ? (
+              <SunIcon className="w-6 h-6 text-yellow-400" />
+            ) : (
+              <MoonIcon className="w-6 h-6 text-gray-700" />
+            )}
+          </button>
+
+          {/* Notifications */}
+          <button
+            className="relative p-2 rounded-full hover:bg-[#fff0f4] dark:hover:bg-[#2a0d16] transition"
+            aria-label="Notifications"
+            onClick={openNotification}
+          >
+            <BellIcon className="h-6 w-6 text-[#df1f47]" />
+            {unreadNotifications > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#df1f47] text-white text-xs rounded-full px-1.5 py-0.5 animate-pulse">
+                {unreadNotifications}
+              </span>
+            )}
+          </button>
+
+          {/* User Dropdown */}
+          <div className="relative group">
+            <button
+              className="flex items-center gap-2 p-1 rounded-full hover:bg-[#fff0f4] dark:hover:bg-[#2a0d16] transition"
+              aria-label="User menu"
+              tabIndex={0}
+            >
+              <img
+                src={user?.avatar || "https://placeimg.com/80/80/people"}
+                alt="profile"
+                className="w-9 h-9 rounded-full object-cover border-2 border-[#df1f47]"
+              />
+              <span className="hidden md:inline font-medium text-sm">{user ? user.fname : 'Loading...'}</span>
+            </button>
+            {/* Dropdown */}
+            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-lg py-2 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 pointer-events-none group-focus-within:pointer-events-auto group-hover:pointer-events-auto transition-all duration-200 z-20">
+              <Link
+                to="/profile"
+                className="block px-4 py-2 text-sm hover:bg-[#fff0f4] dark:hover:bg-[#2a0d16] transition"
+              >
+                Profile
+              </Link>
+              <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+              <button
+                onClick={logoutHandler}
+                className="w-full text-left px-4 py-2 text-sm text-[#df1f47] hover:bg-[#fff0f4] dark:hover:bg-[#2a0d16] transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+  );
 }
 
 export default Header;

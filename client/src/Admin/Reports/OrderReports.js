@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
+
 import Header from '../../Layout/Header';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
@@ -13,6 +14,7 @@ const OrderReports = () => {
   const [preparingOrders, setPreparingOrders] = useState([]);
   const [shippingOrders, setShippingOrders] = useState([]);
   const [deliveredOrders, setDeliveredOrders] = useState([]);
+  const [sortAsc, setSortAsc] = useState(true);
 
   useEffect(() => {
     const fetchOrderReports = async () => {
@@ -34,79 +36,129 @@ const OrderReports = () => {
     fetchOrderReports();
   }, []);
 
+  // Sorting function for orders by date
+  const sortOrders = (orders) => {
+    return [...orders].sort((a, b) => {
+      const dateA = new Date(a.createdAt);
+      const dateB = new Date(b.createdAt);
+      return sortAsc ? dateA - dateB : dateB - dateA;
+    });
+  };
+
   const renderOrdersTable = (orders) => (
-    <table className="table w-full mt-6">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Customer</th>
-          {activeTab === 'Preparing' && <th>Products Ordered</th>}
-          {activeTab === 'Shipped' && (
-            <>
-              <th>Address</th>
-              <th>Products Ordered</th>
-            </>
-          )}
-          {activeTab === 'Delivered' && <th>Products Ordered</th>}
-        </tr>
-      </thead>
-      <tbody>
-        {orders.map(order => (
-          <tr key={order._id}>
-            <td>{order._id}</td>
-            <td>{order.user ? `${order.user.fname} ${order.user.lname}` : 'Unknown User'}</td>
-            {activeTab === 'Preparing' && (
-              <td>
-                {order.orderProducts.map(product => (
-                  <div key={product.product?._id}>{product.product?.name || 'Unknown Product'}</div>
-                ))}
-              </td>
-            )}
-            {activeTab === 'Shipped' && (
-              <>
-                <td>{order.deliveryAddress}</td>
-                <td>
-                  {order.orderProducts.map(product => (
-                    <div key={product.product?._id}>{product.product?.name || 'Unknown Product'}</div>
-                  ))}
-                </td>
-              </>
-            )}
-            {activeTab === 'Delivered' && (
-              <td>
-                {order.orderProducts.map(product => (
-                  <div key={product.product?._id}>{product.product?.name || 'Unknown Product'}</div>
-                ))}
-              </td>
-            )}
+    <div className="overflow-x-auto">
+      <table className="table w-full mt-6 text-xs sm:text-sm">
+        <thead>
+          <tr>
+            <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>
+              <div className="flex items-center justify-center gap-1">
+                Date & Time
+                <button
+                  className="ml-1 text-[#ed003f] border border-[#ed003f] rounded px-1 py-0.5 text-xs"
+                  onClick={() => setSortAsc((prev) => !prev)}
+                  title="Sort"
+                  type="button"
+                >
+                  {sortAsc ? '▲' : '▼'}
+                </button>
+              </div>
+            </th>
+            <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>Order ID</th>
+            <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>Customer</th>
+            <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>Products Ordered</th>
+            <th style={{ color: '#ed003f', fontSize: '0.9rem', textAlign: 'center' }}>Total Price</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {sortOrders(orders).map(order => (
+            <tr key={order._id}>
+              <td className="text-center">
+                {order.createdAt
+                  ? new Date(order.createdAt).toLocaleString()
+                  : 'N/A'}
+              </td>
+              <td className="text-center">{order._id}</td>
+              <td className="text-center">{order.user ? `${order.user.fname} ${order.user.lname}` : 'Unknown User'}</td>
+              <td className="text-center">
+                {order.orderProducts.map(product => (
+                  <div key={product.product?._id}>{product.product?.name || 'Unknown Product'}</div>
+                ))}
+              </td>
+              <td className="text-center">{order.totalPrice ? `₱${Number(order.totalPrice).toFixed(2)}` : 'N/A'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 
-  const generatePDF = async () => {
-    const doc = new jsPDF();
+  const generatePDF = () => {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Title
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(18);
-    doc.text('Order Reports', 14, 20);
-  
-    const tableColumn = ['Order ID', 'Customer', 'Products Ordered'];
-    const tableRows = [];
-  
-    const orders = activeTab === 'Preparing' ? preparingOrders : activeTab === 'Shipped' ? shippingOrders : deliveredOrders;
-  
-    orders.forEach(order => {
-      const products = order.orderProducts.map(product => product.product?.name || 'Unknown Product').join(', ');
+    doc.setTextColor('#ed003f');
+    const titleText = 'Kababaihan ng Maynila';
+    const titleWidth = doc.getTextWidth(titleText);
+    const titleX = (pageWidth - titleWidth) / 2;
+    doc.text(titleText, titleX, 20);
+
+    // Subtitle
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(15);
+    doc.setTextColor('#000000');
+    const subText = 'Order Report';
+    const subWidth = doc.getTextWidth(subText);
+    const subX = (pageWidth - subWidth) / 2;
+    doc.text(subText, subX, 35);
+
+    // Prepare table data
+    let tableColumn = ['Date & Time', 'Order ID', 'Customer', 'Products Ordered', 'Total Price'];
+    let tableRows = [];
+
+    const orders = activeTab === 'Preparing' ? preparingOrders :
+                   activeTab === 'Shipped' ? shippingOrders :
+                   deliveredOrders;
+
+    sortOrders(orders).forEach(order => {
+      const products = order.orderProducts
+        .map(product => product.product?.name || 'Unknown Product')
+        .join(', ');
       const customerName = order.user ? `${order.user.fname} ${order.user.lname}` : 'Unknown User';
-      tableRows.push([order._id, customerName, products]);
+      const totalPrice = order.totalPrice ? `₱${Number(order.totalPrice).toFixed(2)}` : 'N/A';
+      const dateTime = order.createdAt
+        ? new Date(order.createdAt).toLocaleString()
+        : 'N/A';
+      tableRows.push([dateTime, order._id, customerName, products, totalPrice]);
     });
-  
-    doc.autoTable({
+
+    autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
-      startY: 40
+      startY: 45,
+      headStyles: {
+        fillColor: [237, 0, 63],
+        textColor: 255,
+        halign: 'center'
+      },
+      styles: {
+        textColor: '#000000',
+        cellPadding: 3,
+        fontSize: 10,
+        halign: 'center',
+        valign: 'middle'
+      },
+      columnStyles: {
+        0: { cellWidth: 50 }, // Date & Time
+        1: { cellWidth: 60 }, // Order ID
+        2: { cellWidth: 50 }, // Customer
+        3: { cellWidth: 90 }, // Products Ordered
+        4: { cellWidth: 40 }, // Total Price
+      }
     });
-  
+
     doc.save('Order_Reports.pdf');
   };
 
@@ -114,20 +166,56 @@ const OrderReports = () => {
     <>
       <div className="drawer lg:drawer-open">
         <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
-        <div className="drawer-content flex flex-col">
+        <div className="drawer-content flex flex-col min-h-screen">
           <Header />
-          <main className="flex-1 p-6 bg-base-200">
-            <TitleCard title="Order Reports" TopSideButtons={
-              <button className="btn btn-primary" onClick={generatePDF}>
-                Download PDF
-              </button>
-            }>
-              <div className="tabs">
-                <button className={`tab ${activeTab === 'Preparing' ? 'tab-active' : ''}`} onClick={() => setActiveTab('Preparing')}>Preparing</button>
-                <button className={`tab ${activeTab === 'Shipped' ? 'tab-active' : ''}`} onClick={() => setActiveTab('Shipped')}>Shipping</button>
-                <button className={`tab ${activeTab === 'Delivered' ? 'tab-active' : ''}`} onClick={() => setActiveTab('Delivered')}>Delivered</button>
+          <main className="flex-1 p-2 sm:p-6 bg-base-200">
+            <TitleCard
+              title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Revenue Report</span>}
+              TopSideButtons={
+                <button
+                  className="btn"
+                  style={{ backgroundColor: '#ed003f', borderColor: '#ed003f', color: '#ffffff' }}
+                  onClick={generatePDF}
+                >
+                  Download PDF
+                </button>
+              }
+            >
+              <div className="w-full flex justify-center mb-4">
+                <div className="flex w-full">
+                  <button
+                    className={`flex-1 tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border transition-colors duration-200 ${
+                      activeTab === 'Preparing'
+                        ? 'bg-[#ed003f] text-white border-[#ed003f]'
+                        : 'border-[#ed003f] text-[#ed003f] bg-white'
+                    }`}
+                    onClick={() => setActiveTab('Preparing')}
+                  >
+                    Preparing
+                  </button>
+                  <button
+                    className={`flex-1 tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border-t border-b border-l transition-colors duration-200 ${
+                      activeTab === 'Shipped'
+                        ? 'bg-[#ed003f] text-white border-[#ed003f]'
+                        : 'border-[#ed003f] text-[#ed003f] bg-white'
+                    }`}
+                    onClick={() => setActiveTab('Shipped')}
+                  >
+                    Shipping
+                  </button>
+                  <button
+                    className={`flex-1 tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border transition-colors duration-200 ${
+                      activeTab === 'Delivered'
+                        ? 'bg-[#ed003f] text-white border-[#ed003f]'
+                        : 'border-[#ed003f] text-[#ed003f] bg-white'
+                    }`}
+                    onClick={() => setActiveTab('Delivered')}
+                  >
+                    Delivered
+                  </button>
+                </div>
               </div>
-              <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+              <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 250px)' }}>
                 {activeTab === 'Preparing' && renderOrdersTable(preparingOrders)}
                 {activeTab === 'Shipped' && renderOrdersTable(shippingOrders)}
                 {activeTab === 'Delivered' && renderOrdersTable(deliveredOrders)}
