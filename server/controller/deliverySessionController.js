@@ -3,6 +3,7 @@ const Rider = require('../models/rider');
 const Truck = require('../models/truck');
 const Order = require('../models/order');
 const schedule = require('node-schedule');
+const User = require('../models/user');
 
 const markPendingOrdersAsDelivered = async () => {
   try {

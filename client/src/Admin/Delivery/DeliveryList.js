@@ -59,6 +59,7 @@ function DeliveryList() {
       });
       setDeliveries(response.data.groupedSessions || []);
       setFilteredDeliveries(response.data.groupedSessions || []);
+      console.log("Fetched deliveries:", response.data.groupedSessions);
     } catch (error) {
       console.error('Error fetching deliveries:', error);
     }
@@ -218,19 +219,26 @@ function DeliveryList() {
                                 </td>
                                 <td>{session.riderDetails[0]?.fname} {session.riderDetails[0]?.middlei} {session.riderDetails[0]?.lname}</td>
                                 <td>{session.truckDetails[0]?.model} ({session.truckDetails[0]?.plateNo})</td>
-                                <td>
-                                  {session.orders && session.orders.length > 0 ? (
-                                    <ul className="list-disc ml-4">
-                                      {session.orders.map(order =>
-                                        <li key={order._id}>
-                                          {order.KNMOrderId || order._id}
-                                        </li>
-                                      )}
-                                    </ul>
-                                  ) : (
-                                    "No orders"
-                                  )}
-                                </td>
+                               <td>
+  {session.orders && session.orders.length > 0 ? (
+    <ul className="list-disc ml-4">
+      {session.orders.map(orderId => {
+        // Generate KNMOrderId from the orderId
+        // Take the last 5 characters of the MongoDB ObjectId and make them uppercase
+        const idPortion = orderId.toString().substr(-5).toUpperCase();
+        const KNMOrderId = `KNM-${idPortion}`;
+        
+        return (
+          <li key={orderId}>
+            {KNMOrderId}
+          </li>
+        );
+      })}
+    </ul>
+  ) : (
+    "No orders"
+  )}
+</td>
                                 {selectedStatus === 'Ongoing' && (
                                   <td>
                                     <button

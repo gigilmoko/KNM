@@ -210,7 +210,7 @@ function NewDelivery() {
                                                             Order ID {sortBy === '_id' && (sortOrder === 'asc' ? '↑' : '↓')}
                                                         </button>
                                                     </th>
-                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Status</th>
+                                                    {/* <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Status</th> */}
                                                     <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Actions</th>
                                                 </tr>
                                             </thead>
@@ -218,8 +218,8 @@ function NewDelivery() {
                                                 {sortedOrders.length > 0 ? sortedOrders.map((order) => (
                                                     <tr key={order._id}>
                                                         <td>{order.totalPrice}</td>
-                                                        <td className="break-all">{order._id}</td>
-                                                        <td>{order.status}</td>
+                                                        <td className="break-all">{order.KNMOrderId}</td>
+                                                        {/* <td>{order.status}</td> */}
                                                         <td>
                                                             <button
                                                                 className="btn btn-xs sm:btn-sm"
@@ -251,16 +251,16 @@ function NewDelivery() {
                                                 <tr>
                                                     <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Order ID</th>
                                                     <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Total Price</th>
-                                                    <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Status</th>
+                                                    {/* <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Status</th> */}
                                                     <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 {addedOrders.length > 0 ? addedOrders.map((order) => (
                                                     <tr key={order._id}>
-                                                        <td className="break-all">{order._id}</td>
+                                                        <td className="break-all">{order.KNMOrderId}</td>
                                                         <td>{order.totalPrice}</td>
-                                                        <td>{order.status}</td>
+                                                        {/* <td>{order.status}</td> */}
                                                         <td>
                                                             <button
                                                                 className="btn btn-xs sm:btn-sm"
