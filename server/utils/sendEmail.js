@@ -1,23 +1,30 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
+const mailConfig = require("../config/mail");
 
-const sendEmail = async options => {
+const sendEmail = async (options) => {
+  try {
+    // Create a transporter using environment variables directly
     const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        auth: {
-            user: process.env.SMTP_EMAIL,
-            pass: process.env.SMTP_PASSWORD
-        }
+      service: "gmail", // or whatever service you're using
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
     });
 
-    const message = {
-        from: `${process.env.SMTP_FROM_NAME} <${process.env.SMTP_FROM_EMAIL}>`,
-        to: options.email,
-        subject: options.subject,
-        html: `<p>${options.message}</p>`
-    }
+    const mailOptions = {
+      from: `"KNM" <${process.env.GMAIL_USER}>`, // Use environment variable directly
+      to: options.email,
+      subject: options.subject,
+      html: options.message,
+    };
 
-    await transporter.sendMail(message)
-}
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent to: ${options.email}`);
+  } catch (error) {
+    console.log(`Error sending email: ${error}`);
+    // Don't throw an error, just log it to prevent breaking the flow
+  }
+};
 
 module.exports = sendEmail;

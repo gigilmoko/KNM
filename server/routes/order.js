@@ -29,10 +29,15 @@ const {
     getPendingDeliveries, 
     getMyOrdersMobile,
     getLatestOrders,
-    getAdminOrdersMobile
+    getAdminOrdersMobile,
+    updateMissingOrderIds,
+    updateOrderAddresses
 
 } = require("../controller/orderController");
 const { get } = require('mongoose');
+
+// Add this route to your order routes
+router.post('/update-order-addresses', isAuthenticatedUser,updateOrderAddresses);
 
 router.post('/neworder', isAuthenticatedUser, createOrder);
 router.post('/gcash-payment/:token/:id', isAuthenticatedUser, gcashPayment);
@@ -64,6 +69,9 @@ router.get('/truck/orders/preparing',   getPreparingAndCancelledOrders)
 router.get('/orders/delivery-pending',   getPendingDeliveries)
 router.put('/order/proof/:orderId/confirmed',proofOfDeliveryConfirmed)
 router.put('/order/proof/:orderId/notconfirmed',proofOfDeliveryNotConfirmed)
+
+router.post('/order/updateids', updateMissingOrderIds);
+
 
 
 module.exports = router;

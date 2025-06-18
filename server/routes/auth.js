@@ -11,12 +11,14 @@ const { registerUser, loginUser, logout, forgotPassword,
         approveApplyMember, denyApplyMember, avatarUpdate,
         updatePasswordMobile, updateProfileMobile, getUserProfileById,
         getUsersByMonth, getUsersByCurrentMonth, getAllUsersCount, getUsersCountForToday, 
-        getUsersCountForPast7Days, getTotalMembers, countUsersApply, updateAddressAndDetails } = require('../controller/authController');
+        getUsersCountForPast7Days, getTotalMembers, countUsersApply, updateAddressAndDetails, 
+        verifyAdminCode, createAddress} = require('../controller/authController');
 
 router.get('/fetchusermember', isAuthenticatedUser, fetchUserMemberMatch);
 router.post('/register', registerUser);
 router.post('/register-member', registerUserMember);
 router.post('/login', loginUser);
+router.post('/verify-admin', verifyAdminCode);
 router.post('/google-login', googleLogin);
 router.get('/logout', logout);
 router.post('/password/forgot', forgotPassword);
@@ -45,5 +47,11 @@ router.get('/analytics/users/weekly', getUsersCountForPast7Days);
 router.get('/analytics/users/totalmembers', isAuthenticatedUser, isAdmin, getTotalMembers);
 router.get('/analytics/users/countapplying', isAuthenticatedUser, isAdmin, countUsersApply);
 router.put('/me/update/address', updateAddressAndDetails);
+
+//create address
+router.post('/me/create-address',  createAddress);
+//create address 
+
+
 
 module.exports = router;

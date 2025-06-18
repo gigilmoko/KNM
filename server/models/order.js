@@ -42,6 +42,32 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: 10,
     },
+    address: {
+        houseNo: {
+            type: String,
+            default: "none",
+        },
+        streetName: {
+            type: String,
+            default: "none",
+        },
+        barangay: {
+            type: String,
+            default: "none",
+        },
+        city: {
+            type: String,
+            default: "none",
+        },
+        latitude: {
+            type: Number,
+            default: 0,
+        },
+        longitude: {
+            type: Number,
+            default: 0,
+        },
+    },
     status: {
         type: String,
         enum: ["Preparing", "Shipped", "Delivered", "Delivered Pending", "Cancelled"],

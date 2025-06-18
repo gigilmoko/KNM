@@ -1037,10 +1037,11 @@ exports.getTotalMembers = async (req, res) => {
 
 exports.updateAddressAndDetails = async (req, res, next) => {
   try {
-    console.log('Update Address route hit');
+    console.log('Update Address and Details route hit');
     console.log('Request Body:', req.body);
 
-    const { userId, deliveryAddress } = req.body;
+    // Extract userId and addressData from request
+    const { userId, addressData, addressIndex } = req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -1049,71 +1050,180 @@ exports.updateAddressAndDetails = async (req, res, next) => {
       });
     }
 
-    if (!deliveryAddress || !Array.isArray(deliveryAddress) || deliveryAddress.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Delivery address is required and must be an array',
-      });
-    }
-
-    const newAddress = deliveryAddress[0];
-
-    if (
-      !newAddress.houseNo || newAddress.houseNo === 'N/A' ||
-      !newAddress.streetName || newAddress.streetName === 'N/A' ||
-      !newAddress.barangay || newAddress.barangay === 'N/A' ||
-      !newAddress.city || newAddress.city === 'N/A'
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: 'All address fields must be valid and cannot be placeholders',
-      });
-    }
-
-    const updateData = {
-      $set: {
-        deliveryAddress: [newAddress],
-      },
-    };
-
-    console.log('Update Data:', updateData);
-
-    const originalUser = await User.findById(userId);
-    const existingAddresses = originalUser.address || [];
-
-    console.log('Original Address:', existingAddresses);
-
-    const isAddressDuplicate = existingAddresses.length > 0 && existingAddresses.some(
-      (addr) =>
-        addr.houseNo === newAddress.houseNo &&
-        addr.streetName === newAddress.streetName &&
-        addr.barangay === newAddress.barangay &&
-        addr.city === newAddress.city &&
-        addr.latitude === newAddress.latitude &&
-        addr.longitude === newAddress.longitude
-    );
-
-    if (isAddressDuplicate) {
-      console.log('No actual change in address data, skipping update.');
-      return res.status(200).json({
-        success: true,
-        user: originalUser,
-      });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updatedUser) {
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User Not Found or Not Updated',
+        message: 'User not found',
       });
     }
 
-    console.log('Address successfully updated');
+    // Initialize deliveryAddress array if it doesn't exist
+    if (!user.deliveryAddress) {
+      user.deliveryAddress = [];
+    }
+
+    // Handle address update if addressData is provided
+    if (addressData) {
+      // Validate that we have all required address fields
+      if (!addressData.houseNo || !addressData.streetName || !addressData.barangay || !addressData.city) {
+        return res.status(400).json({
+          success: false,
+          message: 'All address fields are required',
+        });
+      }
+
+      // Create the address object with all required fields
+      const updatedAddress = {
+        houseNo: addressData.houseNo,
+        streetName: addressData.streetName,
+        barangay: addressData.barangay,
+        city: addressData.city,
+        latitude: addressData.latitude || 0,
+        longitude: addressData.longitude || 0,
+      };
+
+      // Check if we're updating an existing address or adding a new one
+      if (addressIndex !== undefined && addressIndex >= 0 && addressIndex < user.deliveryAddress.length) {
+        // Update existing address at the specified index
+        user.deliveryAddress[addressIndex] = updatedAddress;
+        console.log(`Updated address at index ${addressIndex}`);
+      } else {
+        // Add as a new address if no index is specified or index is invalid
+        user.deliveryAddress.push(updatedAddress);
+        console.log('Added new address');
+      }
+    }
+
+    // Update other user details if provided
+    if (req.body.fname) user.fname = req.body.fname;
+    if (req.body.lname) user.lname = req.body.lname;
+    if (req.body.email) user.email = req.body.email;
+    if (req.body.contactNo) user.contactNo = req.body.contactNo;
+
+    // Save the updated user
+    const updatedUser = await user.save();
+
+    console.log('User details updated successfully');
+    res.status(200).json({
+      success: true,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error occurred:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// Add this function to create a new address
+exports.createAddress = async (req, res, next) => {
+  try {
+    console.log('Create Address route hit');
+    console.log('Request Body:', req.body);
+
+    const { userId, address } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
+    if (!address || !address.houseNo || !address.streetName || !address.barangay || !address.city) {
+      return res.status(400).json({
+        success: false,
+        message: 'All address fields are required',
+      });
+    }
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Create new address object with all required fields
+    const newAddress = {
+      houseNo: address.houseNo,
+      streetName: address.streetName,
+      barangay: address.barangay,
+      city: address.city,
+      latitude: address.latitude || 0,
+      longitude: address.longitude || 0,
+    };
+
+    // Add the new address to the user's deliveryAddress array
+    // Initialize the array if it doesn't exist
+    if (!user.deliveryAddress) {
+      user.deliveryAddress = [];
+    }
+    
+    user.deliveryAddress.push(newAddress);
+    
+    // Save the updated user
+    const updatedUser = await user.save();
+
+    console.log('Address successfully created');
+    res.status(201).json({
+      success: true,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error('Error occurred:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// Add this function to delete an address
+exports.deleteAddress = async (req, res, next) => {
+  try {
+    console.log('Delete Address route hit');
+    
+    const { userId, addressIndex } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
+    if (addressIndex === undefined || addressIndex < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid address index is required',
+      });
+    }
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    // Check if the address at the specified index exists
+    if (!user.deliveryAddress || !user.deliveryAddress[addressIndex]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Address not found at the specified index',
+      });
+    }
+
+    // Remove the address at the specified index
+    user.deliveryAddress.splice(addressIndex, 1);
+    
+    // Save the updated user
+    const updatedUser = await user.save();
+
+    console.log('Address successfully deleted');
     res.status(200).json({
       success: true,
       user: updatedUser,
