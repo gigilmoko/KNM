@@ -22,6 +22,7 @@ const markPendingOrdersAsDelivered = async () => {
 
 schedule.scheduleJob('0 0 * * *', markPendingOrdersAsDelivered);
 
+// Function to create a new delivery session
 exports.createDeliverySession = async (req, res) => {
   try {
     const { riderId, truckId, orderIds } = req.body;
@@ -182,6 +183,8 @@ exports.createDeliverySession = async (req, res) => {
     res.status(500).json({ message: 'Error creating delivery session', error: error.message });
   }
 };
+
+
 // old assigning delivery session to a rider and truck
 // exports.createDeliverySession = async (req, res) => {
 //   try {
