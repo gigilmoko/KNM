@@ -38,7 +38,7 @@ exports.createDeliverySession = async (req, res) => {
     const orders = await Order.find({
       _id: { $in: orderIds },
       status: { $in: ['Preparing', 'Cancelled'] }
-    });
+    }).populate('user', 'fname lname email deviceToken');
 
     if (orders.length !== orderIds.length) {
       return res.status(400).json({ message: 'One or more orders are not in Preparing or Cancelled status' });
@@ -62,11 +62,172 @@ exports.createDeliverySession = async (req, res) => {
 
     await newSession.save();
 
-    res.status(201).json({ message: 'Delivery session created successfully', session: newSession });
+    // Fetch admin users for notifications
+    const admins = await User.find({ 
+      role: 'admin', 
+      deviceToken: { $exists: true, $ne: null } 
+    });
+
+    // Send OneSignal notification to the assigned rider
+    if (rider.deviceToken) {
+      const orderNumbers = orders.map(order => order.KNMOrderId || order._id).join(', ');
+      
+      const riderNotification = {
+        app_id: process.env.ONESIGNAL_APP_ID,
+        include_player_ids: [rider.deviceToken],
+        headings: { en: "New Delivery Assignment" },
+        contents: { 
+          en: `You have been assigned a new delivery with ${orders.length} order(s): ${orderNumbers}` 
+        },
+        data: { 
+          sessionId: newSession._id.toString(),
+          type: 'new_delivery_assignment',
+          orders: orderIds
+        }
+      };
+
+      try {
+        const axios = require('axios');
+        const riderResponse = await axios.post('https://onesignal.com/api/v1/notifications', riderNotification, {
+          headers: {
+            'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log(`Delivery assignment notification sent to rider ${rider.fname} ${rider.lname}:`, riderResponse.data);
+      } catch (notifError) {
+        console.error(`Error sending notification to rider:`, notifError.response?.data || notifError.message);
+        // Continue execution even if notification fails
+      }
+    }
+
+    // Send OneSignal notification to admins
+    if (admins.length > 0) {
+      const adminPlayerIds = admins.map(admin => admin.deviceToken).filter(Boolean);
+      
+      if (adminPlayerIds.length > 0) {
+        const adminNotification = {
+          app_id: process.env.ONESIGNAL_APP_ID,
+          include_player_ids: adminPlayerIds,
+          headings: { en: "New Delivery Session Created" },
+          contents: { 
+            en: `A new delivery session has been created for ${rider.fname} ${rider.lname} with ${truck.model} (${truck.plateNo}) for ${orders.length} orders.` 
+          },
+          data: { 
+            sessionId: newSession._id.toString(),
+            type: 'admin_delivery_created' 
+          }
+        };
+        
+        try {
+          const axios = require('axios');
+          const adminResponse = await axios.post('https://onesignal.com/api/v1/notifications', adminNotification, {
+            headers: {
+              'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          console.log(`Delivery creation notification sent to ${adminPlayerIds.length} admins:`, adminResponse.data);
+        } catch (notifError) {
+          console.error(`Error sending notification to admins:`, notifError.response?.data || notifError.message);
+          // Continue execution even if notification fails
+        }
+      }
+    }
+
+    // Notify customers that their orders are shipped
+    for (const order of orders) {
+      if (order.user && order.user.deviceToken) {
+        const customerNotification = {
+          app_id: process.env.ONESIGNAL_APP_ID,
+          include_player_ids: [order.user.deviceToken],
+          headings: { en: "Order Shipped" },
+          contents: { 
+            en: `Your order ${order.KNMOrderId || order._id} has been shipped and is on its way.` 
+          },
+          data: { 
+            orderId: order._id.toString(),
+            status: 'Shipped',
+            type: 'order_status_update'
+          }
+        };
+        
+        try {
+          const axios = require('axios');
+          await axios.post('https://onesignal.com/api/v1/notifications', customerNotification, {
+            headers: {
+              'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          console.log(`Order shipped notification sent to customer for order ${order._id}`);
+        } catch (notifError) {
+          console.error(`Error sending notification to customer for order ${order._id}:`, notifError.response?.data || notifError.message);
+          // Continue execution even if notification fails
+        }
+      }
+    }
+
+    res.status(201).json({ 
+      message: 'Delivery session created successfully', 
+      session: newSession,
+      notificationsSent: {
+        rider: !!rider.deviceToken,
+        admins: admins.length,
+        customers: orders.filter(o => o.user && o.user.deviceToken).length
+      }
+    });
   } catch (error) {
+    console.error('Error creating delivery session:', error);
     res.status(500).json({ message: 'Error creating delivery session', error: error.message });
   }
 };
+// old assigning delivery session to a rider and truck
+// exports.createDeliverySession = async (req, res) => {
+//   try {
+//     const { riderId, truckId, orderIds } = req.body;
+
+//     // Check if the rider and truck are available (not in use)
+//     const rider = await Rider.findById(riderId);
+//     const truck = await Truck.findById(truckId);
+
+//     if (!rider || !truck) {
+//       return res.status(404).json({ message: 'Rider or Truck not found' });
+//     }
+
+//     // Ensure all orders have status 'Preparing' or 'Cancelled'
+//     const orders = await Order.find({
+//       _id: { $in: orderIds },
+//       status: { $in: ['Preparing', 'Cancelled'] }
+//     });
+
+//     if (orders.length !== orderIds.length) {
+//       return res.status(400).json({ message: 'One or more orders are not in Preparing or Cancelled status' });
+//     }
+
+//     // Update order status to 'Shipped'
+//     await Order.updateMany(
+//       { _id: { $in: orderIds } },
+//       { $set: { status: 'Shipped', assignedAlready: true } }
+//     );
+
+//     // Create the delivery session
+//     const newSession = new DeliverySession({
+//       rider: riderId,
+//       truck: truckId,
+//       orders: orderIds,
+//       status: 'Ongoing',
+//       startTime: null,
+//       endTime: null,
+//     });
+
+//     await newSession.save();
+
+//     res.status(201).json({ message: 'Delivery session created successfully', session: newSession });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error creating delivery session', error: error.message });
+//   }
+// };
 
 exports.getSessions = async (req, res) => {
     try {
@@ -174,7 +335,6 @@ exports.completeDeliverySession = async (req, res) => {
     res.status(500).json({ message: 'Error completing delivery session', error: error.message });
   }
 };
-
 
 exports.startDeliverySession = async (req, res) => {
   try {
@@ -364,25 +524,65 @@ exports.getOngoingSessionsByRider = async (req, res) => {
         populate: [
           {
             path: 'orderProducts.product',
-            select: 'name description price',
+            select: 'name description price images',
           },
           {
             path: 'user',
-            select: 'fname lname email phone deliveryAddress',
+            select: 'fname lname email phone contactNo deliveryAddress',
           },
         ],
-        select: 'KNMOrderId', // Include KNMOrderId in the populated orders
+        // Include more order fields including shipping charges and total price
+        select: 'KNMOrderId orderProducts address itemsPrice shippingCharges totalPrice paymentInfo status createdAt UpdatedAt',
       });
+
+    // Format the response data for better client consumption
+    const formattedSessions = ongoingSessions.map(session => {
+      return {
+        _id: session._id,
+        startTime: session.startTime,
+        status: session.status,
+        rider: session.rider,
+        truck: session.truck,
+        orders: session.orders.map(order => ({
+          _id: order._id,
+          KNMOrderId: order.KNMOrderId,
+          customer: {
+            name: `${order.user.fname} ${order.user.lname}`,
+            email: order.user.email,
+            phone: order.user.contactNo || order.user.phone,
+          },
+          address: order.address,
+          products: order.orderProducts.map(item => ({
+            _id: item.product._id,
+            name: item.product.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.product.images && item.product.images.length > 0 ? item.product.images[0].url : null,
+          })),
+          payment: {
+            method: order.paymentInfo,
+            itemsPrice: order.itemsPrice,
+            shippingCharges: order.shippingCharges,
+            totalAmount: order.totalPrice,
+          },
+          status: order.status,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+        })),
+      };
+    });
 
     res.status(200).json({
       success: true,
-      ongoingSessions,
+      ongoingSessions: formattedSessions,
+      count: formattedSessions.length,
     });
   } catch (error) {
     console.error('Error fetching rider sessions:', error);
     res.status(500).json({
       success: false,
       message: 'Internal Server Error',
+      error: error.message,
     });
   }
 };
@@ -391,28 +591,97 @@ exports.getSessionsByRiderId = async (req, res, next) => {
   try {
     const { riderId } = req.params;
 
-    // Fetch all delivery sessions linked to the riderId
-    const sessions = await DeliverySession.find({ rider: riderId })
-      .populate('rider', 'name') // Populate rider details if needed
-      .populate('truck', 'plateNo') // Populate truck details if needed
-      .populate('orders'); // Populate orders if needed
+    // Fetch all delivery sessions linked to the riderId with focus on completed sessions
+    const sessions = await DeliverySession.find({ 
+      rider: riderId,
+      status: { $in: ['Completed'] } // Focus on completed sessions
+    })
+      .populate('rider', 'fname lname email phone') // Get rider details
+      .populate('truck', 'model plateNo') // Get truck details
+      .populate({
+        path: 'orders',
+        populate: [
+          {
+            path: 'orderProducts.product',
+            select: 'name description price images' // Include product images
+          },
+          {
+            path: 'user',
+            select: 'fname lname email phone contactNo deliveryAddress'
+          }
+        ],
+        // Include comprehensive order information
+        select: 'KNMOrderId orderProducts address itemsPrice shippingCharges totalPrice paymentInfo status createdAt updatedAt deliveredAt proofOfDelivery'
+      });
 
     if (!sessions || sessions.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No delivery sessions found for this rider',
+        message: 'No completed delivery sessions found for this rider',
       });
     }
 
+    // Format the response data for better client consumption
+    const formattedSessions = sessions.map(session => ({
+      _id: session._id,
+      startTime: session.startTime,
+      endTime: session.endTime,
+      status: session.status,
+      createdAt: session.createdAt,
+      rider: {
+        _id: session.rider._id,
+        name: `${session.rider.fname} ${session.rider.lname}`,
+        email: session.rider.email,
+        phone: session.rider.phone
+      },
+      truck: {
+        _id: session.truck._id,
+        model: session.truck.model,
+        plateNo: session.truck.plateNo
+      },
+      orders: session.orders.map(order => ({
+        _id: order._id,
+        KNMOrderId: order.KNMOrderId,
+        customer: {
+          name: order.user ? `${order.user.fname} ${order.user.lname}` : 'N/A',
+          email: order.user ? order.user.email : 'N/A',
+          phone: order.user ? (order.user.contactNo || order.user.phone) : 'N/A'
+        },
+        address: order.address,
+        products: order.orderProducts.map(item => ({
+          _id: item.product ? item.product._id : '',
+          name: item.product ? item.product.name : 'Product Unavailable',
+          price: item.price,
+          quantity: item.quantity,
+          image: item.product && item.product.images && item.product.images.length > 0 
+                 ? item.product.images[0].url 
+                 : null
+        })),
+        payment: {
+          method: order.paymentInfo,
+          itemsPrice: order.itemsPrice,
+          shippingCharges: order.shippingCharges,
+          totalAmount: order.totalPrice
+        },
+        status: order.status,
+        createdAt: order.createdAt,
+        deliveredAt: order.deliveredAt,
+        updatedAt: order.updatedAt,
+        proofOfDelivery: order.proofOfDelivery || null
+      }))
+    }));
+
     res.status(200).json({
       success: true,
-      sessions,
+      sessionsCount: formattedSessions.length,
+      sessions: formattedSessions
     });
   } catch (error) {
-    console.error("Error fetching delivery sessions:", error);
+    console.error("Error fetching delivery sessions history:", error);
     res.status(500).json({
       success: false,
       message: "Internal Server Error",
+      error: error.message
     });
   }
 };
