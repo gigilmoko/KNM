@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
 
+
 const FooterPublic = () => {
   return (
     <footer className="w-full bg-[#df1f47] text-white pt-12 pb-6">
@@ -16,10 +17,10 @@ const FooterPublic = () => {
         <div>
           <h3 className="text-xl font-bold mb-3">Quick Links</h3>
           <ul className="text-sm space-y-2">
-            <li><a href="#" className="hover:underline hover:text-gray-200 transition">About Us</a></li>
-            <li><a href="#" className="hover:underline hover:text-gray-200 transition">Our Story</a></li>
-            <li><a href="#" className="hover:underline hover:text-gray-200 transition">Products</a></li>
-            <li><a href="#" className="hover:underline hover:text-gray-200 transition">Contact Us</a></li>
+            <li><a href="/" className="hover:underline hover:text-gray-200 transition">About Us</a></li>
+            <li><a href="/blog" className="hover:underline hover:text-gray-200 transition">Our Story</a></li>
+            <li><a href="/products" className="hover:underline hover:text-gray-200 transition">Products</a></li>
+            <li><a href="/contact" className="hover:underline hover:text-gray-200 transition">Contact Us</a></li>
           </ul>
         </div>
         {/* Contact */}

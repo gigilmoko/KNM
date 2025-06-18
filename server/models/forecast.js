@@ -1,19 +1,9 @@
 const mongoose = require('mongoose');
 
 const forecastSchema = new mongoose.Schema({
-    productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product',
-        required: true,
-    },
-    forecastedDemand: {
-        type: Number,
-        required: true,
-    },
-    forecastDate: {
-        type: Date,
-        required: true,
-    },
+    year: Number,
+    month: String,
+    index: Number
 }, { timestamps: true });
 
 module.exports = mongoose.model('Forecast', forecastSchema);

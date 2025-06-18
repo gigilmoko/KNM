@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import BellIcon from '@heroicons/react/24/outline/BellIcon';
 import Bars3Icon from '@heroicons/react/24/outline/Bars3Icon';
 import MoonIcon from '@heroicons/react/24/outline/MoonIcon';
 import SunIcon from '@heroicons/react/24/outline/SunIcon';
@@ -13,9 +12,6 @@ function Header() {
     const [currentTheme, setCurrentTheme] = useState(localStorage.getItem('theme') || 'light');
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [unreadNotifications, setUnreadNotifications] = useState(0);
-    const [showNotificationTab, setShowNotificationTab] = useState(false);
-    const [notifications, setNotifications] = useState([]);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const isAuthPage = location.pathname === "/register" || location.pathname === "/login";
@@ -27,7 +23,6 @@ function Header() {
             setCurrentTheme(prefersDark ? 'dark' : 'light');
         }
         getProfile();
-        getUnreadNotifications();
         // eslint-disable-next-line
     }, [currentTheme]);
 
@@ -44,37 +39,6 @@ function Header() {
         } catch (error) {
             setLoading(false);
         }
-    };
-
-    const getUnreadNotifications = async () => {
-        const config = {
-            headers: {
-                Authorization: `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications/unread-count`, config);
-            setUnreadNotifications(data.unreadCount);
-        } catch (error) {}
-    };
-
-    const fetchNotifications = async () => {
-        const config = {
-            headers: {
-                Authorization: `Bearer ${sessionStorage.getItem('token')}`,
-            },
-        };
-        try {
-            const { data } = await axios.get(`${process.env.REACT_APP_API}/api/notifications`, config);
-            setNotifications(Array.isArray(data) ? data : data.notifications || []);
-        } catch (error) {}
-    };
-
-    const openNotification = async () => {
-        if (!showNotificationTab) {
-            await fetchNotifications();
-        }
-        setShowNotificationTab(!showNotificationTab);
     };
 
     const logoutHandler = async () => {
@@ -151,63 +115,6 @@ function Header() {
                             <span className="ml-2">Loading...</span>
                         ) : user ? (
                             <div className="flex items-center space-x-2 relative">
-                                <button className="btn btn-ghost btn-circle" onClick={openNotification}>
-                                    <div className="indicator">
-                                        <BellIcon className="h-6 w-6" />
-                                        {unreadNotifications > 0 && (
-                                            <span className="indicator-item badge badge-secondary badge-sm">
-                                                {unreadNotifications}
-                                            </span>
-                                        )}
-                                    </div>
-                                </button>
-                                {showNotificationTab && (
-                                    <div
-                                        className={`absolute top-12 right-0 shadow-lg rounded-lg w-80 p-4 z-20 ${
-                                            currentTheme === 'dark' ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-700'
-                                        }`}
-                                    >
-                                        <h3 className="text-lg font-semibold mb-2">Notifications</h3>
-                                        {Array.isArray(notifications) && notifications.length > 0 ? (
-                                            <ul className="space-y-2 max-h-80 overflow-y-auto">
-                                                {notifications.map((notification, index) => (
-                                                    notification && (
-                                                        <li
-                                                            key={index}
-                                                            className="p-2 border-b last:border-none rounded-lg"
-                                                            style={{
-                                                                backgroundColor: notification.isUnread
-                                                                    ? (currentTheme === 'dark'
-                                                                        ? 'rgb(255, 183, 3)'
-                                                                        : 'rgb(33, 158, 188)')
-                                                                    : (currentTheme === 'dark'
-                                                                        ? 'rgb(255, 183, 3)'
-                                                                        : 'rgb(142, 202, 230)'),
-                                                                color: currentTheme === 'dark' ? 'black' : 'inherit'
-                                                            }}
-                                                        >
-                                                            <strong>{notification.event?.title || notification.title || 'No Title'}</strong>
-                                                            <p>{notification.event?.description || notification.description || 'No Description'}</p>
-                                                            <small>
-                                                                {notification.event?.startDate || notification.eventDate
-                                                                    ? `Event Date: ${new Date(notification.event?.startDate || notification.eventDate).toLocaleString()}`
-                                                                    : 'No Event Date'}
-                                                            </small>
-                                                            <br />
-                                                            <small>
-                                                                {notification.createdAt
-                                                                    ? `Created At: ${new Date(notification.createdAt).toLocaleString()}`
-                                                                    : ''}
-                                                            </small>
-                                                        </li>
-                                                    )
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            <p className="text-sm text-gray-500">No notifications available.</p>
-                                        )}
-                                    </div>
-                                )}
                                 <span className="font-medium hidden md:inline">{user.fname}</span>
                                 <div className="dropdown dropdown-end">
                                     <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
@@ -225,6 +132,11 @@ function Header() {
                                         <li>
                                             <Link to="/profile">Profile</Link>
                                         </li>
+                                        {user.role === 'admin' && (
+                                            <li>
+                                                <Link to="/admin/dashboard">Dashboard</Link>
+                                            </li>
+                                        )}
                                         <div className="divider mt-0 mb-0"></div>
                                         <li>
                                             <a onClick={logoutHandler}>Logout</a>
@@ -257,16 +169,6 @@ function Header() {
                             <span className="ml-2">...</span>
                         ) : user ? (
                             <div className="flex items-center space-x-2 relative">
-                                <button className="btn btn-ghost btn-circle" onClick={openNotification}>
-                                    <div className="indicator">
-                                        <BellIcon className="h-6 w-6" />
-                                        {unreadNotifications > 0 && (
-                                            <span className="indicator-item badge badge-secondary badge-sm">
-                                                {unreadNotifications}
-                                            </span>
-                                        )}
-                                    </div>
-                                </button>
                                 <div className="dropdown dropdown-end">
                                     <label tabIndex={0} className="btn btn-ghost btn-circle avatar flex items-center">
                                         <div className="w-10 rounded-full mr-2">
@@ -283,6 +185,11 @@ function Header() {
                                         <li>
                                             <Link to="/profile">Profile</Link>
                                         </li>
+                                        {user.role === 'admin' && (
+                                            <li>
+                                                <Link to="/admin/dashboard">Dashboard</Link>
+                                            </li>
+                                        )}
                                         <div className="divider mt-0 mb-0"></div>
                                         <li>
                                             <a onClick={logoutHandler}>Logout</a>

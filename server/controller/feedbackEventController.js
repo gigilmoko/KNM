@@ -1,5 +1,5 @@
 const EventFeedback = require('../models/eventfeedback');
-const UserInterest = require('../models/userInterest');  // Assuming this is the path to your UserInterest model
+const UserInterest = require('../models/userInterest');
 const CalendarEvent = require('../models/calendar');
 
 // Create Feedback Controller
@@ -7,72 +7,76 @@ exports.createFeedback = async (req, res) => {
   const { userId, eventId, rating, description } = req.body;
 
   try {
-      // Log the received data to console
-      console.log('Received data:', req.body); // This will log the entire request body
-
-      // Check if the user is interested and has attended the event
-      const userInterest = await UserInterest.findOne({
-          user: userId,
-          event: eventId,
-          interested: true,
-          isAttended: true,  // Ensure the user has attended
+    // Prevent duplicate feedback
+    const existingFeedback = await EventFeedback.findOne({ userId, eventId });
+    if (existingFeedback) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already submitted feedback for this event.',
       });
+    }
 
-      if (!userInterest) {
-          return res.status(400).json({
-              success: false,
-              message: 'User is not marked as attended for this event or is not interested.',
-          });
-      }
+    // Validate rating and description
+    if (rating < 1 || rating > 5) {
+      return res.status(400).json({ success: false, message: 'Rating must be between 1 and 5.' });
+    }
+    if (!description || description.length < 5) {
+      return res.status(400).json({ success: false, message: 'Description is too short.' });
+    }
 
-      // Create new feedback entry
-      const newFeedback = new EventFeedback({
-          userId,
-          eventId,
-          rating,
-          description,
+    // Check if the user is interested and has attended the event
+    const userInterest = await UserInterest.findOne({
+      user: userId,
+      event: eventId,
+      interested: true,
+      isAttended: true,
+    });
+
+    if (!userInterest) {
+      return res.status(400).json({
+        success: false,
+        message: 'User is not marked as attended for this event or is not interested.',
       });
+    }
 
-      await newFeedback.save();
+    // Create new feedback entry
+    const newFeedback = new EventFeedback({
+      userId,
+      eventId,
+      rating,
+      description,
+    });
 
-      return res.status(201).json({
-          success: true,
-          message: 'Feedback created successfully',
-          data: newFeedback,
-      });
+    await newFeedback.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Feedback created successfully',
+      data: newFeedback,
+    });
   } catch (error) {
-      console.error('Error creating feedback:', error);
-      return res.status(500).json({
-          success: false,
-          message: 'Server error. Failed to create feedback.',
-      });
+    console.error('Error creating feedback:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error. Failed to create feedback.',
+    });
   }
 };
 
-
 // Fetch All Feedback Controller
 exports.getEventFeedback = async (req, res) => {
-  const { eventId } = req.params; // Extract the eventId from the URL parameters
-
+  const { eventId } = req.params;
   try {
     let feedbacks;
     if (eventId === "all") {
-      // Fetch all feedbacks if eventId is "all"
-      feedbacks = await EventFeedback.find();
+      feedbacks = await EventFeedback.find()
+        .populate('userId', 'fname middlei lname avatar')
+        .populate('eventId', 'title date');
     } else {
-      // Fetch feedbacks for the given eventId
-      feedbacks = await EventFeedback.find({ eventId });
+      feedbacks = await EventFeedback.find({ eventId })
+        .populate('userId', 'fname middlei lname avatar')
+        .populate('eventId', 'title date');
     }
-
-    // Check if there is no feedback
-    if (feedbacks.length === 0) {
-      // return res.status(404).json({
-       
-      //   message: 'No feedback found.',
-      // });
-    }
-
-    // Return the feedbacks
     return res.status(200).json({
       success: true,
       message: 'Feedback fetched successfully.',
@@ -87,35 +91,18 @@ exports.getEventFeedback = async (req, res) => {
   }
 };
 
+// Fetch All Feedback Controller for Mobile
 exports.getEventFeedbackMobile = async (req, res) => {
-  console.log("event feedback");
-  const { eventId } = req.params; // Extract the eventId from the URL parameters
-
+  const { eventId } = req.params;
   try {
     let feedbacks;
     if (eventId === "all") {
-      // Fetch all feedbacks and populate user details
-      feedbacks = await EventFeedback.find().populate({
-        path: "userId",
-        select: "fname middlei lname avatar", // ✅ Correct field names from User schema
-      });
+      feedbacks = await EventFeedback.find()
+        .populate('userId', 'fname middlei lname avatar');
     } else {
-      // Fetch feedbacks for the given eventId and populate user details
-      feedbacks = await EventFeedback.find({ eventId }).populate({
-        path: "userId",
-        select: "fname middlei lname avatar", // ✅ Fix: Use correct field names
-      });
+      feedbacks = await EventFeedback.find({ eventId })
+        .populate('userId', 'fname middlei lname avatar');
     }
-
-    // Check if there is no feedback
-    // if (feedbacks.length === 0) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     message: "No feedback found.",
-    //   });
-    // }
-
-    // Return the feedbacks
     return res.status(200).json({
       success: true,
       message: "Feedback fetched successfully.",
@@ -130,43 +117,30 @@ exports.getEventFeedbackMobile = async (req, res) => {
   }
 };
 
-
-
-// Fetch All Feedback Events Controller
+// Fetch All Feedback Events Controller (grouped by event)
 exports.getAllFeedbackEvents = async (req, res) => {
-  console.log("getAllFeedbackEvents");
   try {
-    // Use MongoDB aggregation to group feedback by eventId and calculate average rating
     const feedbackEvents = await EventFeedback.aggregate([
       {
         $group: {
-          _id: '$eventId', // Group by eventId
-          averageRating: { $avg: '$rating' }, // Calculate the average rating
+          _id: '$eventId',
+          averageRating: { $avg: '$rating' },
         },
       },
       {
         $project: {
-          eventId: '$_id', // Rename _id to eventId
+          eventId: '$_id',
           averageRating: 1,
-          _id: 0, // Exclude the original _id field
+          _id: 0,
         },
       },
     ]);
-
-    // Check if there are no feedback events
-    if (feedbackEvents.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'No feedback events found.',
-      });
-    }
 
     // Fetch event details for each eventId
     const enrichedFeedbackEvents = await Promise.all(
       feedbackEvents.map(async (event) => {
         const calendarEvent = await CalendarEvent.findOne({ _id: event.eventId })
           .select('date title description startDate endDate image');
-
         return {
           ...event,
           date: calendarEvent?.date || null,
@@ -179,7 +153,6 @@ exports.getAllFeedbackEvents = async (req, res) => {
       })
     );
 
-    // Return grouped feedback events with event details
     return res.status(200).json({
       success: true,
       message: 'Feedback events grouped and fetched successfully.',
@@ -193,4 +166,3 @@ exports.getAllFeedbackEvents = async (req, res) => {
     });
   }
 };
-
