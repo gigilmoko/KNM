@@ -32,35 +32,56 @@ const scheduleEventNotification = async (userId, event) => {
 
 // Function to express interest in an event
 exports.expressInterest = async (req, res) => {
-  console.log('expressInterest Hit'); // Log user data for debugging
+  console.log('expressInterest Hit');
   try {
-    // Log the current date and time
     const currentTime = new Date();
-    console.log('Current time:', currentTime.toISOString()); // Log current time in ISO format
+    console.log('Current time:', currentTime.toISOString());
 
-    console.log('User data:', req.user); // Log user data for debugging
-    const { eventId } = req.body; // Get event ID from request body
-    const userId = req.user.id; // Assuming user ID is available in req.user after authentication
+    console.log('User data:', req.user);
+    console.log('Request body:', req.body);
+    
+    const { eventId, userId } = req.body;
+    
+    // Use userId from req.body if req.user is undefined
+    const userIdentifier = req.user?.id || userId;
+    
+    if (!userIdentifier) {
+      return res.status(400).json({ 
+        message: 'User ID is required. Please ensure you are logged in or provide a userId.' 
+      });
+    }
 
     // Check if the user is already interested in the event
-    const existingInterest = await UserInterest.findOne({ user: userId, event: eventId });
+    const existingInterest = await UserInterest.findOne({ 
+      user: userIdentifier, 
+      event: eventId 
+    });
 
     if (existingInterest) {
-      return res.status(400).json({ message: 'You are already interested in this event.' });
+      return res.status(400).json({ 
+        message: 'You are already interested in this event.',
+        success: false
+      });
     }
 
     // Find the event to notify users
     const event = await CalendarEvent.findById(eventId);
     if (!event) {
-      return res.status(404).json({ message: 'Event not found.' });
+      return res.status(404).json({ 
+        message: 'Event not found.',
+        success: false 
+      });
     }
 
     // Create a new user interest
-    await UserInterest.create({ user: userId, event: eventId });
+    await UserInterest.create({ 
+      user: userIdentifier, 
+      event: eventId 
+    });
 
     // Create a notification for the user immediately
     await Notification.create({
-      user: userId,
+      user: userIdentifier,
       event: eventId,
       title: `Interest in ${event.title}`,
       description: `You have expressed interest in the event: ${event.title}.`,
@@ -68,12 +89,19 @@ exports.expressInterest = async (req, res) => {
     });
 
     // Schedule a notification for 24 hours before the event
-    await scheduleEventNotification(userId, event);
+    await scheduleEventNotification(userIdentifier, event);
 
-    res.status(200).json({ message: 'Interest expressed successfully!' });
+    res.status(200).json({ 
+      message: 'Interest expressed successfully!',
+      success: true
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Express interest error:', error);
+    res.status(500).json({ 
+      message: 'Server error', 
+      error: error.message,
+      success: false
+    });
   }
 };
 

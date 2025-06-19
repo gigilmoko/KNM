@@ -4,6 +4,8 @@ const Truck = require('../models/truck');
 const Order = require('../models/order');
 const schedule = require('node-schedule');
 const User = require('../models/user');
+const Notification = require('../models/notification');
+
 
 const markPendingOrdersAsDelivered = async () => {
   try {
@@ -66,9 +68,43 @@ exports.createDeliverySession = async (req, res) => {
 
     // Fetch admin users for notifications
     const admins = await User.find({ 
-      role: 'admin', 
+      role: 'admin',
       deviceToken: { $exists: true, $ne: null } 
     });
+
+    // Create in-app notifications for admins through your notification model
+    const Notification = require('../models/notification');
+    
+    // Create in-app notifications for admins
+    const adminNotifications = await Promise.all(
+      admins.map(admin => 
+        Notification.create({
+          user: admin._id,
+          title: "New Delivery Session Created", 
+          description: `A new delivery session has been created for rider ${rider.fname} ${rider.lname} with ${orders.length} order(s)`,
+          read: false
+        })
+      )
+    );
+
+    console.log(`Created ${adminNotifications.length} in-app notifications for admins`);
+
+    // Create in-app notifications for users whose orders are being shipped
+    const userNotifications = await Promise.all(
+      orders.map(order => {
+        if (order.user && order.user._id) {
+          return Notification.create({
+            user: order.user._id,
+            title: "Order Shipped",
+            description: `Your order ${order.KNMOrderId || order._id} has been shipped and is on its way.`,
+            read: false
+          });
+        }
+        return null;
+      }).filter(Boolean)
+    );
+
+    console.log(`Created ${userNotifications.length} in-app notifications for users`);
 
     // Send OneSignal notification to the assigned rider
     if (rider.deviceToken) {
@@ -176,7 +212,11 @@ exports.createDeliverySession = async (req, res) => {
       notificationsSent: {
         rider: !!rider.deviceToken,
         admins: admins.length,
-        customers: orders.filter(o => o.user && o.user.deviceToken).length
+        customers: orders.filter(o => o.user && o.user.deviceToken).length,
+        inAppNotifications: {
+          admins: adminNotifications.length,
+          users: userNotifications.length
+        }
       }
     });
   } catch (error) {

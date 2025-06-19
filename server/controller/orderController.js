@@ -1,5 +1,6 @@
 const Order = require("../models/order");
 const User = require("../models/user");
+const Notification = require('../models/notification');
 const Product = require("../models/product"); // Import the Product model
 const PaymongoToken = require("../models/paymongoToken");
 const crypto = require("crypto");
@@ -187,7 +188,7 @@ const handlePayMongo = async (orderItemsDetails, shippingCharges, temporaryLink)
   }
 };
 
-
+// In orderController.js, enhance the createOrder function
 exports.createOrder = async (req, res, next) => {
   console.log("createOrder touched");
   console.log("Request Body:", JSON.stringify(req.body, null, 2));
@@ -298,6 +299,35 @@ exports.createOrder = async (req, res, next) => {
       token: crypto.randomBytes(32).toString("hex"),
       verificationTokenExpire: new Date(Date.now() + 2 * 60 * 1000),
     }).save();
+
+    // Create in-app notification for the user who placed the order
+   await Notification.create({
+  user: user._id,
+  title: "Order Confirmation",
+  description: `Your order ${KNMOrderId} has been received and is being processed. Total: ₱${Number(totalPrice).toFixed(2)}`,
+  read: false
+});
+    
+    console.log(`Created in-app notification for user: ${user._id}`);
+
+    // Create in-app notifications for all admin users
+    const admins = await User.find({ role: 'admin' });
+    
+    if (admins.length > 0) {
+      // Create notifications for all admins
+      const adminNotifications = await Promise.all(
+        admins.map(admin => 
+          Notification.create({
+            user: admin._id,
+            title: "New Order Received",
+            description: `New order ${KNMOrderId} has been placed by ${user.fname} ${user.lname}. Total: ₱${Number(totalPrice).toFixed(2)}`,
+            read: false
+          })
+        )
+      );
+      
+      console.log(`Created ${adminNotifications.length} in-app notifications for admins`);
+    }
 
     // Handle GCash payment if selected
     if (paymentInfo === "GCash") {
@@ -466,6 +496,10 @@ exports.createOrder = async (req, res, next) => {
       success: true,
       order: updatedOrder,
       message: "Order Success",
+      notifications: {
+        user: true,
+        admin: true
+      }
     });
   } catch (error) {
     console.error("Error creating order:", error);
@@ -475,6 +509,293 @@ exports.createOrder = async (req, res, next) => {
     });
   }
 };
+// exports.createOrder = async (req, res, next) => {
+//   console.log("createOrder touched");
+//   console.log("Request Body:", JSON.stringify(req.body, null, 2));
+
+//   const { orderProducts, paymentInfo, itemsPrice, shippingCharges, totalPrice, addressIndex } = req.body;
+
+//   try {
+//     if (!req.user || !req.user._id) {
+//       console.error("Error: User information is missing");
+//       return res.status(400).json({
+//         success: false,
+//         message: "User information is missing",
+//       });
+//     }
+
+//     console.log("User ID:", req.user._id);
+
+//     const user = await User.findById(req.user._id);
+//     if (!user || !user.deliveryAddress || user.deliveryAddress.length === 0) {
+//       console.error("Error: User address is missing");
+//       return res.status(400).json({
+//         success: false,
+//         message: "User address is missing",
+//       });
+//     }
+
+//     // Get the selected address or use the first one as default
+//     const selectedAddressIndex = addressIndex !== undefined ? parseInt(addressIndex) : 0;
+    
+//     // Validate that the selected address index exists
+//     if (selectedAddressIndex < 0 || selectedAddressIndex >= user.deliveryAddress.length) {
+//       console.error(`Error: Invalid address index: ${selectedAddressIndex}`);
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid address selected",
+//       });
+//     }
+    
+//     const selectedAddress = user.deliveryAddress[selectedAddressIndex];
+//     console.log("Selected address:", selectedAddress);
+
+//     if (typeof paymentInfo !== "string") {
+//       console.error("Error: Invalid paymentInfo format, received:", typeof paymentInfo);
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid paymentInfo format. Expected a string.",
+//       });
+//     }
+
+//     for (const item of orderProducts) {
+//       console.log(`Checking stock for product ID: ${item.product}`);
+//       const product = await Product.findById(item.product);
+//       if (!product) {
+//         console.error(`Error: Product not found with ID: ${item.product}`);
+//         return res.status(400).json({
+//           success: false,
+//           message: `Product with ID ${item.product} not found`,
+//         });
+//       }
+//       if (product.stock < item.quantity) {
+//         console.error(`Error: Insufficient stock for product ID: ${item.product}`);
+//         return res.status(400).json({
+//           success: false,
+//           message: "Insufficient stock for one or more items",
+//         });
+//       }
+//     }
+
+//     console.log("Items Price:", itemsPrice);
+//     console.log("Shipping Charges:", shippingCharges);
+//     console.log("Total Amount:", totalPrice);
+
+//     // Create order with temporary KNMOrderId
+//     const order = await Order.create({
+//       user: req.user._id,
+//       KNMOrderId: "KNM-TEMP", // Temporary ID that will be updated
+//       orderProducts,
+//       paymentInfo,
+//       itemsPrice: Number(itemsPrice),
+//       shippingCharges: Number(shippingCharges),
+//       totalPrice: Number(totalPrice),
+//       address: selectedAddress, // Store the selected address with the order
+//       createdAt: Date.now(),
+//     });
+
+//     // Generate the KNMOrderId based on MongoDB ID
+//     // Take the last 5 characters from the MongoDB ObjectId and make them uppercase
+//     const idPortion = order._id.toString().substr(-5).toUpperCase();
+//     const KNMOrderId = `KNM-${idPortion}`;
+    
+//     // Update the order with the new KNMOrderId
+//     const updatedOrder = await Order.findByIdAndUpdate(
+//       order._id,
+//       { KNMOrderId },
+//       { new: true }
+//     );
+
+//     console.log("Created Order with ID:", KNMOrderId);
+
+//     for (const item of orderProducts) {
+//       const product = await Product.findById(item.product);
+//       product.stock -= item.quantity;
+//       await product.save();
+//     }
+
+//     const paymongoToken = await new PaymongoToken({
+//       orderId: order._id,
+//       token: crypto.randomBytes(32).toString("hex"),
+//       verificationTokenExpire: new Date(Date.now() + 2 * 60 * 1000),
+//     }).save();
+
+//     // Handle GCash payment if selected
+//     if (paymentInfo === "GCash") {
+//       if (!process.env.BASE_URL) {
+//         console.error("Error: BASE_URL environment variable is missing");
+//         return res.status(500).json({
+//           success: false,
+//           message: "BASE_URL environment variable is not set",
+//         });
+//       }
+
+//       const temporaryLink = `${process.env.BASE_URL}/paymongo-gcash/${paymongoToken.token}/${order._id}`;
+//       console.log("Temporary Payment Link:", temporaryLink);
+
+//       try {
+//         const checkoutUrl = await handlePayMongo(order.orderProducts, shippingCharges, temporaryLink);
+//         console.log("Generated Checkout URL:", checkoutUrl);
+//         return res.json({ checkoutUrl });
+//       } catch (error) {
+//         console.error("Error generating checkout URL:", error);
+//         return res.status(500).json({ message: "Internal Server Error", error: error.message });
+//       }
+//     }
+
+//     // Send email confirmation to the user using the orderConfirmation.ejs template
+//     try {
+//       // Populate the product information for the email template
+//       const populatedOrder = await Order.findById(order._id)
+//         .populate('orderProducts.product');
+      
+//       // Create template data with properly formatted values
+//       const templateData = {
+//         user: user,
+//         order: {
+//           KNMOrderId,
+//           createdAt: updatedOrder.createdAt,
+//           paymentInfo: updatedOrder.paymentInfo,
+//           orderProducts: populatedOrder.orderProducts,
+//           itemsPrice: Number(itemsPrice),
+//           shippingCharges: Number(shippingCharges),
+//           totalPrice: Number(totalPrice),
+//           address: updatedOrder.address
+//         }
+//       };
+
+//       // Render the template
+//       const htmlMessage = await ejs.renderFile(
+//         path.join(__dirname, '../views/orderConfirmation.ejs'),
+//         templateData
+//       );
+
+//       // Use sendEmail correctly with its expected parameters
+//       const sendEmailOptions = {
+//         email: user.email,
+//         subject: `KNM Order Confirmation #${KNMOrderId}`,
+//         message: htmlMessage
+//       };
+      
+//       const sendEmail = require("../utils/sendEmail");
+//       await sendEmail(sendEmailOptions);
+      
+//       console.log(`Order confirmation email sent to: ${user.email}`);
+//     } catch (error) {
+//       console.error('Error sending order confirmation email:', error);
+//       // Continue process even if email fails
+//     }
+
+//     // Send notification to the customer via OneSignal
+//     if (user.deviceToken) {
+//       const userNotification = {
+//         app_id: process.env.ONESIGNAL_APP_ID,
+//         include_player_ids: [user.deviceToken],
+//         headings: { en: "Order Confirmation" },
+//         contents: { en: `Your order #${KNMOrderId} has been received and is being processed.` },
+//         data: { 
+//           orderId: order._id.toString(),
+//           status: order.status,
+//           type: 'new_order'
+//         }
+//       };
+
+//       try {
+//         await axios.post('https://onesignal.com/api/v1/notifications', userNotification, {
+//           headers: {
+//             'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+//             'Content-Type': 'application/json'
+//           }
+//         });
+//         console.log(`Order notification sent to user: ${user._id}`);
+//       } catch (error) {
+//         console.error('Error sending user notification:', error.response?.data || error.message);
+//       }
+//     }
+
+//     // Send notification to all admins
+//     try {
+//       const admins = await User.find({ 
+//         role: 'admin', 
+//         deviceToken: { $exists: true, $ne: null } 
+//       });
+      
+//       // Send email notifications to all admins
+//       const adminEmails = admins.map(admin => admin.email);
+//       if (adminEmails.length > 0) {
+//         // Create a simple text message for admins
+//         const adminEmailMessage = `
+//           A new order has been placed.
+          
+//           Order ID: ${KNMOrderId}
+//           Customer: ${user.fname} ${user.lname}
+//           Email: ${user.email}
+//           Total: ₱${Number(totalPrice).toFixed(2)}
+//           Payment Method: ${paymentInfo}
+          
+//           This is an automated notification.
+//         `;
+        
+//         // Send emails to each admin
+//         const sendEmail = require("../utils/sendEmail");
+//         for (const email of adminEmails) {
+//           try {
+//             await sendEmail({
+//               email: email,
+//               subject: `New Order Received: #${KNMOrderId}`,
+//               message: adminEmailMessage
+//             });
+//           } catch (err) {
+//             console.error(`Failed to send admin email notification to ${email}:`, err);
+//           }
+//         }
+//       }
+      
+//       // Send OneSignal push notifications to admins
+//       if (admins.length > 0) {
+//         const adminPlayerIds = admins.map(admin => admin.deviceToken).filter(Boolean);
+        
+//         if (adminPlayerIds.length > 0) {
+//           const adminNotification = {
+//             app_id: process.env.ONESIGNAL_APP_ID,
+//             include_player_ids: adminPlayerIds,
+//             headings: { en: "New Order Received" },
+//             contents: { en: `New order #${KNMOrderId} has been placed by ${user.fname} ${user.lname}. Total: ₱${Number(totalPrice).toFixed(2)}` },
+//             data: { 
+//               orderId: order._id.toString(),
+//               type: 'admin_new_order'
+//             }
+//           };
+          
+//           await axios.post('https://onesignal.com/api/v1/notifications', adminNotification, {
+//             headers: {
+//               'Authorization': `Basic ${process.env.ONESIGNAL_API_KEY}`,
+//               'Content-Type': 'application/json'
+//             }
+//           });
+//           console.log(`Order notification sent to ${adminPlayerIds.length} admins`);
+//         }
+//       }
+//     } catch (error) {
+//       console.error('Error sending admin notifications:', error.response?.data || error.message);
+//     }
+
+//     console.log("Final Order:", updatedOrder);
+//     console.log("Generated Token:", paymongoToken);
+
+//     res.status(200).json({
+//       success: true,
+//       order: updatedOrder,
+//       message: "Order Success",
+//     });
+//   } catch (error) {
+//     console.error("Error creating order:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to create order",
+//     });
+//   }
+// };
 
 
 //   try {

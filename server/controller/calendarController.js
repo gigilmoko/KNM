@@ -330,7 +330,7 @@ exports.updateEvent = async (req, res) => {
 
         // Send push notification using OneSignal
         const oneSignalNotification = {
-            app_id: ONESIGNAL_APP_ID,
+            app_id: process.env.ONESIGNAL_APP_ID,
             included_segments: ["All"],
             headings: { en: `Event Updated: ${title}` },
             contents: { en: `The event "${title}" has been updated. Check details: Location - ${location}, Schedule - ${startDate} to ${endDate}.` },
@@ -345,7 +345,7 @@ exports.updateEvent = async (req, res) => {
                 {
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ONESIGNAL_API_KEY}`,
+                        'Authorization': `Bearer ${process.env.ONESIGNAL_API_KEY}`,
                     },
                 }
             );
