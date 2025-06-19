@@ -123,7 +123,7 @@ exports.createDeliverySession = async (req, res) => {
           orders: orderIds
         }
       };
-
+//this is a push
       try {
         const axios = require('axios');
         const riderResponse = await axios.post('https://onesignal.com/api/v1/notifications', riderNotification, {
