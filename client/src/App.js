@@ -66,6 +66,11 @@ import UpdateForecast from './Admin/Forecast/UpdateForecast';
 import ForecastGraph from './Admin/Forecast/ForecastGraph';
 import PpiForecastLineGraph from './Admin/components/PPIForecastLineGraph';
 import ProductPriceForecastLineGraph from './Admin/components/ProductPriceForecastLineGraph';
+import TaskList from './Admin/Task/TaskList';
+import NewTask from './Admin/Task/NewTask';
+import UpdateTask from './Admin/Task/UpdateTask';
+
+
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
 function App() {
@@ -163,13 +168,15 @@ function App() {
           <Route path="/admin/category" element={<ProtectedRoute><CategoryList /></ProtectedRoute>} />
           <Route path="/admin/category/update/:id" element={<ProtectedRoute><UpdateCategory /></ProtectedRoute>} />
           <Route path="/admin/category/new" element={<ProtectedRoute><NewCategory /></ProtectedRoute>} />
-
           {/* Reports */}
           <Route path="/admin/reports/revenue" element={<ProtectedRoute><RevenueReport /></ProtectedRoute>} />
           <Route path="/admin/reports/orders" element={<ProtectedRoute><OrderReports /></ProtectedRoute>} />
           <Route path="/admin/reports/users" element={<ProtectedRoute><UserReports /></ProtectedRoute>} />
           {/* <Route path="/admin/reports/members" element={<ProtectedRoute><MemberReports /></ProtectedRoute>} /> */}
-
+          {/* Tasks */}
+          <Route path="/admin/tasks" element={<ProtectedRoute><TaskList /></ProtectedRoute>} />
+          <Route path="/admin/tasks/new" element={<ProtectedRoute><NewTask /></ProtectedRoute>} />
+          <Route path="/admin/tasks/update/:id" element={<ProtectedRoute><UpdateTask /></ProtectedRoute>} />
           {/* User */}
           <Route path="/admin/users/list" element={<ProtectedRoute><UsersList /></ProtectedRoute>} />
           {/* Orders */}

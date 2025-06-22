@@ -22,6 +22,7 @@ const truckRoute = require('./routes/truck');
 const deliverySession = require('./routes/deliverysession')
 const report = require('./routes/report');
 const forecast = require('./routes/forecast');
+const task = require('./routes/task'); // Assuming you have a task route
 
 const app = express();
 const PORT = process.env.PORT || 4002;
@@ -62,6 +63,7 @@ app.use('/api', truckRoute);
 app.use('/api', deliverySession);
 app.use('/api', forecast);
 app.use('/api/reports', report)
+app.use('/api', task);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, '❌ MongoDB connection error:'));
