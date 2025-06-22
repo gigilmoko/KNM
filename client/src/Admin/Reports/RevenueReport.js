@@ -111,6 +111,7 @@ const RevenueReport = () => {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         labels: {
@@ -189,13 +190,13 @@ const RevenueReport = () => {
                   className="input input-bordered w-full sm:w-auto"
                 />
               </div>
-              <div className="overflow-x-auto">
-                <div className="bg-white rounded-lg p-2 sm:p-4 border border-[#ed003f]">
-                  <div className="h-64 sm:h-80">
-                    <Line data={chartData} options={chartOptions} />
-                  </div>
+              <div className="w-full">
+                <div className="relative w-full" style={{ minHeight: 320, height: '40vw', maxHeight: 500 }}>
+                  <Line data={chartData} options={chartOptions} />
                 </div>
-                <table className="table w-full mt-6 text-xs sm:text-sm">
+              </div>
+              <div className="overflow-x-auto mt-6">
+                <table className="table w-full text-xs sm:text-sm">
                   <thead>
                     <tr>
                       <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Product ID</th>

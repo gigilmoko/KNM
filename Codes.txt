@@ -185,3 +185,68 @@ exports.createOrder = async (req, res, next) => {
     });
   }
 };
+
+
+// Update all users with KNMUserID
+exports.updateAllUsersWithUserId = async (req, res, next) => {
+  try {
+    const users = await User.find({});
+    let updatedCount = 0;
+
+    for (const user of users) {
+      if (user.KNMUserID) continue;
+      const idPortion = user._id.toString().substring(18, 24);
+      const newUserId = `KNMU-${idPortion}`;
+      await User.findByIdAndUpdate(
+        user._id,
+        { KNMUserID: newUserId },
+        { new: true }
+      );
+      updatedCount++;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully updated ${updatedCount} users with new KNMUserID values`,
+    });
+  } catch (error) {
+    console.error("Error updating users with KNMUserID:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update users",
+      error: error.message
+    });
+  }
+};
+
+// Update all products with KNMProdId
+exports.updateAllProductsWithProdId = async (req, res, next) => {
+  try {
+    const products = await Product.find({});
+    let updatedCount = 0;
+
+    for (const product of products) {
+      if (product.KNMProdId) continue;
+      const idPortion = product._id.toString().substring(18, 24);
+      const newProdId = `KNMP-${idPortion}`;
+      await Product.findByIdAndUpdate(
+        product._id,
+        { KNMProdId: newProdId },
+        { new: true }
+      );
+      updatedCount++;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully updated ${updatedCount} products with new KNMProdId values`,
+    });
+  } catch (error) {
+    console.error("Error updating products with KNMProdId:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update products",
+      error: error.message
+    });
+  }
+};

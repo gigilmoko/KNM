@@ -8,6 +8,8 @@ import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
 import TitleCard from '../../Layout/components/Cards/TitleCard';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const OrderReports = () => {
   const [activeTab, setActiveTab] = useState('Preparing');
@@ -15,6 +17,14 @@ const OrderReports = () => {
   const [shippingOrders, setShippingOrders] = useState([]);
   const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [sortAsc, setSortAsc] = useState(true);
+
+  // Date range state
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d;
+  });
+  const [endDate, setEndDate] = useState(new Date());
 
   useEffect(() => {
     const fetchOrderReports = async () => {
@@ -35,6 +45,14 @@ const OrderReports = () => {
 
     fetchOrderReports();
   }, []);
+
+  // Filter orders by date range
+  const filterByDate = (orders) => {
+    return orders.filter(order => {
+      const orderDate = new Date(order.createdAt);
+      return orderDate >= startDate && orderDate <= endDate;
+    });
+  };
 
   // Sorting function for orders by date
   const sortOrders = (orders) => {
@@ -70,19 +88,23 @@ const OrderReports = () => {
           </tr>
         </thead>
         <tbody>
-          {sortOrders(orders).map(order => (
-            <tr key={order._id}>
+          {sortOrders(filterByDate(orders)).map(order => (
+            <tr key={order.KNMOrderId}>
               <td className="text-center">
                 {order.createdAt
                   ? new Date(order.createdAt).toLocaleString()
                   : 'N/A'}
               </td>
-              <td className="text-center">{order._id}</td>
+              <td className="text-center">{order.KNMOrderId}</td>
               <td className="text-center">{order.user ? `${order.user.fname} ${order.user.lname}` : 'Unknown User'}</td>
               <td className="text-center">
-                {order.orderProducts.map(product => (
-                  <div key={product.product?._id}>{product.product?.name || 'Unknown Product'}</div>
-                ))}
+                <div className="flex flex-col items-center">
+                  {order.orderProducts.map(product => (
+                    <div key={product.product?._id} className="py-0.5">
+                      {product.product?.name || 'Unknown Product'}
+                    </div>
+                  ))}
+                </div>
               </td>
               <td className="text-center">{order.totalPrice ? `₱${Number(order.totalPrice).toFixed(2)}` : 'N/A'}</td>
             </tr>
@@ -122,44 +144,40 @@ const OrderReports = () => {
                    activeTab === 'Shipped' ? shippingOrders :
                    deliveredOrders;
 
-    sortOrders(orders).forEach(order => {
+    sortOrders(filterByDate(orders)).forEach(order => {
       const products = order.orderProducts
         .map(product => product.product?.name || 'Unknown Product')
-        .join(', ');
+        .join('\n');
       const customerName = order.user ? `${order.user.fname} ${order.user.lname}` : 'Unknown User';
-      const totalPrice = order.totalPrice ? `₱${Number(order.totalPrice).toFixed(2)}` : 'N/A';
+      const totalPrice = order.totalPrice ? `${Number(order.totalPrice).toFixed(2)}` : 'N/A';
       const dateTime = order.createdAt
         ? new Date(order.createdAt).toLocaleString()
         : 'N/A';
-      tableRows.push([dateTime, order._id, customerName, products, totalPrice]);
+      tableRows.push([dateTime, order.KNMOrderId, customerName, products, totalPrice]);
     });
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 45,
-      headStyles: {
-        fillColor: [237, 0, 63],
-        textColor: 255,
-        halign: 'center'
-      },
-      styles: {
-        textColor: '#000000',
-        cellPadding: 3,
-        fontSize: 10,
-        halign: 'center',
-        valign: 'middle'
-      },
-      columnStyles: {
-        0: { cellWidth: 50 }, // Date & Time
-        1: { cellWidth: 60 }, // Order ID
-        2: { cellWidth: 50 }, // Customer
-        3: { cellWidth: 90 }, // Products Ordered
-        4: { cellWidth: 40 }, // Total Price
-      }
-    });
+autoTable(doc, {
+  head: [tableColumn],
+  body: tableRows,
+  startY: 45,
+  headStyles: {
+    fillColor: [237, 0, 63],
+    textColor: 255,
+    halign: 'center'
+  },
+  styles: {
+    textColor: '#000000',
+    cellPadding: 3,
+    fontSize: 10,
+    halign: 'center',
+    valign: 'middle'
+  },
+  // Remove columnStyles.cellWidth to allow responsive sizing
+  tableWidth: 'auto', // or 'wrap'
+  margin: { left: 10, right: 10 }
+});
 
-    doc.save('Order_Reports.pdf');
+doc.save('Order_Reports.pdf');
   };
 
   return (
@@ -170,7 +188,7 @@ const OrderReports = () => {
           <Header />
           <main className="flex-1 p-2 sm:p-6 bg-base-200">
             <TitleCard
-              title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Revenue Report</span>}
+              title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>Order Report</span>}
               TopSideButtons={
                 <button
                   className="btn"
@@ -181,10 +199,29 @@ const OrderReports = () => {
                 </button>
               }
             >
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4 mb-4">
+                <DatePicker
+                  selected={startDate}
+                  onChange={(date) => setStartDate(date)}
+                  selectsStart
+                  startDate={startDate}
+                  endDate={endDate}
+                  className="input input-bordered w-full sm:w-auto"
+                />
+                <DatePicker
+                  selected={endDate}
+                  onChange={(date) => setEndDate(date)}
+                  selectsEnd
+                  startDate={startDate}
+                  endDate={endDate}
+                  minDate={startDate}
+                  className="input input-bordered w-full sm:w-auto"
+                />
+              </div>
               <div className="w-full flex justify-center mb-4">
                 <div className="flex w-full">
                   <button
-                    className={`flex-1 tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border transition-colors duration-200 ${
+                    className={`flex-1 flex items-center justify-center tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border transition-colors duration-200 ${
                       activeTab === 'Preparing'
                         ? 'bg-[#ed003f] text-white border-[#ed003f]'
                         : 'border-[#ed003f] text-[#ed003f] bg-white'
@@ -194,7 +231,7 @@ const OrderReports = () => {
                     Preparing
                   </button>
                   <button
-                    className={`flex-1 tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border-t border-b border-l transition-colors duration-200 ${
+                    className={`flex-1 flex items-center justify-center tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border-t border-b border-l transition-colors duration-200 ${
                       activeTab === 'Shipped'
                         ? 'bg-[#ed003f] text-white border-[#ed003f]'
                         : 'border-[#ed003f] text-[#ed003f] bg-white'
@@ -204,7 +241,7 @@ const OrderReports = () => {
                     Shipping
                   </button>
                   <button
-                    className={`flex-1 tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border transition-colors duration-200 ${
+                    className={`flex-1 flex items-center justify-center tab rounded-none first:rounded-l-md last:rounded-r-md px-4 py-2 font-semibold border transition-colors duration-200 ${
                       activeTab === 'Delivered'
                         ? 'bg-[#ed003f] text-white border-[#ed003f]'
                         : 'border-[#ed003f] text-[#ed003f] bg-white'
