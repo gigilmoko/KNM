@@ -21,7 +21,7 @@ import CreditCardIcon from '@heroicons/react/24/outline/CreditCardIcon';
 const Dashboard = () => {
   const dispatch = useDispatch();
   const [totalCustomers, setTotalCustomers] = useState("0");
-  const [totalSales, setTotalSales] = useState("$0");
+  const [totalSales, setTotalSales] = useState("₱0");
   const [ordersCatered, setOrdersCatered] = useState("0");
   const [totalUsers, setTotalUsers] = useState("0");
   const [totalMembers, setTotalMembers] = useState("0");
@@ -116,12 +116,12 @@ const Dashboard = () => {
           },
         });
         if (response.data && response.data.success) {
-          setTotalSales(`$${response.data.totalPrice.toLocaleString()}`);
+          setTotalSales(`₱${response.data.totalPrice.toLocaleString()}`);
         } else {
-          setTotalSales("$0");
+          setTotalSales("₱0");
         }
       } catch (error) {
-        setTotalSales("$0");
+        setTotalSales("₱0");
       }
     };
 

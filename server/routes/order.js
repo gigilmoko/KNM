@@ -37,6 +37,7 @@ const {
 const { get } = require('mongoose');
 
 // Add this route to your order routes
+router.post('/predictions/get-top-products', getTopProducts)
 router.post('/update-order-addresses', isAuthenticatedUser,updateOrderAddresses);
 
 router.post('/neworder', isAuthenticatedUser, createOrder);
@@ -54,7 +55,6 @@ router.put("/orders/update/:id", processOrder)
 router.put("/orders/update/status/:id", processOrderAny)
 router.get('/predictions/demand-forecast',isAuthenticatedUser, isAdmin,getDemandForecast)
 router.get('/predictions/market-basket',isAuthenticatedUser, isAdmin,getMarketBasketAnalysis)
-router.get('/predictions/get-top-products', getTopProducts)
 router.get('/analytics/order-latest', getLatestOrders)
 router.get('/predictions/get-seasonality',isAuthenticatedUser, isAdmin,getSeasonalityAnalysis)
 router.get('/predictions/get-peak-hours',isAuthenticatedUser, isAdmin,getPeakOrderHours)

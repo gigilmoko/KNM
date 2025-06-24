@@ -1344,7 +1344,6 @@ exports.getTopProducts = async (req, res) => {
   }
 };
 
-
 exports.getSeasonalityAnalysis = async (req, res) => {
   try {
     const { productId } = req.params;

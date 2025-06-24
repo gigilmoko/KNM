@@ -150,7 +150,12 @@ function RidersList() {
                                                                 </div>
                                                             </div>
                                                             <div>
-                                                                <div className="font-bold">{`${rider.fname} ${rider.middlei ? `${rider.middlei}. ` : ''}${rider.lname}`}</div>
+                                                                <div
+                                                                    className="font-bold cursor-pointer text-[#ed003f] hover:underline"
+                                                                    onClick={() => navigate(`/admin/rider/${rider._id}/history`)}
+                                                                >
+                                                                    {`${rider.fname} ${rider.middlei ? `${rider.middlei}. ` : ''}${rider.lname}`}
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </td>
