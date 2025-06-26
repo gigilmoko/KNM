@@ -1,4 +1,4 @@
-const User = require("../models/user");
+loginconst User = require("../models/user");
 const Member = require("../models/member");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
@@ -188,53 +188,53 @@ exports.loginUser = async (req, res, next) => {
     }
 
     // Check if user is admin
-    console.log("User role:", user.role);
-    if (user.role.includes('admin')) {
-      console.log("Admin detected, sending verification code...");
+    // console.log("User role:", user.role);
+    // if (user.role.includes('admin')) {
+    //   console.log("Admin detected, sending verification code...");
       
-      // Generate and send verification code
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log("Generated code:", code);
-      user.verificationCode = code;
-      user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
-      await user.save();
-      console.log("Verification code saved to user");
+    //   // Generate and send verification code
+    //   const code = Math.floor(100000 + Math.random() * 900000).toString();
+    //   console.log("Generated code:", code);
+    //   user.verificationCode = code;
+    //   user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    //   await user.save();
+    //   console.log("Verification code saved to user");
 
-      // Send verification code via email
-      try {
-        console.log("Creating transporter...");
-        const transporter = createTransporter();
+    //   // Send verification code via email
+    //   try {
+    //     console.log("Creating transporter...");
+    //     const transporter = createTransporter();
         
-        console.log("Rendering email template...");
-        const emailTemplate = await ejs.renderFile(
-          path.join(__dirname, '../views/verificationemail.ejs'),
-          {
-            user: user,
-            verificationCode: code
-          }
-        );
+    //     console.log("Rendering email template...");
+    //     const emailTemplate = await ejs.renderFile(
+    //       path.join(__dirname, '../views/verificationemail.ejs'),
+    //       {
+    //         user: user,
+    //         verificationCode: code
+    //       }
+    //     );
         
-        console.log("Sending email to:", user.email);
-        await transporter.sendMail({
-          from: process.env.GMAIL_USER || 'noreply@yourapp.com',
-          to: user.email,
-          subject: 'Admin Login Verification Code',
-          html: emailTemplate
-        });
+    //     console.log("Sending email to:", user.email);
+    //     await transporter.sendMail({
+    //       from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+    //       to: user.email,
+    //       subject: 'Admin Login Verification Code',
+    //       html: emailTemplate
+    //     });
 
-        console.log("Email sent successfully!");
-        return res.status(200).json({
-          success: true,
-          requiresVerification: true,
-          message: 'Verification code sent to your email'
-        });
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError);
-        return res.status(500).json({ message: 'Failed to send verification code' });
-      }
-    } else {
-      console.log("User is not admin, proceeding with normal login...");
-    }
+    //     console.log("Email sent successfully!");
+    //     return res.status(200).json({
+    //       success: true,
+    //       requiresVerification: true,
+    //       message: 'Verification code sent to your email'
+    //     });
+    //   } catch (emailError) {
+    //     console.error('Email sending failed:', emailError);
+    //     return res.status(500).json({ message: 'Failed to send verification code' });
+    //   }
+    // } else {
+    //   console.log("User is not admin, proceeding with normal login...");
+    // }
 
     // Update OneSignal player tags and device token for non-admin users
     if (deviceToken) {
