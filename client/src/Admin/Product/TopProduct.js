@@ -139,6 +139,7 @@ function TopProduct() {
                                             <th className="text-[#ed003f] text-xs sm:text-sm">Stock</th>
                                             <th className="text-[#ed003f] text-xs sm:text-sm">Category</th>
                                             <th className="text-[#ed003f] text-xs sm:text-sm">Ordered Qty</th>
+                                            <th className="text-[#ed003f] text-xs sm:text-sm">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -172,6 +173,17 @@ function TopProduct() {
                                                     <td className="text-xs sm:text-base">{product.stock}</td>
                                                     <td className="text-xs sm:text-base">{product.category?.name || "Unknown"}</td>
                                                     <td className="text-xs sm:text-base font-bold">{quantity}</td>
+                                                    <td className="text-xs sm:text-base font-bold">
+  {product?.createdAt
+    ? new Date(product.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'Date not available'}
+</td>
+
+                                                        
                                                 </tr>
                                             ))
                                         )}
