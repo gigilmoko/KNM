@@ -63,18 +63,27 @@ function TopProduct() {
             "Price",
             "Stock",
             "Category",
-            "Ordered Qty"
+            "Ordered Qty",
+            "Date"
         ];
 
         const tableRows = topProducts.map(({ product, quantity }) => [
-            (product.images && product.images.length > 0) ? "Image" : "N/A",
-            product.name,
-            product.description,
-            `₱${Number(product.price).toFixed(2)}`,
-            product.stock,
-            product.category?.name || "Unknown",
-            quantity
-        ]);
+  (product.images && product.images.length > 0) ? "Image" : "N/A",
+  product.name,
+  product.description,
+  `₱${Number(product.price).toFixed(2)}`,
+  product.stock,
+  product.category?.name || "Unknown",
+  quantity,
+  product?.createdAt
+    ? new Date(product.createdAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : 'Date not available'
+]);
+
 
         autoTable(doc, {
             head: [tableColumn],
