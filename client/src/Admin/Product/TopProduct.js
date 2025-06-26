@@ -56,6 +56,9 @@ function TopProduct() {
         const doc = new jsPDF();
         doc.text("Top Products", 14, 16);
 
+        doc.setFontSize(12);
+        doc.text(`Date Range: ${dateRange.from} to ${dateRange.to}`, 14, 24);
+
         const tableColumn = [
             "Image",
             "Name",
@@ -88,10 +91,10 @@ function TopProduct() {
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 20
+            startY: 30
         });
 
-        doc.save("top-products.pdf");
+        doc.save(`top-products_Date Range: ${dateRange.from} to ${dateRange.to}.pdf`);
     };
 
     return (
