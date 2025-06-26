@@ -53,49 +53,67 @@ function TopProduct() {
     };
 
     const handleDownloadPDF = () => {
-        const doc = new jsPDF();
-        doc.text("Top Products", 14, 16);
+    const doc = new jsPDF();
 
-        doc.setFontSize(12);
-        doc.text(`Date Range: ${dateRange.from} to ${dateRange.to}`, 14, 24);
-
-        const tableColumn = [
-            "Image",
-            "Name",
-            "Description",
-            "Price",
-            "Stock",
-            "Category",
-            "Ordered Qty",
-            "Date"
-        ];
-
-        const tableRows = topProducts.map(({ product, quantity }) => [
-  (product.images && product.images.length > 0) ? "Image" : "N/A",
-  product.name,
-  product.description,
-  `₱${Number(product.price).toFixed(2)}`,
-  product.stock,
-  product.category?.name || "Unknown",
-  quantity,
-  product?.createdAt
-    ? new Date(product.createdAt).toLocaleDateString('en-US', {
+    const now = new Date();
+    const formattedNow = now.toLocaleString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-      })
-    : 'Date not available'
-]);
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    });
 
+    doc.setFontSize(18);
+    doc.text("Top Products", 14, 16);
 
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 30
-        });
+    // Date range just under title
+    doc.setFontSize(12);
+    doc.text(`Date Range: ${dateRange.from} to ${dateRange.to}`, 14, 24);
 
-        doc.save(`top-products_Date Range: ${dateRange.from} to ${dateRange.to}.pdf`);
-    };
+    const tableColumn = [
+        "Image",
+        "Name",
+        "Description",
+        "Price",
+        "Stock",
+        "Category",
+        "Ordered Qty",
+        "Date"
+    ];
+
+    const tableRows = topProducts.map(({ product, quantity }) => [
+        (product.images && product.images.length > 0) ? "Image" : "N/A",
+        product.name,
+        product.description,
+        `₱${Number(product.price).toFixed(2)}`,
+        product.stock,
+        product.category?.name || "Unknown",
+        quantity,
+        product?.createdAt
+            ? new Date(product.createdAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+            })
+            : 'Date not available'
+    ]);
+
+    autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        startY: 30,
+        didDrawPage: function (data) {
+            
+            doc.setFontSize(10);
+            doc.setTextColor(150);
+            doc.text(`Downloaded on: ${formattedNow}`, data.settings.margin.left, doc.internal.pageSize.height - 10);
+        }
+    });
+
+    doc.save(`top-products_${dateRange.from}_to_${dateRange.to}.pdf`);
+};
 
     return (
         <>
