@@ -76,6 +76,11 @@ const routes = [
         icon: <ShoppingBagIcon className={submenuIconClasses}/>,
         name: 'Product List',
       },
+       {
+        path: '/admin/products/top',
+        icon: <ShoppingBagIcon className={submenuIconClasses}/>,
+        name: 'Top Products',
+      },
       {
         path: '/admin/products/new',
         icon: <ShoppingBagIcon className={submenuIconClasses}/>,

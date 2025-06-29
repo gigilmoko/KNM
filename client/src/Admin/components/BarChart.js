@@ -82,7 +82,7 @@ function BarChart() {
           new Date(item._id.year, item._id.month - 1).toLocaleString("default", {
             month: "long",
           }),
-        "totalAmount"
+        "totalPrice" // <-- changed from "totalAmount" to "totalPrice"
       );
     } else if (activeTab === "weekly") {
       fetchData("weekly", (item) => item.day, "count");

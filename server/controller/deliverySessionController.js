@@ -225,7 +225,6 @@ exports.createDeliverySession = async (req, res) => {
   }
 };
 
-
 // old assigning delivery session to a rider and truck
 // exports.createDeliverySession = async (req, res) => {
 //   try {
@@ -635,19 +634,19 @@ exports.getSessionsByRiderId = async (req, res, next) => {
   try {
     const { riderId } = req.params;
 
-    // Fetch all delivery sessions linked to the riderId with focus on completed sessions
+    // Fetch all delivery sessions linked to the riderId (remove status filter)
     const sessions = await DeliverySession.find({ 
-      rider: riderId,
-      status: { $in: ['Completed'] } // Focus on completed sessions
+      rider: riderId
+      // status: { $in: ['Completed'] } // REMOVE or comment out this line
     })
-      .populate('rider', 'fname lname email phone') // Get rider details
-      .populate('truck', 'model plateNo') // Get truck details
+      .populate('rider', 'fname lname email phone')
+      .populate('truck', 'model plateNo')
       .populate({
         path: 'orders',
         populate: [
           {
             path: 'orderProducts.product',
-            select: 'name description price images' // Include product images
+            select: 'name description price images'
           },
           {
             path: 'user',
@@ -661,7 +660,7 @@ exports.getSessionsByRiderId = async (req, res, next) => {
     if (!sessions || sessions.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No completed delivery sessions found for this rider',
+        message: 'No delivery sessions found for this rider',
       });
     }
 

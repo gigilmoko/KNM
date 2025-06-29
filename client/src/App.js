@@ -69,7 +69,8 @@ import ProductPriceForecastLineGraph from './Admin/components/ProductPriceForeca
 import TaskList from './Admin/Task/TaskList';
 import NewTask from './Admin/Task/NewTask';
 import UpdateTask from './Admin/Task/UpdateTask';
-
+import RiderHistory from './Admin/Rider/RiderHistory';
+import TopProduct from './Admin/Product/TopProduct';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -130,6 +131,7 @@ function App() {
           <Route path="/admin/forecast/graph" element={<ProtectedRoute><ForecastGraph /></ProtectedRoute>} />
           {/* Rider */}
           <Route path="/admin/rider/list" element={<ProtectedRoute><RiderList /></ProtectedRoute>} />
+          <Route path="/admin/rider/:riderId/history" element={<ProtectedRoute><RiderHistory /></ProtectedRoute>} />
           <Route path="/admin/rider/new" element={<ProtectedRoute><NewRider /></ProtectedRoute>} />
           <Route path="/admin/rider/edit/:riderId" element={<ProtectedRoute><UpdateRider /></ProtectedRoute>} />
           <Route path="/admin/rider/changepassword/:riderId" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
@@ -161,6 +163,7 @@ function App() {
           <Route path="/admin/calendar/info/:id" element={<ProtectedRoute><CalendarInfo /></ProtectedRoute>} />
           <Route path="/admin/calendar/info/:id/list" element={<ProtectedRoute><CalendarInterested /></ProtectedRoute>} />
           {/* Products */}
+          <Route path="/admin/products/top" element={<ProtectedRoute><TopProduct /></ProtectedRoute>} />
           <Route path="/admin/products" element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />
           <Route path="/admin/products/update/:id" element={<ProtectedRoute><UpdateProduct /></ProtectedRoute>} />
           <Route path="/admin/products/new" element={<ProtectedRoute><NewProduct /></ProtectedRoute>} />
