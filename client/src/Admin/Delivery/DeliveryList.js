@@ -51,20 +51,24 @@ function DeliveryList() {
   }, [newNotificationMessage]);
 
   const fetchDeliveries = async () => {
-    setLoading(true);
-    try {
-      const token = sessionStorage.getItem("token");
-      const response = await axios.get(`${process.env.REACT_APP_API}/api/delivery-session/by-status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setDeliveries(response.data.groupedSessions || []);
-      setFilteredDeliveries(response.data.groupedSessions || []);
-      console.log("Fetched deliveries:", response.data.groupedSessions);
-    } catch (error) {
-      console.error('Error fetching deliveries:', error);
-    }
-    setLoading(false);
-  };
+  setLoading(true);
+  try {
+    const token = sessionStorage.getItem("token");
+    const response = await axios.get(`${process.env.REACT_APP_API}/api/delivery-session/by-status`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    setDeliveries(response.data.groupedSessions || []);
+    setFilteredDeliveries(response.data.groupedSessions || []);
+    
+    // Console log completed orders only
+    const completedOrders = response.data.groupedSessions?.find(delivery => delivery._id === 'Completed');
+    console.log('Completed orders:', completedOrders);
+    
+  } catch (error) {
+    console.error('Error fetching deliveries:', error);
+  }
+  setLoading(false);
+};
 
   const applySearch = (value) => {
     const lowercasedValue = value.toLowerCase();
@@ -148,6 +152,20 @@ function DeliveryList() {
     setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
+  // Helper function to format address
+  const formatAddress = (address) => {
+    if (!address) return "N/A";
+    
+    const { houseNo, streetName, barangay, city } = address;
+    
+    // Filter out "none" values and empty strings
+    const addressParts = [houseNo, streetName, barangay, city].filter(
+      part => part && part.toLowerCase() !== "none" && part.trim() !== ""
+    );
+    
+    return addressParts.length > 0 ? addressParts.join(", ") : "N/A";
+  };
+
   return (
     <>
       <div className="drawer lg:drawer-open">
@@ -200,6 +218,7 @@ function DeliveryList() {
                         <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Rider</th>
                         <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Truck</th>
                         <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>KNM Order IDs</th>
+                        <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Delivery Address</th>
                         {selectedStatus === 'Ongoing' && (
                           <th style={{ color: '#ed003f', fontSize: '0.9rem' }}>Actions</th>
                         )}
@@ -219,26 +238,31 @@ function DeliveryList() {
                                 </td>
                                 <td>{session.riderDetails[0]?.fname} {session.riderDetails[0]?.middlei} {session.riderDetails[0]?.lname}</td>
                                 <td>{session.truckDetails[0]?.model} ({session.truckDetails[0]?.plateNo})</td>
-                               <td>
-  {session.orders && session.orders.length > 0 ? (
-    <ul className="list-disc ml-4">
-      {session.orders.map(orderId => {
-        // Generate KNMOrderId from the orderId
-        // Take the last 5 characters of the MongoDB ObjectId and make them uppercase
-        const idPortion = orderId.toString().substr(-5).toUpperCase();
-        const KNMOrderId = `KNM-${idPortion}`;
-        
-        return (
-          <li key={orderId}>
-            {KNMOrderId}
-          </li>
-        );
-      })}
-    </ul>
-  ) : (
-    "No orders"
-  )}
-</td>
+                                <td>
+                                  {session.orders && session.orders.length > 0 ? (
+                                    <ul className="list-disc ml-4">
+                                      {session.orders.map(orderId => {
+                                        // Generate KNMOrderId from the orderId
+                                        // Take the last 5 characters of the MongoDB ObjectId and make them uppercase
+                                        const idPortion = orderId.toString().substr(-5).toUpperCase();
+                                        const KNMOrderId = `KNM-${idPortion}`;
+                                        
+                                        return (
+                                          <li key={orderId}>
+                                            {KNMOrderId}
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
+                                  ) : (
+                                    "No orders"
+                                  )}
+                                </td>
+                                <td className="text-xs sm:text-sm">
+                                  {session.orderDetails && session.orderDetails.address
+                                    ? formatAddress(session.orderDetails.address)
+                                    : "N/A"}
+                                </td>
                                 {selectedStatus === 'Ongoing' && (
                                   <td>
                                     <button
@@ -262,7 +286,7 @@ function DeliveryList() {
                           )
                       ) : (
                         <tr>
-                          <td colSpan={selectedStatus === 'Ongoing' ? 5 : 4} className="text-center">No deliveries found</td>
+                          <td colSpan={selectedStatus === 'Ongoing' ? 6 : 5} className="text-center">No deliveries found</td>
                         </tr>
                       )}
                     </tbody>

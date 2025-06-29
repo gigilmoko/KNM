@@ -41,9 +41,11 @@ function CalendarView() {
       const apiUrl = `${process.env.REACT_APP_API}/api/calendar/events`;
       try {
         const response = await axios.get(apiUrl);
+        console.log('Fetched events:', response.data.data); // Debug log
         setEvents(response.data.data || []);
         setLoading(false);
       } catch (error) {
+        console.error('Error fetching events:', error);
         setError('Failed to load events.');
         setLoading(false);
       }
@@ -79,13 +81,18 @@ function CalendarView() {
 
   const openAllEventsDetail = (date, theme) => {
     if (theme !== "MORE") return;
-    let filteredEvents = events.filter((e) => moment(date).isSame(moment(e.startDate), 'day'))
-      .map((e) => ({ title: e.title, theme: e.theme }));
+    let filteredEvents = events.filter((e) => moment(date).isSame(moment(e.startDate), 'day'));
+    console.log('Opening all events for date:', date, 'Events:', filteredEvents); // Debug log
     openDayDetail({ filteredEvents, title: moment(date).format("D MMM YYYY") });
   };
 
   const openDayDetail = ({ filteredEvents, title }) => {
-    dispatch(openRightDrawer({ header: title, bodyType: RIGHT_DRAWER_TYPES.CALENDAR_EVENTS, extraObject: { filteredEvents } }));
+    console.log('Opening day detail with events:', filteredEvents); // Debug log
+    dispatch(openRightDrawer({ 
+      header: title, 
+      bodyType: RIGHT_DRAWER_TYPES.CALENDAR_EVENTS, 
+      extraObject: { filteredEvents } 
+    }));
   };
 
   const isToday = (date) => moment(date).isSame(moment(), 'day');
@@ -164,10 +171,14 @@ function CalendarView() {
                         ${eventsForDay.length > 0 ? "cursor-pointer hover:bg-[#ed003f] hover:text-white" : ""}
                       `}
                       style={eventsForDay.length === 0 ? { pointerEvents: "none" } : {}}
-                      onClick={eventsForDay.length > 0 ? () => openDayDetail({
-                        filteredEvents: events.filter((e) => moment(day).isSame(moment(e.startDate), 'day')),
-                        title: moment(day).format("D MMM YYYY")
-                      }) : undefined}
+                      onClick={eventsForDay.length > 0 ? () => {
+                        const dayEvents = events.filter((e) => moment(day).isSame(moment(e.startDate), 'day'));
+                        console.log('Day clicked, events:', dayEvents); // Debug log
+                        openDayDetail({
+                          filteredEvents: dayEvents,
+                          title: moment(day).format("D MMM YYYY")
+                        });
+                      } : undefined}
                     >
                       {moment(day).format("D")}
                     </p>
