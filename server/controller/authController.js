@@ -1,4 +1,4 @@
-loginconst User = require("../models/user");
+const User = require("../models/user");
 const Member = require("../models/member");
 const sendToken = require("../utils/jwtToken");
 const sendEmail = require("../utils/sendEmail");
@@ -71,55 +71,56 @@ exports.avatarUpdate = async (req, res) => {
 };
 
 // Exported function to fetch user and member data where conditions match
+// Exported function to fetch user and member data where conditions match
 exports.fetchUserMemberMatch = async (req, res) => {
   try {
       const { memberId } = req.query; // Get memberId from request query
 
-      // Use aggregation to join User and Member collections based on memberId
-      const matchingUsers = await User.aggregate([
-          {
-              $lookup: {
-                  from: "members", // The name of the Member collection
-                  localField: "memberId", // Field in the User model
-                  foreignField: "memberId", // Field in the Member model
-                  as: "memberDetails" // Output array field
-              }
-          },
+      // Use aggregation to find users applying for membership
+      const applyingUsers = await User.aggregate([
           {
               $match: {
-                  "memberDetails.memberId": { $exists: true, $ne: null }, // Ensure memberId exists in both
-                  ...(memberId ? { memberId } : {}) // Filter by memberId if provided
+                  applyMember: true, // Users who are applying for membership
+                  role: 'user' // Still have user role (not yet approved as member)
               }
           },
           {
               $project: {
                   fname: 1,
                   lname: 1,
+                  middlei: 1,
+                  email: 1,
                   memberId: 1,
                   role: 1,
-                  memberDetails: { fname: 1, lname: 1, memberId: 1 } // Include relevant fields from Member
+                  applyMember: 1,
+                  avatar: 1,
+                  createdAt: 1
               }
+          },
+          {
+              $sort: { createdAt: -1 } // Sort by creation date, newest first
           }
       ]);
 
-      if (matchingUsers.length === 0) {
+      if (applyingUsers.length === 0) {
           return res.status(404).json({
               success: false,
-              message: 'No matching user-member found'
+              message: 'No users applying for membership found'
           });
       }
 
-      // If found, return the user and member data
+      // Return the users applying for membership
       return res.json({
           success: true,
-          data: matchingUsers
+          data: applyingUsers,
+          count: applyingUsers.length
       });
 
   } catch (error) {
-      console.error('Error fetching user-member match:', error);
+      console.error('Error fetching users applying for membership:', error);
       return res.status(500).json({
           success: false,
-          message: 'Server error while fetching user-member match'
+          message: 'Server error while fetching users applying for membership'
       });
   }
 };
