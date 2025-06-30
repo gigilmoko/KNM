@@ -115,11 +115,11 @@ const routes = [
         icon: <TruckIcon className={submenuIconClasses}/>,
         name: 'New Delivery',
       },
-      {
-        path: '/admin/delivery/update/:id',
-        icon: <TruckIcon className={submenuIconClasses}/>,
-        name: 'Update Delivery',
-      },
+      // {
+      //   path: '/admin/delivery/update/:id',
+      //   icon: <TruckIcon className={submenuIconClasses}/>,
+      //   name: 'Update Delivery',
+      // },
     ]
   },
   {

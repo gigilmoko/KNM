@@ -143,7 +143,7 @@ function App() {
           {/* Delivery */}
           <Route path="/admin/delivery/list" element={<ProtectedRoute><DeliveryList /></ProtectedRoute>} />
           <Route path="/admin/delivery/new" element={<ProtectedRoute><NewDelivery /></ProtectedRoute>} />
-          <Route path="/admin/delivery/edit/:deliveryId" element={<ProtectedRoute><UpdateDelivery /></ProtectedRoute>} />
+         <Route path="/admin/delivery/edit/:id" element={<UpdateDelivery />} />
           {/* Feedback */}
           <Route path="/admin/feedback/list" element={<ProtectedRoute><FeedbackList /></ProtectedRoute>} />
           <Route path="/admin/event/feedback/list" element={<ProtectedRoute><EventFeedbackList /></ProtectedRoute>} />

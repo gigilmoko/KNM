@@ -25,6 +25,139 @@ const markPendingOrdersAsDelivered = async () => {
 
 schedule.scheduleJob('0 0 * * *', markPendingOrdersAsDelivered);
 
+// Add this after the existing controllers
+
+exports.updateDeliverySession = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { riderId, truckId, orderIds } = req.body;
+
+    console.log('Updating delivery session:', id);
+    console.log('New data:', { riderId, truckId, orderIds });
+
+    // Find the existing delivery session
+    const session = await DeliverySession.findById(id).populate('orders');
+    if (!session) {
+      return res.status(404).json({ message: 'Delivery session not found' });
+    }
+
+    // Check if session can be updated (only allow updates for Ongoing status)
+    if (session.status !== 'Ongoing') {
+      return res.status(400).json({ message: 'Can only update ongoing delivery sessions' });
+    }
+
+    // Validate rider and truck if they are being changed
+    if (riderId && riderId !== session.rider.toString()) {
+      const rider = await Rider.findById(riderId);
+      if (!rider) {
+        return res.status(404).json({ message: 'New rider not found' });
+      }
+    }
+
+    if (truckId && truckId !== session.truck.toString()) {
+      const truck = await Truck.findById(truckId);
+      if (!truck) {
+        return res.status(404).json({ message: 'New truck not found' });
+      }
+    }
+
+    // If orders are being updated
+    if (orderIds && Array.isArray(orderIds)) {
+      // Validate new orders - must be Preparing or Cancelled status
+      const newOrders = await Order.find({
+        _id: { $in: orderIds },
+        status: { $in: ['Preparing', 'Cancelled', 'Shipped'] }
+      }).populate('user', 'fname lname email deviceToken');
+
+      if (newOrders.length !== orderIds.length) {
+        return res.status(400).json({ message: 'One or more orders are invalid or not available for delivery' });
+      }
+
+      // Get current order IDs from session
+      const currentOrderIds = session.orders.map(order => order._id.toString());
+      
+      // Find orders being removed (in current but not in new)
+      const removedOrderIds = currentOrderIds.filter(oldId => !orderIds.includes(oldId));
+      
+      // Find orders being added (in new but not in current)
+      const addedOrderIds = orderIds.filter(newId => !currentOrderIds.includes(newId));
+
+      console.log('Current orders:', currentOrderIds);
+      console.log('New orders:', orderIds);
+      console.log('Orders being removed:', removedOrderIds);
+      console.log('Orders being added:', addedOrderIds);
+
+      // Reset status of orders that are being removed
+      if (removedOrderIds.length > 0) {
+        await Order.updateMany(
+          { _id: { $in: removedOrderIds } },
+          { $set: { status: 'Preparing', assignedAlready: false } }
+        );
+        console.log(`Reset ${removedOrderIds.length} removed orders to Preparing`);
+      }
+
+      // Update status of orders being added
+      if (addedOrderIds.length > 0) {
+        await Order.updateMany(
+          { _id: { $in: addedOrderIds } },
+          { $set: { status: 'Shipped', assignedAlready: true } }
+        );
+        console.log(`Updated ${addedOrderIds.length} added orders to Shipped`);
+      }
+
+      // Update the session with new orders
+      session.orders = orderIds;
+    }
+
+    // Update rider and truck if provided
+    if (riderId) {
+      session.rider = riderId;
+      console.log('Updated rider to:', riderId);
+    }
+    
+    if (truckId) {
+      session.truck = truckId;
+      console.log('Updated truck to:', truckId);
+    }
+
+    // Save the updated session
+    await session.save();
+
+    // Populate the updated session for response
+    const updatedSession = await DeliverySession.findById(id)
+      .populate('rider', 'fname lname email phone')
+      .populate('truck', 'model plateNo')
+      .populate({
+        path: 'orders',
+        select: 'KNMOrderId status totalPrice paymentInfo address user',
+        populate: {
+          path: 'user',
+          select: 'fname lname email'
+        }
+      });
+
+    console.log('Delivery session updated successfully');
+
+    res.status(200).json({ 
+      message: 'Delivery session updated successfully', 
+      session: updatedSession,
+      changes: {
+        riderChanged: !!riderId,
+        truckChanged: !!truckId,
+        ordersChanged: !!(orderIds && Array.isArray(orderIds)),
+        orderCount: updatedSession.orders.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Error updating delivery session:', error);
+    res.status(500).json({ 
+      message: 'Error updating delivery session', 
+      error: error.message 
+    });
+  }
+};
+
 // Function to create a new delivery session sa
 exports.createDeliverySession = async (req, res) => {
   try {
@@ -286,20 +419,27 @@ exports.getSessions = async (req, res) => {
 };
 
 exports.getSessionById = async (req, res) => {
-    try {
-      const session = await DeliverySession.findById(req.params.id)
-        .populate('rider', 'fname lname email phone')
-        .populate('truck', 'model plateNo')
-        .populate('orders', 'status');
-  
-      if (!session) {
-        return res.status(404).json({ message: 'Delivery session not found' });
-      }
-  
-      res.status(200).json({ session });
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching delivery session', error: error.message });
+  try {
+    const session = await DeliverySession.findById(req.params.id)
+      .populate('rider', 'fname lname email phone middlei')
+      .populate('truck', 'model plateNo')
+      .populate({
+        path: 'orders',
+        select: 'KNMOrderId status totalPrice paymentInfo address user items createdAt',
+        populate: {
+          path: 'user',
+          select: 'fname lname email'
+        }
+      });
+
+    if (!session) {
+      return res.status(404).json({ message: 'Delivery session not found' });
     }
+
+    res.status(200).json({ session });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching delivery session', error: error.message });
+  }
 };
   
 exports.completeDeliverySession = async (req, res) => {
