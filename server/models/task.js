@@ -8,7 +8,7 @@ const taskSchema = new mongoose.Schema({
   description: String,
   members: [{ 
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Member',
+    ref: 'User', // Changed from 'Member' to 'User'
     required: true,
   }],
   deadline: {

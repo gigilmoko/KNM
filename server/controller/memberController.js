@@ -1,5 +1,5 @@
 const Member = require("../models/member");
-
+const User = require("../models/user");
 
 exports.createMember = async (req, res) => {
     try {
@@ -105,18 +105,41 @@ exports.createMember = async (req, res) => {
   // Get all members
 exports.getAllMembers = async (req, res) => {
     try {
-      const members = await Member.find();
+      // Only get users with role "member" that have deviceToken (playerId)
+      const memberUsers = await User.find({ 
+        role: 'member',
+        deviceToken: { $exists: true, $ne: null } 
+      }).select('fname lname middlei email phone memberId avatar role createdAt deviceToken');
+      
+      // Map users to consistent format
+      const allMembers = memberUsers.map(user => ({
+        _id: user._id,
+        fname: user.fname,
+        lname: user.lname,
+        middlei: user.middlei,
+        email: user.email,
+        phone: user.phone,
+        memberId: user.memberId,
+        avatar: user.avatar,
+        role: user.role,
+        deviceToken: user.deviceToken,
+        source: 'User',
+        type: 'user_member',
+        createdAt: user.createdAt
+      }));
   
-      if (members.length === 0) {
+      if (allMembers.length === 0) {
         return res.status(404).json({
           success: false,
-          message: 'No members found'
+          message: 'No members with device tokens found'
         });
       }
   
       res.status(200).json({
         success: true,
-        data: members
+        data: allMembers,
+        count: allMembers.length,
+        message: `Found ${allMembers.length} members with device tokens`
       });
     } catch (error) {
       res.status(400).json({
@@ -125,6 +148,3 @@ exports.getAllMembers = async (req, res) => {
       });
     }
   };
-
-  
-  
