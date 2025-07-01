@@ -10,7 +10,7 @@ import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import { toast, ToastContainer } from 'react-toastify';
-
+import PlusIcon from '@heroicons/react/24/outline/PlusIcon';
 function TaskList() {
     const navigate = useNavigate();
     const [tasks, setTasks] = useState([]);
@@ -29,6 +29,11 @@ function TaskList() {
     useEffect(() => {
         applySearch(searchText);
     }, [searchText, tasks]);
+
+    
+    const handleCreateTask = () => {
+        navigate('/admin/tasks/new');
+    };
 
     const fetchTasks = async () => {
         try {
@@ -93,16 +98,17 @@ function TaskList() {
                 <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
                     <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200" ref={mainContentRef}>
-                        <TitleCard
+                         <TitleCard
                             title={<span className="text-[#ed003f] font-bold">All Tasks</span>}
                             topMargin="mt-3"
                             TopSideButtons={
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                                     <SearchBar searchText={searchText} styleClass="mr-0 sm:mr-4" setSearchText={setSearchText} />
                                     <button
-                                        className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition"
-                                        onClick={() => navigate('/admin/tasks/new')}
+                                        className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition flex items-center gap-2"
+                                        onClick={handleCreateTask}
                                     >
+                                        <PlusIcon className="w-4 h-4" />
                                         New Task
                                     </button>
                                 </div>

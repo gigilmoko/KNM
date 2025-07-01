@@ -13,6 +13,7 @@ import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
+import PlusIcon from '@heroicons/react/24/outline/PlusIcon';
 import { toast, ToastContainer } from 'react-toastify';
 
 function CategoryList() {
@@ -116,6 +117,10 @@ function CategoryList() {
         navigate(`/admin/category/update/${id}`);
     };
 
+    const handleCreateCategory = () => {
+        navigate('/admin/category/new');
+    };
+
     return (
         <>
             <ToastContainer />
@@ -130,12 +135,21 @@ function CategoryList() {
                             TopSideButtons={
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                                     <SearchBar searchText={searchText} styleClass="mr-0 sm:mr-4" setSearchText={setSearchText} />
-                                    <button 
-                                        className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition"
-                                        onClick={toggleSortOrder}
-                                    >
-                                        {sortOrder === "asc" ? "Sort Descending" : "Sort Ascending"}
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition"
+                                            onClick={toggleSortOrder}
+                                        >
+                                            {sortOrder === "asc" ? "Sort Descending" : "Sort Ascending"}
+                                        </button>
+                                        <button 
+                                            className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition flex items-center gap-2"
+                                            onClick={handleCreateCategory}
+                                        >
+                                            <PlusIcon className="w-4 h-4" />
+                                            New Category
+                                        </button>
+                                    </div>
                                 </div>
                             }
                         >
@@ -160,6 +174,7 @@ function CategoryList() {
                                                             className="btn btn-square btn-ghost border border-[#ed003f] hover:bg-[#fff0f4] transition"
                                                             onClick={() => handleEdit(category._id)}
                                                             style={{ color: "#ed003f" }}
+                                                            title="Edit Category"
                                                         >
                                                             <PencilIcon className="w-5" style={{ color: "#ed003f" }} />
                                                         </button>
@@ -169,6 +184,7 @@ function CategoryList() {
                                                             className="btn btn-square btn-ghost border border-[#ed003f] hover:bg-[#fff0f4] transition"
                                                             onClick={() => confirmDeleteCategory(category._id, index)}
                                                             style={{ color: "#ed003f" }}
+                                                            title="Delete Category"
                                                         >
                                                             <TrashIcon className="w-5" style={{ color: "#ed003f" }} />
                                                         </button>
@@ -177,7 +193,19 @@ function CategoryList() {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="4" className="text-center">No categories found</td>
+                                                <td colSpan="4" className="text-center text-gray-500 py-8">
+                                                    No categories found
+                                                    {searchText && (
+                                                        <div className="mt-2">
+                                                            <button 
+                                                                className="btn btn-sm bg-[#ed003f] text-white border-none hover:bg-red-700"
+                                                                onClick={() => setSearchText("")}
+                                                            >
+                                                                Clear Search
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </td>
                                             </tr>
                                         )}
                                     </tbody>

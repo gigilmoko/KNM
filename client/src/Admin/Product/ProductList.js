@@ -15,6 +15,7 @@ import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
 import ChevronUpIcon from '@heroicons/react/24/outline/ChevronUpIcon';
 import ChevronDownIcon from '@heroicons/react/24/outline/ChevronDownIcon';
+import PlusIcon from '@heroicons/react/24/outline/PlusIcon';
 import { toast, ToastContainer } from 'react-toastify';
 
 function ProductsList() {
@@ -119,6 +120,10 @@ function ProductsList() {
         navigate(`/admin/products/update/${id}`);
     };
 
+    const handleCreateProduct = () => {
+        navigate('/admin/products/new');
+    };
+
     const toggleLowStockWarning = () => {
         setShowLowStockWarning(!showLowStockWarning);
     };
@@ -173,12 +178,21 @@ function ProductsList() {
                             TopSideButtons={
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
                                     <SearchBar searchText={searchText} styleClass="mr-0 sm:mr-4" setSearchText={setSearchText} />
-                                    <button
-                                        className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition"
-                                        onClick={toggleSortByDate}
-                                    >
-                                        {sortByDate === 'desc' ? 'Sort by Date Ascending' : 'Sort by Date Descending'}
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition"
+                                            onClick={toggleSortByDate}
+                                        >
+                                            {sortByDate === 'desc' ? 'Sort by Date Ascending' : 'Sort by Date Descending'}
+                                        </button>
+                                        <button
+                                            className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition flex items-center gap-2"
+                                            onClick={handleCreateProduct}
+                                        >
+                                            <PlusIcon className="w-4 h-4" />
+                                            New Product
+                                        </button>
+                                    </div>
                                 </div>
                             }
                         >
@@ -226,7 +240,19 @@ function ProductsList() {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="8" className="text-center">No products found</td>
+                                                <td colSpan="8" className="text-center text-gray-500 py-8">
+                                                    No products found
+                                                    {searchText && (
+                                                        <div className="mt-2">
+                                                            <button 
+                                                                className="btn btn-sm bg-[#ed003f] text-white border-none hover:bg-red-700"
+                                                                onClick={() => setSearchText("")}
+                                                            >
+                                                                Clear Search
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </td>
                                             </tr>
                                         )}
                                     </tbody>

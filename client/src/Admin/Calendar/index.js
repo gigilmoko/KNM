@@ -18,6 +18,7 @@ const THEME_BG = CALENDAR_EVENT_STYLE;
 function CalendarView() {
   const today = moment().startOf('day');
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const weekdays = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   const colStartClasses = [
     "",
@@ -34,7 +35,6 @@ function CalendarView() {
   const [currMonth, setCurrMonth] = useState(() => moment(today).format("MMM-yyyy"));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -74,16 +74,29 @@ function CalendarView() {
     if (filteredEvents.length > 2) {
       let originalLength = filteredEvents.length;
       filteredEvents = filteredEvents.slice(0, 2);
-      filteredEvents.push({ title: `${originalLength - 2} more`, theme: "MORE" });
+      filteredEvents.push({ title: `${originalLength - 2} more`, theme: "MORE", isMoreButton: true });
     }
     return filteredEvents;
   };
 
-  const openAllEventsDetail = (date, theme) => {
-    if (theme !== "MORE") return;
-    let filteredEvents = events.filter((e) => moment(date).isSame(moment(e.startDate), 'day'));
-    console.log('Opening all events for date:', date, 'Events:', filteredEvents); // Debug log
-    openDayDetail({ filteredEvents, title: moment(date).format("D MMM YYYY") });
+  // Updated function to handle both individual events and "more" button
+  const handleEventClick = (event, date) => {
+    console.log('Event clicked:', event); // Debug log
+    
+    if (event.isMoreButton) {
+      // If it's the "more" button, show all events for that day in sidebar
+      let filteredEvents = events.filter((e) => moment(date).isSame(moment(e.startDate), 'day'));
+      console.log('Opening all events for date:', date, 'Events:', filteredEvents); // Debug log
+      openDayDetail({ filteredEvents, title: moment(date).format("D MMM YYYY") });
+    } else {
+      // If it's a regular event, navigate to event details
+      const eventId = event._id || event.id;
+      if (eventId) {
+        navigate(`/admin/calendar/info/${eventId}`);
+      } else {
+        console.error('No valid event ID found:', event);
+      }
+    }
   };
 
   const openDayDetail = ({ filteredEvents, title }) => {
@@ -185,13 +198,17 @@ function CalendarView() {
                     {eventsForDay.map((e, k) => (
                       <p
                         key={k}
-                        onClick={() => openAllEventsDetail(day, e.theme)}
-                        className={`text-xs px-2 mt-1 truncate rounded cursor-pointer
-                          ${e.theme === "MORE"
+                        onClick={(event) => {
+                          event.stopPropagation(); // Prevent triggering the day click
+                          handleEventClick(e, day);
+                        }}
+                        className={`text-xs px-2 mt-1 truncate rounded cursor-pointer hover:opacity-80 transition-opacity
+                          ${e.isMoreButton
                             ? "bg-[#ed003f] text-white font-semibold"
                             : getRandomEventColorClass()
                           }`}
                         style={{ maxWidth: "90%" }}
+                        title={e.title} // Show full title on hover
                       >
                         {e.title}
                       </p>

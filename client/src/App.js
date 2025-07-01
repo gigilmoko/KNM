@@ -6,6 +6,7 @@ import { gapi } from 'gapi-script';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from './Public/Login';
 import Register from './Public/Register';
+import AdminVerify from './Public/AdminVerify';
 import ProtectedRoute from './Route/ProtectedRoute';
 import MembersList from './Admin/Member/MembersList';
 import MemberApply from './User/MemberApply';
@@ -71,6 +72,7 @@ import NewTask from './Admin/Task/NewTask';
 import UpdateTask from './Admin/Task/UpdateTask';
 import RiderHistory from './Admin/Rider/RiderHistory';
 import TopProduct from './Admin/Product/TopProduct';
+import Verify from './Public/Verify';
 
 const clientId = "503515447444-2m5c069jorg7vsjj6eibo1vrl82nbc99.apps.googleusercontent.com";
 
@@ -103,7 +105,7 @@ function App() {
           <Route path="/event-list" element={<EventList/>} />
           <Route path="/ppi" element={<PpiForecastLineGraph />} />
           <Route path="/price" element={<ProductPriceForecastLineGraph />} />
-          
+          <Route path="/admin-verify" element={<AdminVerify />} />
           {/* Feedback */}
           <Route path="/feedback/new" element={<NewFeedback />} />
           {/* <Route path="/event/feedback/new" element={<NewFeedback />} />
@@ -116,6 +118,7 @@ function App() {
           {/* Fillup */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify" element={<Verify />} />
           <Route path="/register-member" element={<RegisterMember />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/password/reset/:token" element={<NewPassword />} />

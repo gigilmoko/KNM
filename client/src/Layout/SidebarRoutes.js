@@ -59,11 +59,11 @@ const routes = [
         icon: <TagIcon className={submenuIconClasses}/>,
         name: 'Category List',
       },
-      {
-        path: '/admin/category/new',
-        icon: <TagIcon className={submenuIconClasses}/>,
-        name: 'New Category',
-      },
+      // {
+      //   path: '/admin/category/new',
+      //   icon: <TagIcon className={submenuIconClasses}/>,
+      //   name: 'New Category',
+      // },
     ]
   },
   {
@@ -76,16 +76,12 @@ const routes = [
         icon: <ShoppingBagIcon className={submenuIconClasses}/>,
         name: 'Product List',
       },
-       {
-        path: '/admin/products/top',
-        icon: <ShoppingBagIcon className={submenuIconClasses}/>,
-        name: 'Top Products',
-      },
-      {
-        path: '/admin/products/new',
-        icon: <ShoppingBagIcon className={submenuIconClasses}/>,
-        name: 'New Product',
-      },
+  
+      // {
+      //   path: '/admin/products/new',
+      //   icon: <ShoppingBagIcon className={submenuIconClasses}/>,
+      //   name: 'New Product',
+      // },
     ]
   },
   {
@@ -110,11 +106,11 @@ const routes = [
         icon: <TruckIcon className={submenuIconClasses}/>,
         name: 'Delivery List',
       },
-      {
-        path: '/admin/delivery/new',
-        icon: <TruckIcon className={submenuIconClasses}/>,
-        name: 'New Delivery',
-      },
+      // {
+      //   path: '/admin/delivery/new',
+      //   icon: <TruckIcon className={submenuIconClasses}/>,
+      //   name: 'New Delivery',
+      // },
       // {
       //   path: '/admin/delivery/update/:id',
       //   icon: <TruckIcon className={submenuIconClasses}/>,
@@ -149,11 +145,11 @@ const routes = [
         icon: <ClipboardDocumentCheckIcon className={submenuIconClasses}/>,
         name: 'Task List',
       },
-      {
-        path: '/admin/tasks/new',
-        icon: <ClipboardDocumentCheckIcon className={submenuIconClasses}/>,
-        name: 'New Task',
-      },
+      // {
+      //   path: '/admin/tasks/new',
+      //   icon: <ClipboardDocumentCheckIcon className={submenuIconClasses}/>,
+      //   name: 'New Task',
+      // },
     ]
   },
   {
@@ -166,11 +162,11 @@ const routes = [
         icon: <UserGroupIcon className={submenuIconClasses}/>,
         name: 'Rider List',
       },
-      {
-        path: '/admin/rider/new/',
-        icon: <UserGroupIcon className={submenuIconClasses}/>,
-        name: 'Create New Rider',
-      },
+      // {
+      //   path: '/admin/rider/new/',
+      //   icon: <UserGroupIcon className={submenuIconClasses}/>,
+      //   name: 'Create New Rider',
+      // },
     ]
   },
   {
@@ -183,11 +179,11 @@ const routes = [
         icon: <TruckIcon className={submenuIconClasses}/>,
         name: 'Truck List',
       },
-      {
-        path: '/admin/truck/new',
-        icon: <TruckIcon className={submenuIconClasses}/>,
-        name: 'Create New Truck',
-      },
+      // {
+      //   path: '/admin/truck/new',
+      //   icon: <TruckIcon className={submenuIconClasses}/>,
+      //   name: 'Create New Truck',
+      // },
     ]
   },
   {
@@ -205,11 +201,11 @@ const routes = [
         icon: <ChartBarIcon className={submenuIconClasses}/>,
         name: 'Forecast Graph',
       },
-      {
-        path: '/admin/forecast/create',
-        icon: <ChartBarIcon className={submenuIconClasses}/>,
-        name: 'New Forecast',
-      },
+      // {
+      //   path: '/admin/forecast/create',
+      //   icon: <ChartBarIcon className={submenuIconClasses}/>,
+      //   name: 'New Forecast',
+      // },
     ]
   },
   {
@@ -253,6 +249,11 @@ const routes = [
         path: '/admin/reports/users',
         icon: <DocumentChartBarIcon className={submenuIconClasses}/>,
         name: 'User Reports',
+      },
+      {
+        path: '/admin/products/top',
+        icon: <ShoppingBagIcon className={submenuIconClasses}/>,
+        name: 'Top Products',
       },
     ]
   },

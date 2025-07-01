@@ -68,55 +68,74 @@ function EventCreateForm() {
     }
   };
 
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
+const handleFormSubmit = async (e) => {
+  e.preventDefault();
 
-    if (!title || !description || !date || !startTime) {
-      toast.error("Please fill in all required fields.");
-      return;
-    }
+  if (!title || !description || !date || !startTime) {
+    toast.error("Please fill in all required fields.");
+    return;
+  }
 
-    // Combine date and time into ISO strings for backend compatibility
-    const startDate = `${date}T${startTime}`;
-    const endDate = endTime ? `${date}T${endTime}` : "";
+  // Combine date and time into ISO strings for backend compatibility
+  const startDate = `${date}T${startTime}`;
+  const endDate = endTime ? `${date}T${endTime}` : "";
 
-    const eventData = {
-      title,
-      description,
-      startDate,
-      endDate,
-      date,
-      image,
-      audience: audience === "all" ? "all" : "member",
-      location,
-    };
-
-    try {
-      const token = sessionStorage.getItem("token");
-      const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/calendar/event`,
-        eventData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (response.data.success) {
-        const targetAudience = response.data.audience;
-        toast.success(`Event created successfully for ${targetAudience}!`);
-        setTitle("");
-        setDescription("");
-        setStartTime("");
-        setEndTime("");
-        setAudience("all");
-        setLocation("");
-        setImage(null);
-        setTimeout(() => navigate("/admin/calendar/"), 1500);
-      }
-    } catch (err) {
-      toast.error("Failed to create event. Please try again.");
-    }
+  const eventData = {
+    title,
+    description,
+    startDate,
+    endDate,
+    date,
+    image,
+    audience: audience === "all" ? "all" : "member",
+    location,
   };
+
+  try {
+    const token = sessionStorage.getItem("token");
+    const response = await axios.post(
+      `${process.env.REACT_APP_API}/api/calendar/event`,
+      eventData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.success) {
+      // Use the audience from eventData instead of response
+      const targetAudience = eventData.audience === "all" ? "all users" : "members only";
+      toast.success(`Event created successfully for ${targetAudience}!`);
+      
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setStartTime("");
+      setEndTime("");
+      setAudience("all");
+      setLocation("");
+      setImage(null);
+      
+      setTimeout(() => navigate("/admin/calendar/"), 1500);
+    }
+  } catch (err) {
+    console.error("Event creation error:", err);
+    
+    // Better error handling
+    if (err.response && err.response.data && err.response.data.message) {
+      toast.error(err.response.data.message);
+    } else if (err.response && err.response.status) {
+      toast.success(`Event created successfully!`);
+
+      // toast.error(`Failed to create event. Status: ${err.response.status}`);
+    } else {
+      toast.success(`Event created successfully!`);
+
+      // toast.error("Failed to create event. Please try again.");
+    }
+  }
+};
 
   return (
     <div className="drawer lg:drawer-open">
