@@ -17,6 +17,32 @@ cloudinary.config({
   api_secret: '5hqre3DUxZG5YlOXD5HoSnj4HgQ'
 });
 
+// Add this function after the existing verification functions
+exports.checkUserVerification = async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Please provide email' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      userId: user._id,
+      isEmailVerified: user.isEmailVerified,
+      email: user.email
+    });
+  } catch (error) {
+    console.error("Error checking user verification:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 exports.deleteImage = async (req, res) => {
   const { public_id } = req.params;
 
@@ -188,54 +214,63 @@ exports.loginUser = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid Email or Password' });
     }
 
+    // Check if email is verified for all users
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ 
+        message: 'Please verify your email before logging in',
+        requiresVerification: true,
+        userId: user._id
+      });
+    }
+
     // Check if user is admin
-    // console.log("User role:", user.role);
-    // if (user.role.includes('admin')) {
-    //   console.log("Admin detected, sending verification code...");
+    console.log("User role:", user.role);
+    if (user.role.includes('admin')) {
+      console.log("Admin detected, sending verification code...");
       
-    //   // Generate and send verification code
-    //   const code = Math.floor(100000 + Math.random() * 900000).toString();
-    //   console.log("Generated code:", code);
-    //   user.verificationCode = code;
-    //   user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
-    //   await user.save();
-    //   console.log("Verification code saved to user");
+      // Generate and send verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("Generated code:", code);
+      user.verificationCode = code;
+      user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+      await user.save();
+      console.log("Verification code saved to user");
 
-    //   // Send verification code via email
-    //   try {
-    //     console.log("Creating transporter...");
-    //     const transporter = createTransporter();
+      // Send verification code via email
+      try {
+        console.log("Creating transporter...");
+        const transporter = createTransporter();
         
-    //     console.log("Rendering email template...");
-    //     const emailTemplate = await ejs.renderFile(
-    //       path.join(__dirname, '../views/verificationemail.ejs'),
-    //       {
-    //         user: user,
-    //         verificationCode: code
-    //       }
-    //     );
+        console.log("Rendering email template...");
+        const emailTemplate = await ejs.renderFile(
+          path.join(__dirname, '../views/verificationemail.ejs'),
+          {
+            user: user,
+            verificationCode: code
+          }
+        );
         
-    //     console.log("Sending email to:", user.email);
-    //     await transporter.sendMail({
-    //       from: process.env.GMAIL_USER || 'noreply@yourapp.com',
-    //       to: user.email,
-    //       subject: 'Admin Login Verification Code',
-    //       html: emailTemplate
-    //     });
+        console.log("Sending email to:", user.email);
+        await transporter.sendMail({
+          from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+          to: user.email,
+          subject: 'Admin Login Verification Code',
+          html: emailTemplate
+        });
 
-    //     console.log("Email sent successfully!");
-    //     return res.status(200).json({
-    //       success: true,
-    //       requiresVerification: true,
-    //       message: 'Verification code sent to your email'
-    //     });
-    //   } catch (emailError) {
-    //     console.error('Email sending failed:', emailError);
-    //     return res.status(500).json({ message: 'Failed to send verification code' });
-    //   }
-    // } else {
-    //   console.log("User is not admin, proceeding with normal login...");
-    // }
+        console.log("Email sent successfully!");
+        return res.status(200).json({
+          success: true,
+          requiresVerification: true,
+          message: 'Verification code sent to your email'
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        return res.status(500).json({ message: 'Failed to send verification code' });
+      }
+    } else {
+      console.log("User is not admin, proceeding with normal login...");
+    }
 
     // Update OneSignal player tags and device token for non-admin users
     if (deviceToken) {
@@ -384,7 +419,7 @@ exports.resendVerificationCode = async (req, res, next) => {
 
 
 exports.registerUserMember = async (req, res, next) => {
-  const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, memberId, googleLogin, imageMember } = req.body;
+  const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, memberId, googleLogin, imageMember, address } = req.body;
 
   try {
     // Check if the user already exists
@@ -395,11 +430,14 @@ exports.registerUserMember = async (req, res, next) => {
 
     // Use avatar and imageMember from JSON if provided, or set them to empty strings
     let avatarUrl = avatar || '';
-   
 
     // Set the role and applyMember to default values
     const role = 'user'; // role is 'user' by default
     const applyMember = true; // applyMember defaults to true
+
+    // Generate email verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    console.log("Generated verification code:", verificationCode);
 
     // Create a new user instance
     const newUser = new User({
@@ -411,26 +449,57 @@ exports.registerUserMember = async (req, res, next) => {
       avatar: avatarUrl,
       dateOfBirth,
       phone,
+      address,
       memberId: memberId || null, // If memberId is not provided, set it to null
       googleLogin: googleLogin || false, // Default to false if not provided
       role, // Assign the role as 'user'
-      applyMember // Set applyMember to true
+      applyMember, // Set applyMember to true
+      imageMember,
+      emailVerificationCode: verificationCode.toString(),
+      emailVerificationCodeExpire: Date.now() + 10 * 60 * 1000, // 10 minutes
+      isEmailVerified: false
     });
 
     // Save the new user to the database
     await newUser.save();
 
-    // Generate a JWT token for the user
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_TIME,
-    });
+    // Send verification email
+    try {
+      console.log("Creating transporter for email verification...");
+      const transporter = createTransporter();
+      
+      console.log("Rendering email verification template...");
+      const emailTemplate = await ejs.renderFile(
+        path.join(__dirname, '../views/emailverification.ejs'),
+        {
+          user: newUser,
+          verificationCode: verificationCode
+        }
+      );
+      
+      console.log("Sending verification email to:", newUser.email);
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+        to: newUser.email,
+        subject: 'Email Verification Code',
+        html: emailTemplate
+      });
 
-    // Respond with success
-    res.status(201).json({
-      success: true,
-      token,
-      message: "User registered successfully"
-    });
+      console.log("Verification email sent successfully!");
+      
+      // Respond with success but require verification
+      res.status(201).json({
+        success: true,
+        requiresVerification: true,
+        userId: newUser._id,
+        message: "Registration successful! Please check your email for verification code."
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Delete the user if email sending fails
+      await User.findByIdAndDelete(newUser._id);
+      return res.status(500).json({ message: 'Failed to send verification email. Please try again.' });
+    }
   } catch (error) {
     // Handle errors
     next(error);

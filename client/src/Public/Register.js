@@ -98,95 +98,98 @@ function Register() {
     await registerUserMember();
   };
 
-  const registerUser = async () => {
-    setLoading(true);
-    try {
-      const updatedRegisterObj = {
-        ...registerObj,
-        role: 'user',
-      };
-      const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/register`,
-        updatedRegisterObj,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+const registerUser = async () => {
+  setLoading(true);
+  try {
+    const updatedRegisterObj = {
+      ...registerObj,
+      role: 'user',
+    };
+    const response = await axios.post(
+      `${process.env.REACT_APP_API}/api/register`,
+      updatedRegisterObj,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    if (response.data.requiresVerification) {
+      toast.success("Registration successful! Please check your email for verification code.");
+      setTimeout(() => {
+        navigate("/verify", { state: { userId: response.data.userId } });
+      }, 2000);
+    } else {
       toast.success("User registered successfully!");
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-    } catch (error) {
-      if (error.response) {
-        const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
-        toast.error(errorMsg);
-      } else if (error.request) {
-        toast.error('Network error. Please try again later.');
-      } else {
-        toast.error('An unexpected error occurred. Please try again.');
-      }
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    // ...existing error handling
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const registerUserMember = async () => {
-    setLoading(true);
-    try {
-      const updatedRegisterObj = {
-        ...registerObj,
-        memberId,
-      };
-      const response = await axios.post(
-        `${process.env.REACT_APP_API}/api/register-member`,
-        updatedRegisterObj,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+// In the registerUserMember function, replace the success handling:
+const registerUserMember = async () => {
+  setLoading(true);
+  try {
+    const updatedRegisterObj = {
+      ...registerObj,
+      memberId,
+    };
+    const response = await axios.post(
+      `${process.env.REACT_APP_API}/api/register-member`,
+      updatedRegisterObj,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    
+    if (response.data.requiresVerification) {
+      toast.success("Registration successful! Please check your email for verification code.");
+      setTimeout(() => {
+        navigate("/verify", { state: { userId: response.data.userId } });
+      }, 2000);
+    } else {
       toast.success("User registered successfully!");
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-    } catch (error) {
-      if (error.response) {
-        const errorMsg = error.response.data.message || 'Registration failed. Please try again.';
-        toast.error(errorMsg);
-      } else if (error.request) {
-        toast.error('Network error. Please try again later.');
-      } else {
-        toast.error('An unexpected error occurred. Please try again.');
-      }
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    // ...existing error handling
+  } finally {
+    setLoading(false);
+  }
+};
 
   const updateFormValue = ({ updateType, value }) => {
     setErrorMessage('');
     setRegisterObj({ ...registerObj, [updateType]: value });
   };
 
-  const handleGoogleSuccess = (res) => {
-    const { profileObj } = res;
-    setRegisterObj(prev => ({
-      ...prev,
-      fname: profileObj.givenName,
-      lname: profileObj.familyName,
-      email: profileObj.email,
-      googleLogin: true,
-      avatar: profileObj.imageUrl
-    }));
-    setAvatarImage(profileObj.imageUrl);
-  };
+  // const handleGoogleSuccess = (res) => {
+  //   const { profileObj } = res;
+  //   setRegisterObj(prev => ({
+  //     ...prev,
+  //     fname: profileObj.givenName,
+  //     lname: profileObj.familyName,
+  //     email: profileObj.email,
+  //     googleLogin: true,
+  //     avatar: profileObj.imageUrl
+  //   }));
+  //   setAvatarImage(profileObj.imageUrl);
+  // };
 
-  const handleGoogleFailure = (res) => {
-    // Handle Google login failure
-  };
+  // const handleGoogleFailure = (res) => {
+  //   // Handle Google login failure
+  // };
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];

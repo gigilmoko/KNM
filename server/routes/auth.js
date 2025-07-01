@@ -3,7 +3,7 @@ const router = express.Router();
 const upload = require("../utils/multer");
 const { isAuthenticatedUser, authorizeRoles, isAdmin } = require('../middlewares/auth');
 
-const { registerUser, loginUser, logout, forgotPassword,
+const { registerUser, loginUser, logout, checkUserVerification, forgotPassword,
         resetPassword, getUserProfile, updatePassword, updateProfile,
         allUsers, getUserDetails, updateUser, updateUserRole, deleteUser, 
         googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
@@ -16,6 +16,7 @@ const { registerUser, loginUser, logout, forgotPassword,
         resendEmailVerificationCode, checkEmailVerificationStatus} = require('../controller/authController');
 
 router.get('/fetchusermember', isAuthenticatedUser, fetchUserMemberMatch);
+router.post('/check-user-verification', checkUserVerification);
 router.post('/register', registerUser);
 router.post('/verify-email', verifyEmailCode);
 router.post('/resend-email-verification', resendEmailVerificationCode);
