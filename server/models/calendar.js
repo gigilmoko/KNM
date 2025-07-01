@@ -3,40 +3,40 @@ const mongoose = require('mongoose');
 const calendarEventSchema = new mongoose.Schema({
   date: {
     type: Date,
-    required: true,
+    // required: true,
   },
   title: {
     type: String,
-    required: true,
+    // required: true,
   },
   description: {
     type: String,
   },
   startDate: {
     type: Date,
-    required: true,
+    // required: true,
   },
   endDate: {
     type: Date,
-    required: true,
+    // required: true,
   },
   image: {
     type: String,
-    required: false,
+    // required: false,
   },
   location: {
     type: String,
-    required: true, // Assuming location is mandatory for an event
+    // required: true, // Assuming location is mandatory for an event
   },
   audience: {
     type: String,
     enum: ['all', 'member'], 
-    required: true,
+    // required: true,
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', 
-    required: true,
+    // required: true,
   },
 }, {
   timestamps: true,

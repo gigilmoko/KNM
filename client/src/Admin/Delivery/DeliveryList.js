@@ -12,7 +12,7 @@ import Header from "../../Layout/Header";
 import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import { toast, ToastContainer } from "react-toastify";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import moment from "moment";
 
 function DeliveryList() {
@@ -327,6 +327,11 @@ function DeliveryList() {
     setEditLoading(false);
   };
 
+  // Navigate to create delivery page
+  const handleCreateDelivery = () => {
+    navigate('/admin/delivery/new');
+  };
+
   // Helper function to format address
   const formatAddress = (address) => {
     if (!address) return "N/A";
@@ -401,6 +406,13 @@ function DeliveryList() {
                     onClick={handleSortToggle}
                   >
                     {sortOrder === "asc" ? "Sort Descending" : "Sort Ascending"}
+                  </button>
+                  <button
+                    className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition flex items-center gap-2"
+                    onClick={handleCreateDelivery}
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    New Delivery
                   </button>
                 </div>
               }

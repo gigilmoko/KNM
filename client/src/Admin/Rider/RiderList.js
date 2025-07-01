@@ -11,7 +11,7 @@ import 'react-notifications/lib/notifications.css';
 import Header from "../../Layout/Header";
 import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
-import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { toast, ToastContainer } from 'react-toastify';
 
 function RidersList() {
@@ -104,6 +104,10 @@ function RidersList() {
         setFilteredRiders(filtered);
     };
 
+    const handleCreateRider = () => {
+        navigate('/admin/rider/new');
+    };
+
     return (
         <>
             <div className="drawer lg:drawer-open">
@@ -116,14 +120,23 @@ function RidersList() {
                             title={<span style={{ color: '#ed003f', fontWeight: 'bold' }}>All Riders</span>}
                             topMargin="mt-2"
                             TopSideButtons={
-                                <SearchBar
-                                    searchText={searchText}
-                                    styleClass="mr-4"
-                                    setSearchText={setSearchText}
-                                    inputProps={{
-                                        style: { borderColor: '#ed003f', borderWidth: '2px' }
-                                    }}
-                                />
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                                    <SearchBar
+                                        searchText={searchText}
+                                        styleClass="mr-0 sm:mr-4"
+                                        setSearchText={setSearchText}
+                                        inputProps={{
+                                            style: { borderColor: '#ed003f', borderWidth: '2px' }
+                                        }}
+                                    />
+                                    <button
+                                        className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition flex items-center gap-2"
+                                        onClick={handleCreateRider}
+                                    >
+                                        <PlusIcon className="w-4 h-4" />
+                                        New Rider
+                                    </button>
+                                </div>
                             }
                         >
                             <div className="overflow-x-auto w-full">
@@ -188,6 +201,7 @@ function RidersList() {
                                                         <button
                                                             className="btn btn-square btn-ghost"
                                                             onClick={() => confirmDeleteRider(rider._id, index)}
+                                                            title="Delete"
                                                         >
                                                             <TrashIcon className="w-5 h-5 text-[#ed003f]" />
                                                         </button>
@@ -196,7 +210,19 @@ function RidersList() {
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="6" className="text-center">No riders found</td>
+                                                <td colSpan="6" className="text-center text-gray-500 py-8">
+                                                    No riders found
+                                                    {searchText && (
+                                                        <div className="mt-2">
+                                                            <button 
+                                                                className="btn btn-sm bg-[#ed003f] text-white border-none hover:bg-red-700"
+                                                                onClick={() => setSearchText("")}
+                                                            >
+                                                                Clear Search
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </td>
                                             </tr>
                                         )}
                                     </tbody>
