@@ -12,13 +12,20 @@ const { registerUser, loginUser, logout, forgotPassword,
         updatePasswordMobile, updateProfileMobile, getUserProfileById,
         getUsersByMonth, getUsersByCurrentMonth, getAllUsersCount, getUsersCountForToday, 
         getUsersCountForPast7Days, getTotalMembers, countUsersApply, updateAddressAndDetails, 
-        verifyAdminCode, createAddress} = require('../controller/authController');
+        verifyAdminCode, createAddress, resendVerificationCode, verifyEmailCode, 
+        resendEmailVerificationCode, checkEmailVerificationStatus} = require('../controller/authController');
 
 router.get('/fetchusermember', isAuthenticatedUser, fetchUserMemberMatch);
 router.post('/register', registerUser);
+router.post('/verify-email', verifyEmailCode);
+router.post('/resend-email-verification', resendEmailVerificationCode);
+router.get('/check-email-verification/:userId', checkEmailVerificationStatus);
 router.post('/register-member', registerUserMember);
 router.post('/login', loginUser);
-router.post('/verify-admin', verifyAdminCode);
+router.post('/verify', verifyAdminCode);
+//resend admin cod
+router.post('/resend-verification', resendVerificationCode);
+
 router.post('/google-login', googleLogin);
 router.get('/logout', logout);
 router.post('/password/forgot', forgotPassword);

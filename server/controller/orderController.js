@@ -972,6 +972,10 @@ exports.getAdminOrders = async (req, res, next) => {
           .populate({
               path: "orderProducts.product",
               select: "name price", // Include the fields you need
+          })
+          .populate({
+              path: "user",
+              select: "fname lname middlei email phone", // Include user name fields
           });
 
       res.status(200).json({

@@ -51,17 +51,23 @@ function RightSidebar() {
   return (
     <div
       className={
-        "fixed z-40 inset-0 flex items-end md:items-center justify-end " +
+        "fixed inset-0 flex items-end md:items-center justify-end " +
         (isOpen
-          ? "transition-opacity opacity-100 duration-500"
+          ? "transition-opacity opacity-100 duration-500 z-50"
           : "transition-all delay-500 opacity-0 pointer-events-none")
       }
-      style={{ background: isOpen ? 'rgba(30, 41, 59, 0.25)' : 'transparent' }}
     >
-      {/* Drawer */}
+      {/* Overlay - Lower z-index */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-25 z-40"
+        onClick={close}
+        aria-label="Close drawer overlay"
+      ></div>
+
+      {/* Drawer - Higher z-index */}
       <aside
         className={
-          "w-full max-w-[95vw] sm:max-w-[400px] md:max-w-[430px] h-[90vh] md:h-full bg-white dark:bg-gray-900 shadow-2xl rounded-t-2xl md:rounded-l-2xl md:rounded-t-none flex flex-col transition-all duration-500 ease-in-out " +
+          "w-full max-w-[95vw] sm:max-w-[400px] md:max-w-[430px] h-[90vh] md:h-full bg-white dark:bg-gray-900 shadow-2xl rounded-t-2xl md:rounded-l-2xl md:rounded-t-none flex flex-col transition-all duration-500 ease-in-out z-50 relative " +
           (isOpen ? "translate-x-0" : "translate-x-full")
         }
         style={{
@@ -95,12 +101,12 @@ function RightSidebar() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 bg-white dark:bg-gray-900 rounded-b-2xl md:rounded-bl-2xl">
+        <div className="flex-1 overflow-y-auto px-4 py-4 bg-white dark:bg-gray-900 rounded-b-2xl md:rounded-bl-2xl relative z-10">
           <div className="flex flex-col w-full">
             {
               {
                 [RIGHT_DRAWER_TYPES.NOTIFICATION]: (
-                  <NotificationBodyRightDrawer {...extraObject} closeRightDrawer={close} />
+                  <NotificationBodyRightDrawer {...extraObject} />
                 ),
                 [RIGHT_DRAWER_TYPES.CALENDAR_EVENTS]: (
                   <CalendarEventsBodyRightDrawer {...extraObject} closeRightDrawer={close} />
@@ -111,13 +117,6 @@ function RightSidebar() {
           </div>
         </div>
       </aside>
-      {/* Overlay */}
-      <div
-        className="fixed inset-0 z-30"
-        style={{ background: 'rgba(30, 41, 59, 0.25)' }}
-        onClick={close}
-        aria-label="Close drawer overlay"
-      ></div>
     </div>
   );
 }

@@ -23,7 +23,7 @@ function LeftSidebar() {
     };
   }, []);
 
-  const logoSrc = currentTheme === 'dark' ? '/logowhite.png' : '/logoblack.png';
+  const logoSrc = currentTheme === 'dark' ? '/1.png' : '/1.png';
 
   return (
     <div className="drawer-side z-30">
@@ -39,7 +39,7 @@ function LeftSidebar() {
         </button>
         {/* Logo */}
         <li className="mb-4 flex items-center justify-center">
-          <Link to={'/app/welcome'} className="flex items-center gap-3">
+          <Link to={'/admin/dashboard'} className="flex items-center gap-3">
             <img className="mask mask-squircle w-14 h-14" src={logoSrc} alt="Logo" />
             <span className="font-bold text-2xl text-[#df1f47] tracking-wide">KNM</span>
           </Link>

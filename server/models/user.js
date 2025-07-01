@@ -92,6 +92,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    emailVerificationCode: {
+      type: String,
+    },
+    emailVerificationCodeExpire: {
+      type: Date,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
     verificationCode: {
       type: String,
     },

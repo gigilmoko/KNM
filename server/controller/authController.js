@@ -71,55 +71,56 @@ exports.avatarUpdate = async (req, res) => {
 };
 
 // Exported function to fetch user and member data where conditions match
+// Exported function to fetch user and member data where conditions match
 exports.fetchUserMemberMatch = async (req, res) => {
   try {
       const { memberId } = req.query; // Get memberId from request query
 
-      // Use aggregation to join User and Member collections based on memberId
-      const matchingUsers = await User.aggregate([
-          {
-              $lookup: {
-                  from: "members", // The name of the Member collection
-                  localField: "memberId", // Field in the User model
-                  foreignField: "memberId", // Field in the Member model
-                  as: "memberDetails" // Output array field
-              }
-          },
+      // Use aggregation to find users applying for membership
+      const applyingUsers = await User.aggregate([
           {
               $match: {
-                  "memberDetails.memberId": { $exists: true, $ne: null }, // Ensure memberId exists in both
-                  ...(memberId ? { memberId } : {}) // Filter by memberId if provided
+                  applyMember: true, // Users who are applying for membership
+                  role: 'user' // Still have user role (not yet approved as member)
               }
           },
           {
               $project: {
                   fname: 1,
                   lname: 1,
+                  middlei: 1,
+                  email: 1,
                   memberId: 1,
                   role: 1,
-                  memberDetails: { fname: 1, lname: 1, memberId: 1 } // Include relevant fields from Member
+                  applyMember: 1,
+                  avatar: 1,
+                  createdAt: 1
               }
+          },
+          {
+              $sort: { createdAt: -1 } // Sort by creation date, newest first
           }
       ]);
 
-      if (matchingUsers.length === 0) {
+      if (applyingUsers.length === 0) {
           return res.status(404).json({
               success: false,
-              message: 'No matching user-member found'
+              message: 'No users applying for membership found'
           });
       }
 
-      // If found, return the user and member data
+      // Return the users applying for membership
       return res.json({
           success: true,
-          data: matchingUsers
+          data: applyingUsers,
+          count: applyingUsers.length
       });
 
   } catch (error) {
-      console.error('Error fetching user-member match:', error);
+      console.error('Error fetching users applying for membership:', error);
       return res.status(500).json({
           success: false,
-          message: 'Server error while fetching user-member match'
+          message: 'Server error while fetching users applying for membership'
       });
   }
 };
@@ -188,7 +189,7 @@ exports.loginUser = async (req, res, next) => {
     }
 
     // Check if user is admin
-    console.log("User role:", user.role);
+    // console.log("User role:", user.role);
     // if (user.role.includes('admin')) {
     //   console.log("Admin detected, sending verification code...");
       
@@ -312,6 +313,74 @@ exports.verifyAdminCode = async (req, res, next) => {
   }
 };
 
+// Add this new function after the verifyAdminCode function
+exports.resendVerificationCode = async (req, res, next) => {
+  const { email } = req.body;
+  console.log("Resend verification attempt - Email:", email);
+
+  if (!email) {
+    return res.status(400).json({ error: 'Please provide email' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    // Check if user is admin
+    if (!user.role.includes('admin')) {
+      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    }
+
+    // Generate new verification code
+    const code = Math.floor(100000 + Math.random() * 900000); // Generate as number
+    console.log("Generated new code:", code);
+    
+    user.verificationCode = code.toString(); // Store as string for consistency
+    user.verificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+    console.log("New verification code saved to user");
+
+    // Send verification code via email
+    try {
+      console.log("Creating transporter for resend...");
+      const transporter = createTransporter();
+      
+      console.log("Rendering email template for resend...");
+      const emailTemplate = await ejs.renderFile(
+        path.join(__dirname, '../views/verificationemail.ejs'),
+        {
+          user: user,
+          verificationCode: code
+        }
+      );
+      
+      console.log("Sending resend email to:", user.email);
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+        to: user.email,
+        subject: 'Admin Login Verification Code - Resent',
+        html: emailTemplate
+      });
+
+      console.log("Resend email sent successfully!");
+      return res.status(200).json({
+        success: true,
+        message: 'New verification code sent to your email'
+      });
+    } catch (emailError) {
+      console.error('Resend email failed:', emailError);
+      return res.status(500).json({ message: 'Failed to resend verification code' });
+    }
+  } catch (error) {
+    console.error("Error during resend verification:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ...existing code...
+
 
 
 exports.registerUserMember = async (req, res, next) => {
@@ -368,6 +437,7 @@ exports.registerUserMember = async (req, res, next) => {
   }
 };
 
+// register user
 exports.registerUser = async (req, res, next) => {
   const { fname, lname, middlei, email, password, dateOfBirth, avatar, phone, address, googleLogin } = req.body;
 
@@ -386,6 +456,10 @@ exports.registerUser = async (req, res, next) => {
     const imageMember = null;
     const role = 'user';
 
+    // Generate email verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    console.log("Generated verification code:", verificationCode);
+
     // Create a new user instance
     const newUser = new User({
       fname,
@@ -397,29 +471,203 @@ exports.registerUser = async (req, res, next) => {
       dateOfBirth,
       phone,
       address,
-      memberId, // memberId is explicitly null
-      googleLogin: googleLogin || false, // Default to false if not provided
-      role, // Default role is 'user'
-      imageMember
+      memberId,
+      googleLogin: googleLogin || false,
+      role,
+      imageMember,
+      emailVerificationCode: verificationCode.toString(),
+      emailVerificationCodeExpire: Date.now() + 10 * 60 * 1000, // 10 minutes
+      isEmailVerified: false
     });
 
     // Save the new user to the database
     await newUser.save();
 
-    // Generate a JWT token for the user
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_TIME,
-    });
+    // Send verification email
+    try {
+      console.log("Creating transporter for email verification...");
+      const transporter = createTransporter();
+      
+      console.log("Rendering email verification template...");
+      const emailTemplate = await ejs.renderFile(
+        path.join(__dirname, '../views/emailverification.ejs'),
+        {
+          user: newUser,
+          verificationCode: verificationCode
+        }
+      );
+      
+      console.log("Sending verification email to:", newUser.email);
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+        to: newUser.email,
+        subject: 'Email Verification Code',
+        html: emailTemplate
+      });
 
-    // Respond with success
-    res.status(201).json({
-      success: true,
-      token,
-      message: "User registered successfully"
-    });
+      console.log("Verification email sent successfully!");
+      
+      // Respond with success but require verification
+      res.status(201).json({
+        success: true,
+        requiresVerification: true,
+        userId: newUser._id,
+        message: "Registration successful! Please check your email for verification code."
+      });
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+      // Delete the user if email sending fails
+      await User.findByIdAndDelete(newUser._id);
+      return res.status(500).json({ message: 'Failed to send verification email. Please try again.' });
+    }
   } catch (error) {
     // Handle errors
     next(error);
+  }
+};
+
+// verify
+exports.verifyEmailCode = async (req, res, next) => {
+  const { userId, verificationCode } = req.body;
+  console.log("Email verification attempt - UserId:", userId);
+  console.log("Email verification attempt - Code:", verificationCode);
+
+  if (!userId || !verificationCode) {
+    return res.status(400).json({ error: 'Please provide user ID and verification code' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    // Check if email is already verified
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'Email is already verified' });
+    }
+
+    // Verify the code
+    if (user.emailVerificationCode !== verificationCode || user.emailVerificationCodeExpire < Date.now()) {
+      return res.status(401).json({ message: 'Invalid or expired verification code' });
+    }
+
+    // Clear verification code and mark email as verified
+    user.emailVerificationCode = undefined;
+    user.emailVerificationCodeExpire = undefined;
+    user.isEmailVerified = true;
+    await user.save();
+
+    console.log("Email verification successful for:", user.email);
+
+    // Generate a JWT token for the verified user
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRES_TIME,
+    });
+
+    // Send token for successful verification
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        fname: user.fname,
+        lname: user.lname,
+        role: user.role,
+      },
+      message: "Email verified successfully! You are now logged in."
+    });
+  } catch (error) {
+    console.error("Error during email verification:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Resend email verification code
+exports.resendEmailVerificationCode = async (req, res, next) => {
+  const { userId } = req.body;
+  console.log("Resend email verification attempt - UserId:", userId);
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Please provide user ID' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    // Check if email is already verified
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: 'Email is already verified' });
+    }
+
+    // Generate new verification code
+    const code = Math.floor(100000 + Math.random() * 900000);
+    console.log("Generated new verification code:", code);
+    
+    user.emailVerificationCode = code.toString();
+    user.emailVerificationCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save();
+    console.log("New email verification code saved to user");
+
+    // Send verification code via email
+    try {
+      console.log("Creating transporter for resend email verification...");
+      const transporter = createTransporter();
+      
+      console.log("Rendering email verification template for resend...");
+      const emailTemplate = await ejs.renderFile(
+        path.join(__dirname, '../views/emailverification.ejs'),
+        {
+          user: user,
+          verificationCode: code
+        }
+      );
+      
+      console.log("Sending resend verification email to:", user.email);
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+        to: user.email,
+        subject: 'Email Verification Code - Resent',
+        html: emailTemplate
+      });
+
+      console.log("Resend verification email sent successfully!");
+      return res.status(200).json({
+        success: true,
+        message: 'New verification code sent to your email'
+      });
+    } catch (emailError) {
+      console.error('Resend verification email failed:', emailError);
+      return res.status(500).json({ message: 'Failed to resend verification code' });
+    }
+  } catch (error) {
+    console.error("Error during resend email verification:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Check email verification status
+exports.checkEmailVerificationStatus = async (req, res, next) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      isEmailVerified: user.isEmailVerified,
+      email: user.email
+    });
+  } catch (error) {
+    console.error("Error checking email verification status:", error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
