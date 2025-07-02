@@ -2,15 +2,16 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../Layout/Header';
-import TitleCard from '../../Layout/components/Cards/TitleCard';
 import LeftSidebar from '../../Layout/LeftSidebar';
 import RightSidebar from '../../Layout/RightSidebar';
 import ModalLayout from '../../Layout/ModalLayout';
 import { toast, ToastContainer } from 'react-toastify';
+import { ArrowLeftIcon, UserPlusIcon, XMarkIcon, CalendarIcon, DocumentTextIcon, UserIcon } from '@heroicons/react/24/outline';
 
 function NewTask() {
     const navigate = useNavigate();
     const mainContentRef = useRef(null);
+    const [loading, setLoading] = useState(false);
     const [taskData, setTaskData] = useState({
         name: "",
         description: "",
@@ -23,6 +24,12 @@ function NewTask() {
 
     useEffect(() => {
         fetchMembers();
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        setTaskData(prev => ({
+            ...prev,
+            deadline: today
+        }));
     }, []);
 
     const fetchMembers = async () => {
@@ -31,8 +38,11 @@ function NewTask() {
             const response = await axios.get(`${process.env.REACT_APP_API}/api/members`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+            console.log('Members response:', response.data);
             setMembers(response.data.data || []);
         } catch (error) {
+            console.error('Error fetching members:', error);
+            toast.error('Failed to load members');
             setMembers([]);
         }
     };
@@ -46,9 +56,12 @@ function NewTask() {
     };
 
     const handleAddMember = () => {
-        if (!selectedMember) return;
+        if (!selectedMember) {
+            setMemberError("Please select a member");
+            return;
+        }
         if (taskData.members.includes(selectedMember)) {
-            setMemberError("Member already added.");
+            setMemberError("Member already added");
             return;
         }
         setTaskData(prev => ({
@@ -69,127 +82,304 @@ function NewTask() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!taskData.name.trim()) return toast.error('Task name is required!');
-        if (!taskData.members.length) return toast.error('At least one person involved is required!');
-        if (!taskData.deadline) return toast.error('Deadline is required!');
+        
+        // Validation
+        if (!taskData.name.trim()) {
+            toast.error('Task name is required!');
+            return;
+        }
+        if (!taskData.description.trim()) {
+            toast.error('Task description is required!');
+            return;
+        }
+        if (!taskData.members.length) {
+            toast.error('At least one member must be assigned!');
+            return;
+        }
+        if (!taskData.deadline) {
+            toast.error('Deadline is required!');
+            return;
+        }
+
+        // Check if deadline is not in the past
+        const selectedDate = new Date(taskData.deadline);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            toast.error('Deadline cannot be in the past!');
+            return;
+        }
+
+        setLoading(true);
+        
         try {
             const token = sessionStorage.getItem("token");
-            await axios.post(`${process.env.REACT_APP_API}/api/tasks`, taskData, {
-                headers: { Authorization: `Bearer ${token}` },
+            console.log('Submitting task data:', taskData);
+            
+            const response = await axios.post(`${process.env.REACT_APP_API}/api/tasks`, taskData, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
             });
+            
+            console.log('Task creation response:', response.data);
             toast.success('Task created successfully!');
             setTimeout(() => navigate('/admin/tasks'), 1500);
         } catch (error) {
-            toast.error(error.response?.data?.message || 'An error occurred while creating task.');
+            console.error('Task creation error:', error);
+            const errorMessage = error.response?.data?.message || 'Failed to create task. Please try again.';
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    const handleGoBack = () => {
+        navigate('/admin/tasks');
     };
 
     return (
         <>
-            <ToastContainer />
+            <ToastContainer position="top-right" />
             <div className="drawer lg:drawer-open">
                 <input id="left-sidebar-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
-                    <main className="flex-1 overflow-y-auto pt-4 px-2 sm:px-6 bg-base-200" ref={mainContentRef}>
-                        <div className="max-w-2xl w-full mx-auto bg-white rounded-lg shadow-lg p-4 sm:p-8 mt-4">
-                            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-[#ed003f]">
-                                Create New Task
-                            </h2>
-                            <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:gap-6" autoComplete="off">
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Task Name</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={taskData.name}
-                                        onChange={handleChange}
-                                        className="input input-bordered w-full text-sm"
-                                        placeholder="Enter task name"
-                                        required
-                                    />
+                    <main className="flex-1 overflow-y-auto pt-4 px-4 sm:px-6 bg-base-200" ref={mainContentRef}>
+                        <div className="max-w-7xl mx-auto">
+                            {/* Header with Back Button */}
+                            <div className="mb-6">
+                                <button
+                                    onClick={handleGoBack}
+                                    className="btn btn-ghost mb-4 text-[#ed003f] hover:bg-red-50 flex items-center gap-2"
+                                >
+                                    <ArrowLeftIcon className="w-5 h-5" />
+                                    Back to Tasks
+                                </button>
+                                <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-[#ed003f]">
+                                    <h1 className="text-3xl font-bold text-[#ed003f] mb-2">Create New Task</h1>
+                                    <p className="text-gray-600">Fill in the details below to create a new task and assign team members.</p>
                                 </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <textarea
-                                        name="description"
-                                        value={taskData.description}
-                                        onChange={handleChange}
-                                        className="textarea textarea-bordered w-full text-sm"
-                                        placeholder="Enter task description"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Add Person Involved</label>
-                                    <div className="flex flex-col sm:flex-row gap-2">
-                                        <select
-                                            value={selectedMember}
-                                            onChange={e => {
-                                                setSelectedMember(e.target.value);
-                                                setMemberError("");
-                                            }}
-                                            className="select select-bordered w-full text-sm"
-                                            aria-label="Select member to add"
-                                        >
-                                            <option value="">Select a member</option>
-                                            {members
-                                                .filter(m => !taskData.members.includes(m._id))
-                                                .map(member => (
-                                                    <option key={member._id} value={member._id}>
-                                                        {member.fname} {member.lname}
-                                                    </option>
-                                                ))}
-                                        </select>
-                                        <button
-                                            type="button"
-                                            className="btn bg-[#ed003f] text-white border-none hover:bg-red-700 transition"
-                                            onClick={handleAddMember}
-                                            disabled={!selectedMember}
-                                            aria-disabled={!selectedMember}
-                                        >
-                                            Add
-                                        </button>
-                                    </div>
-                                    {memberError && <div className="text-red-500 text-xs mt-1">{memberError}</div>}
-                                    {/* Show selected members */}
-                                    <div className="mt-2 flex flex-col sm:flex-row flex-wrap gap-2">
-                                        {taskData.members.map(id => {
-                                            const member = members.find(m => m._id === id);
-                                            return member ? (
-                                                <span key={id} className="flex items-center gap-1 text-sm">
-                                                    {member.fname} {member.lname}
+                            </div>
+
+                            {/* Main Content - Landscape Layout */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Left Panel - Task Details */}
+                                <div className="lg:col-span-2">
+                                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                        <div className="bg-gradient-to-r from-[#ed003f] to-red-600 px-6 py-4">
+                                            <h2 className="text-xl font-semibold text-white flex items-center">
+                                                <DocumentTextIcon className="w-6 h-6 mr-2" />
+                                                Task Details
+                                            </h2>
+                                        </div>
+                                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                                            <div>
+                                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Task Name *
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id="name"
+                                                    name="name"
+                                                    value={taskData.name}
+                                                    onChange={handleChange}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ed003f] focus:border-[#ed003f] transition-colors"
+                                                    placeholder="Enter a descriptive task name"
+                                                    required
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Description *
+                                                </label>
+                                                <textarea
+                                                    id="description"
+                                                    name="description"
+                                                    value={taskData.description}
+                                                    onChange={handleChange}
+                                                    rows={6}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ed003f] focus:border-[#ed003f] transition-colors resize-none"
+                                                    placeholder="Provide detailed information about the task, including objectives and requirements"
+                                                    required
+                                                />
+                                            </div>
+                                            
+                                            <div>
+                                                <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-2">
+                                                    <CalendarIcon className="w-4 h-4 inline mr-1" />
+                                                    Deadline *
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    id="deadline"
+                                                    name="deadline"
+                                                    value={taskData.deadline}
+                                                    onChange={handleChange}
+                                                    min={new Date().toISOString().split('T')[0]}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ed003f] focus:border-[#ed003f] transition-colors"
+                                                    required
+                                                />
+                                            </div>
+
+                                            {/* Form Actions */}
+                                            <div className="border-t border-gray-200 pt-6">
+                                                <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
                                                     <button
                                                         type="button"
-                                                        className="ml-1 text-red-500"
-                                                        onClick={() => handleRemoveMember(id)}
-                                                        title="Remove"
-                                                        aria-label={`Remove ${member.fname} ${member.lname}`}
+                                                        onClick={handleGoBack}
+                                                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                                                     >
-                                                        ×
+                                                        Cancel
                                                     </button>
-                                                </span>
-                                            ) : null;
-                                        })}
+                                                    <button
+                                                        type="submit"
+                                                        disabled={loading || taskData.members.length === 0}
+                                                        className="px-8 py-3 bg-[#ed003f] text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        {loading ? (
+                                                            <>
+                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                Creating Task...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <DocumentTextIcon className="w-4 h-4" />
+                                                                Create Task
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Deadline</label>
-                                    <input
-                                        type="date"
-                                        name="deadline"
-                                        value={taskData.deadline}
-                                        onChange={handleChange}
-                                        required
-                                        className="input input-bordered w-full text-sm"
-                                    />
+
+                                {/* Right Panel - Team Assignment */}
+                                <div className="lg:col-span-1">
+                                    <div className="bg-white rounded-lg shadow-sm overflow-hidden sticky top-4">
+                                        <div className="bg-gradient-to-r from-[#ed003f] to-red-600 px-6 py-4">
+                                            <h2 className="text-xl font-semibold text-white flex items-center">
+                                                <UserIcon className="w-6 h-6 mr-2" />
+                                                Team Assignment
+                                            </h2>
+                                        </div>
+                                        <div className="p-6 space-y-6">
+                                            {/* Add Member Section */}
+                                            <div className="bg-gray-50 rounded-lg p-4">
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                                    Add Team Member *
+                                                </label>
+                                                <div className="space-y-3">
+                                                    <select
+                                                        value={selectedMember}
+                                                        onChange={e => {
+                                                            setSelectedMember(e.target.value);
+                                                            setMemberError("");
+                                                        }}
+                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ed003f] focus:border-[#ed003f] transition-colors"
+                                                    >
+                                                        <option value="">Select a team member</option>
+                                                        {members
+                                                            .filter(m => !taskData.members.includes(m._id))
+                                                            .map(member => (
+                                                                <option key={member._id} value={member._id}>
+                                                                    {member.fname} {member.lname}
+                                                                </option>
+                                                            ))}
+                                                    </select>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleAddMember}
+                                                        disabled={!selectedMember}
+                                                        className="w-full px-4 py-3 bg-[#ed003f] text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <UserPlusIcon className="w-4 h-4" />
+                                                        Add Member
+                                                    </button>
+                                                </div>
+                                                {memberError && (
+                                                    <p className="text-red-500 text-sm mt-2">{memberError}</p>
+                                                )}
+                                            </div>
+
+                                            {/* Selected Members */}
+                                            <div>
+                                                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center justify-between">
+                                                    <span>Assigned Members</span>
+                                                    {taskData.members.length > 0 && (
+                                                        <span className="bg-[#ed003f] text-white text-xs px-2 py-1 rounded-full">
+                                                            {taskData.members.length}
+                                                        </span>
+                                                    )}
+                                                </h3>
+                                                
+                                                {taskData.members.length > 0 ? (
+                                                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                                                        {taskData.members.map(id => {
+                                                            const member = members.find(m => m._id === id);
+                                                            return member ? (
+                                                                <div
+                                                                    key={id}
+                                                                    className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-8 h-8 bg-[#ed003f] text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                                                            {member.fname[0]}{member.lname[0]}
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-sm font-medium text-gray-900">
+                                                                                {member.fname} {member.lname}
+                                                                            </p>
+                                                                            <p className="text-xs text-gray-500">{member.email}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveMember(id)}
+                                                                        className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                                                        title={`Remove ${member.fname} ${member.lname}`}
+                                                                    >
+                                                                        <XMarkIcon className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
+                                                            ) : null;
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-8 text-gray-500">
+                                                        <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                                        <p className="text-sm">No team members assigned yet</p>
+                                                        <p className="text-xs">Add at least one member to continue</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Task Summary */}
+                                            <div className="bg-gray-50 rounded-lg p-4">
+                                                <h3 className="text-sm font-medium text-gray-700 mb-2">Task Summary</h3>
+                                                <div className="space-y-2 text-sm text-gray-600">
+                                                    <div className="flex justify-between">
+                                                        <span>Name:</span>
+                                                        <span className="text-right">{taskData.name || 'Not set'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Deadline:</span>
+                                                        <span className="text-right">{taskData.deadline || 'Not set'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Members:</span>
+                                                        <span className="text-right">{taskData.members.length} assigned</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button
-                                    type="submit"
-                                    className="btn w-full text-base font-semibold bg-[#ed003f] text-white border-none hover:bg-red-700 transition"
-                                >
-                                    Create Task
-                                </button>
-                            </form>
+                            </div>
                         </div>
                         <div className="h-16"></div>
                     </main>

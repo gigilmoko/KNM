@@ -1,18 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
+import axios from 'axios';
+import { toast, ToastContainer } from 'react-toastify';
 import HeaderPublic from '../Layout/HeaderPublic';
 import FooterPublic from '../Layout/FooterPublic';
 import PhoneIcon from '@heroicons/react/24/solid/PhoneIcon';
 import MapPinIcon from '@heroicons/react/24/solid/MapPinIcon';
 import EnvelopeIcon from '@heroicons/react/24/solid/EnvelopeIcon';
-import { FaFacebook, FaRegCalendarAlt } from 'react-icons/fa';
-import emailjs from 'emailjs-com';
+import { FaFacebook, FaRegCalendarAlt, FaStar } from 'react-icons/fa';
+import { StarIcon } from '@heroicons/react/24/outline';
 
 const Contact = () => {
   const location = useLocation();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [sent, setSent] = useState(false);
+  const [feedbackData, setFeedbackData] = useState({
+    name: '',
+    email: '',
+    feedback: '',
+    rating: 0
+  });
 
   useEffect(() => {
     if (!localStorage.getItem('theme')) {
@@ -21,24 +28,86 @@ const Contact = () => {
     }
   }, []);
 
-  const sendEmail = (e) => {
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFeedbackData({ ...feedbackData, [name]: value });
+  };
+
+  const handleStarClick = (rating) => {
+    setFeedbackData({ ...feedbackData, rating });
+  };
+
+  const validateForm = () => {
+    if (!feedbackData.name.trim()) {
+      toast.error('Name is required!');
+      return false;
+    }
+    if (!feedbackData.email.trim()) {
+      toast.error('Email is required!');
+      return false;
+    }
+    if (!feedbackData.feedback.trim() || feedbackData.feedback.length < 5) {
+      toast.error('Feedback must be at least 5 characters long!');
+      return false;
+    }
+    if (feedbackData.rating === 0) {
+      toast.error('Please select a rating!');
+      return false;
+    }
+    return true;
+  };
+
+  const submitFeedback = async (e) => {
     e.preventDefault();
-    emailjs
-      .sendForm('service_idf070e', 'template_vo713ak', e.target, 'LXmbdzx4vKR1J6vY1')
-      .then(
-        (result) => {
-          setSent(true);
-        },
-        (error) => {
-          alert('Failed to send message, please try again later.');
-        }
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    const token = sessionStorage.getItem('token');
+    
+    if (!token) {
+      toast.error('Please log in to submit feedback');
+      return;
+    }
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_API}/api/feedback/new`, 
+        {
+          feedback: feedbackData.feedback,
+          rating: feedbackData.rating
+        }, 
+        config
       );
-    e.target.reset();
+      
+      toast.success('Feedback submitted successfully!');
+      setSent(true);
+      
+      // Reset form
+      setFeedbackData({
+        name: '',
+        email: '',
+        feedback: '',
+        rating: 0
+      });
+      
+    } catch (error) {
+      console.error('Error submitting feedback:', error.response ? error.response.data : error);
+      toast.error('Failed to submit feedback. Please try again.');
+    }
   };
 
   return (
     <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900 text-white" : "bg-base-200 text-black"} flex flex-col`}>
       <HeaderPublic />
+      <ToastContainer position="top-right" />
       <div className="flex flex-1 flex-col items-center py-12 px-4">
         <div className="w-full max-w-6xl">
           {/* Responsive Two-Column Layout */}
@@ -94,17 +163,23 @@ const Contact = () => {
                 </ul>
               </div>
             </div>
-            {/* Right Column - Contact Form */}
+            {/* Right Column - Feedback Form */}
             <div className={`p-8 rounded-2xl shadow-xl ${theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-900"}`}>
-              <h2 className="text-3xl font-bold mb-6 text-center text-[#df1f47]">Send Us a Message</h2>
+              <h2 className="text-3xl font-bold mb-6 text-center text-[#df1f47]">Share Your Feedback</h2>
               {sent ? (
                 <div className="flex flex-col items-center justify-center h-full">
                   <div className="text-5xl mb-4">✅</div>
-                  <p className="text-xl font-semibold text-center mb-2">Thank you for reaching out!</p>
-                  <p className="text-center text-gray-500">Your message has been sent successfully. We will get back to you soon.</p>
+                  <p className="text-xl font-semibold text-center mb-2">Thank you for your feedback!</p>
+                  <p className="text-center text-gray-500">Your feedback has been submitted successfully. We appreciate your input!</p>
+                  <button
+                    onClick={() => setSent(false)}
+                    className="mt-4 btn bg-[#df1f47] text-white hover:bg-[#c0183d] transition duration-200"
+                  >
+                    Submit Another Feedback
+                  </button>
                 </div>
               ) : (
-                <form onSubmit={sendEmail} className="space-y-4">
+                <form onSubmit={submitFeedback} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="name" className="block text-sm font-bold mb-1">Name</label>
@@ -112,6 +187,8 @@ const Contact = () => {
                         type="text"
                         id="name"
                         name="name"
+                        value={feedbackData.name}
+                        onChange={handleInputChange}
                         placeholder="Your Name"
                         required
                         className={`w-full p-2 border rounded focus:ring-2 focus:ring-[#df1f47] ${theme === "dark" ? "bg-gray-700 text-white border-gray-600" : "border-gray-300"}`}
@@ -123,39 +200,64 @@ const Contact = () => {
                         type="email"
                         id="email"
                         name="email"
+                        value={feedbackData.email}
+                        onChange={handleInputChange}
                         placeholder="Your Email"
                         required
                         className={`w-full p-2 border rounded focus:ring-2 focus:ring-[#df1f47] ${theme === "dark" ? "bg-gray-700 text-white border-gray-600" : "border-gray-300"}`}
                       />
                     </div>
                   </div>
+                  
+                  {/* Rating Section */}
                   <div>
-                    <label htmlFor="subject" className="block text-sm font-bold mb-1">Subject</label>
-                    <input
-                      type="text"
-                      id="subject"
-                      name="subject"
-                      placeholder="Subject"
-                      required
-                      className={`w-full p-2 border rounded focus:ring-2 focus:ring-[#df1f47] ${theme === "dark" ? "bg-gray-700 text-white border-gray-600" : "border-gray-300"}`}
-                    />
+                    <label className="block text-sm font-bold mb-2">Rate Your Experience</label>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => handleStarClick(star)}
+                          className="transition-colors duration-200"
+                        >
+                          <StarIcon
+                            className={`w-8 h-8 ${
+                              star <= feedbackData.rating 
+                                ? 'text-yellow-400 fill-current' 
+                                : 'text-gray-300 hover:text-yellow-200'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="ml-2 text-sm text-gray-600">
+                        {feedbackData.rating > 0 ? `${feedbackData.rating} out of 5 stars` : 'Click to rate'}
+                      </span>
+                    </div>
                   </div>
+                  
                   <div>
-                    <label htmlFor="message" className="block text-sm font-bold mb-1">Your Message</label>
+                    <label htmlFor="feedback" className="block text-sm font-bold mb-1">Your Feedback</label>
                     <textarea
-                      id="message"
-                      name="message"
+                      id="feedback"
+                      name="feedback"
+                      value={feedbackData.feedback}
+                      onChange={handleInputChange}
                       rows="6"
-                      placeholder="Write your message here..."
+                      placeholder="Tell us about your experience..."
                       required
+                      minLength="5"
+                      maxLength="500"
                       className={`w-full p-2 border rounded focus:ring-2 focus:ring-[#df1f47] ${theme === "dark" ? "bg-gray-700 text-white border-gray-600" : "border-gray-300"}`}
                     ></textarea>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {feedbackData.feedback.length}/500 characters
+                    </p>
                   </div>
                   <button
                     type="submit"
                     className="btn w-full bg-[#df1f47] text-white hover:bg-[#c0183d] transition duration-200 font-semibold py-2 rounded-lg"
                   >
-                    Submit
+                    Submit Feedback
                   </button>
                 </form>
               )}
