@@ -12,6 +12,7 @@ import SearchBar from "../../Layout/components/Input/SearchBar";
 import TitleCard from "../../Layout/components/Cards/TitleCard";
 import TrashIcon from '@heroicons/react/24/outline/TrashIcon';
 import PencilIcon from '@heroicons/react/24/outline/PencilIcon';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 
@@ -78,6 +79,10 @@ function MembersList() {
 
   const handleEdit = (id) => {
     navigate(`/admin/members/edit/${id}`);
+  };
+
+  const handleNewMember = () => {
+    navigate('/admin/members/new');
   };
 
   const handleSort = (column) => {
@@ -147,6 +152,13 @@ function MembersList() {
                     onClick={toggleSortByDate}
                   >
                     {sortByDate === 'desc' ? 'Sort by Date Ascending' : 'Sort by Date Descending'}
+                  </button>
+                  <button
+                    className="btn bg-[#ed003f] text-white font-bold border-none hover:bg-red-700 transition flex items-center gap-2"
+                    onClick={handleNewMember}
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    New Member
                   </button>
                 </div>
               }

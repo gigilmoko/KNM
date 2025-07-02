@@ -148,33 +148,35 @@ function NewTask() {
                 <div className="drawer-content flex flex-col min-h-screen">
                     <Header />
                     <main className="flex-1 overflow-y-auto pt-4 px-4 sm:px-6 bg-base-200" ref={mainContentRef}>
-                        <div className="max-w-4xl mx-auto">
+                        <div className="max-w-7xl mx-auto">
                             {/* Header with Back Button */}
                             <div className="mb-6">
                                 <button
                                     onClick={handleGoBack}
-                                    className="btn btn-ghost mb-4 text-[#ed003f] hover:bg-red-50"
+                                    className="btn btn-ghost mb-4 text-[#ed003f] hover:bg-red-50 flex items-center gap-2"
                                 >
-                                    <ArrowLeftIcon className="w-5 h-5 mr-2" />
+                                    <ArrowLeftIcon className="w-5 h-5" />
                                     Back to Tasks
                                 </button>
-                                <div className="bg-white rounded-lg shadow-sm p-6">
+                                <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-[#ed003f]">
                                     <h1 className="text-3xl font-bold text-[#ed003f] mb-2">Create New Task</h1>
                                     <p className="text-gray-600">Fill in the details below to create a new task and assign team members.</p>
                                 </div>
                             </div>
 
-                            {/* Main Form */}
-                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                                    {/* Task Details Section */}
-                                    <div className="border-b border-gray-200 pb-6">
-                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                                            <DocumentTextIcon className="w-5 h-5 mr-2 text-[#ed003f]" />
-                                            Task Details
-                                        </h2>
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                            <div className="lg:col-span-2">
+                            {/* Main Content - Landscape Layout */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Left Panel - Task Details */}
+                                <div className="lg:col-span-2">
+                                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                        <div className="bg-gradient-to-r from-[#ed003f] to-red-600 px-6 py-4">
+                                            <h2 className="text-xl font-semibold text-white flex items-center">
+                                                <DocumentTextIcon className="w-6 h-6 mr-2" />
+                                                Task Details
+                                            </h2>
+                                        </div>
+                                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                                            <div>
                                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                                                     Task Name *
                                                 </label>
@@ -189,7 +191,8 @@ function NewTask() {
                                                     required
                                                 />
                                             </div>
-                                            <div className="lg:col-span-2">
+                                            
+                                            <div>
                                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                                                     Description *
                                                 </label>
@@ -198,12 +201,13 @@ function NewTask() {
                                                     name="description"
                                                     value={taskData.description}
                                                     onChange={handleChange}
-                                                    rows={4}
+                                                    rows={6}
                                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ed003f] focus:border-[#ed003f] transition-colors resize-none"
                                                     placeholder="Provide detailed information about the task, including objectives and requirements"
                                                     required
                                                 />
                                             </div>
+                                            
                                             <div>
                                                 <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-2">
                                                     <CalendarIcon className="w-4 h-4 inline mr-1" />
@@ -220,129 +224,161 @@ function NewTask() {
                                                     required
                                                 />
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Team Assignment Section */}
-                                    <div>
-                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                                            <UserIcon className="w-5 h-5 mr-2 text-[#ed003f]" />
-                                            Team Assignment
-                                        </h2>
-                                        
-                                        {/* Add Member */}
-                                        <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Add Team Member *
-                                            </label>
-                                            <div className="flex flex-col sm:flex-row gap-3">
-                                                <select
-                                                    value={selectedMember}
-                                                    onChange={e => {
-                                                        setSelectedMember(e.target.value);
-                                                        setMemberError("");
-                                                    }}
-                                                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ed003f] focus:border-[#ed003f] transition-colors"
-                                                >
-                                                    <option value="">Select a team member</option>
-                                                    {members
-                                                        .filter(m => !taskData.members.includes(m._id))
-                                                        .map(member => (
-                                                            <option key={member._id} value={member._id}>
-                                                                {member.fname} {member.lname}
-                                                            </option>
-                                                        ))}
-                                                </select>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleAddMember}
-                                                    disabled={!selectedMember}
-                                                    className="px-6 py-3 bg-[#ed003f] text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-                                                >
-                                                    <UserPlusIcon className="w-4 h-4" />
-                                                    Add Member
-                                                </button>
-                                            </div>
-                                            {memberError && (
-                                                <p className="text-red-500 text-sm mt-2">{memberError}</p>
-                                            )}
-                                        </div>
-
-                                        {/* Selected Members */}
-                                        {taskData.members.length > 0 && (
-                                            <div>
-                                                <h3 className="text-sm font-medium text-gray-700 mb-3">
-                                                    Assigned Members ({taskData.members.length})
-                                                </h3>
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                                    {taskData.members.map(id => {
-                                                        const member = members.find(m => m._id === id);
-                                                        return member ? (
-                                                            <div
-                                                                key={id}
-                                                                className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
-                                                            >
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 bg-[#ed003f] text-white rounded-full flex items-center justify-center text-sm font-medium">
-                                                                        {member.fname[0]}{member.lname[0]}
-                                                                    </div>
-                                                                    <span className="text-sm font-medium text-gray-900">
-                                                                        {member.fname} {member.lname}
-                                                                    </span>
-                                                                </div>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleRemoveMember(id)}
-                                                                    className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
-                                                                    title={`Remove ${member.fname} ${member.lname}`}
-                                                                >
-                                                                    <XMarkIcon className="w-4 h-4" />
-                                                                </button>
-                                                            </div>
-                                                        ) : null;
-                                                    })}
+                                            {/* Form Actions */}
+                                            <div className="border-t border-gray-200 pt-6">
+                                                <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleGoBack}
+                                                        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        type="submit"
+                                                        disabled={loading || taskData.members.length === 0}
+                                                        className="px-8 py-3 bg-[#ed003f] text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        {loading ? (
+                                                            <>
+                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                Creating Task...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <DocumentTextIcon className="w-4 h-4" />
+                                                                Create Task
+                                                            </>
+                                                        )}
+                                                    </button>
                                                 </div>
                                             </div>
-                                        )}
-
-                                        {taskData.members.length === 0 && (
-                                            <div className="text-center py-8 text-gray-500">
-                                                <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                                                <p>No team members assigned yet</p>
-                                                <p className="text-sm">Add at least one member to continue</p>
-                                            </div>
-                                        )}
+                                        </form>
                                     </div>
+                                </div>
 
-                                    {/* Form Actions */}
-                                    <div className="border-t border-gray-200 pt-6">
-                                        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={handleGoBack}
-                                                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                disabled={loading || taskData.members.length === 0}
-                                                className="px-8 py-3 bg-[#ed003f] text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                                            >
-                                                {loading ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                        Creating Task...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        Create Task
-                                                    </>
+                                {/* Right Panel - Team Assignment */}
+                                <div className="lg:col-span-1">
+                                    <div className="bg-white rounded-lg shadow-sm overflow-hidden sticky top-4">
+                                        <div className="bg-gradient-to-r from-[#ed003f] to-red-600 px-6 py-4">
+                                            <h2 className="text-xl font-semibold text-white flex items-center">
+                                                <UserIcon className="w-6 h-6 mr-2" />
+                                                Team Assignment
+                                            </h2>
+                                        </div>
+                                        <div className="p-6 space-y-6">
+                                            {/* Add Member Section */}
+                                            <div className="bg-gray-50 rounded-lg p-4">
+                                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                                    Add Team Member *
+                                                </label>
+                                                <div className="space-y-3">
+                                                    <select
+                                                        value={selectedMember}
+                                                        onChange={e => {
+                                                            setSelectedMember(e.target.value);
+                                                            setMemberError("");
+                                                        }}
+                                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#ed003f] focus:border-[#ed003f] transition-colors"
+                                                    >
+                                                        <option value="">Select a team member</option>
+                                                        {members
+                                                            .filter(m => !taskData.members.includes(m._id))
+                                                            .map(member => (
+                                                                <option key={member._id} value={member._id}>
+                                                                    {member.fname} {member.lname}
+                                                                </option>
+                                                            ))}
+                                                    </select>
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleAddMember}
+                                                        disabled={!selectedMember}
+                                                        className="w-full px-4 py-3 bg-[#ed003f] text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                                                    >
+                                                        <UserPlusIcon className="w-4 h-4" />
+                                                        Add Member
+                                                    </button>
+                                                </div>
+                                                {memberError && (
+                                                    <p className="text-red-500 text-sm mt-2">{memberError}</p>
                                                 )}
-                                            </button>
+                                            </div>
+
+                                            {/* Selected Members */}
+                                            <div>
+                                                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center justify-between">
+                                                    <span>Assigned Members</span>
+                                                    {taskData.members.length > 0 && (
+                                                        <span className="bg-[#ed003f] text-white text-xs px-2 py-1 rounded-full">
+                                                            {taskData.members.length}
+                                                        </span>
+                                                    )}
+                                                </h3>
+                                                
+                                                {taskData.members.length > 0 ? (
+                                                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                                                        {taskData.members.map(id => {
+                                                            const member = members.find(m => m._id === id);
+                                                            return member ? (
+                                                                <div
+                                                                    key={id}
+                                                                    className="flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+                                                                >
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-8 h-8 bg-[#ed003f] text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                                                            {member.fname[0]}{member.lname[0]}
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-sm font-medium text-gray-900">
+                                                                                {member.fname} {member.lname}
+                                                                            </p>
+                                                                            <p className="text-xs text-gray-500">{member.email}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveMember(id)}
+                                                                        className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition-colors"
+                                                                        title={`Remove ${member.fname} ${member.lname}`}
+                                                                    >
+                                                                        <XMarkIcon className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
+                                                            ) : null;
+                                                        })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-8 text-gray-500">
+                                                        <UserIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                                                        <p className="text-sm">No team members assigned yet</p>
+                                                        <p className="text-xs">Add at least one member to continue</p>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Task Summary */}
+                                            <div className="bg-gray-50 rounded-lg p-4">
+                                                <h3 className="text-sm font-medium text-gray-700 mb-2">Task Summary</h3>
+                                                <div className="space-y-2 text-sm text-gray-600">
+                                                    <div className="flex justify-between">
+                                                        <span>Name:</span>
+                                                        <span className="text-right">{taskData.name || 'Not set'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Deadline:</span>
+                                                        <span className="text-right">{taskData.deadline || 'Not set'}</span>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <span>Members:</span>
+                                                        <span className="text-right">{taskData.members.length} assigned</span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
                         <div className="h-16"></div>
