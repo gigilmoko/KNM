@@ -13,12 +13,15 @@ const Blog = () => {
   const bottomSectionRef = useRef(null);
   const eventRefs = useRef({});
   const [loading, setLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (!localStorage.getItem('theme')) {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setTheme(prefersDark ? 'dark' : 'light');
     }
+    // Trigger animation after component mounts
+    setTimeout(() => setIsVisible(true), 100);
   }, []);
 
   const handleScrollToBottom = () => {
@@ -35,7 +38,7 @@ const Blog = () => {
         const { data } = await axios.get(`${process.env.REACT_APP_API}/api/calendar/events/featured`);
         setFeaturedEvents(data.data.slice(0, 3));
       } catch (error) {
-        // handle error
+        console.error('Error fetching events:', error);
       } finally {
         setLoading(false);
       }
@@ -55,299 +58,344 @@ const Blog = () => {
   }, [location]);
 
   return (
-    <div className={`min-h-screen flex flex-col ${theme === "dark" ? "bg-gray-900 text-white" : "bg-base-200 text-black"}`}>
+    <div className={`min-h-screen ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-50 text-black"}`}>
       <HeaderPublic />
 
-      {/* Hero Section */}
-      <section className="w-full mt-8">
-        <div className="w-full min-h-[50vh] px-4 md:px-0 py-16 md:py-24 bg-[#df1f47] text-white flex flex-col items-center justify-center shadow-2xl">
-          <h2 className="text-4xl md:text-7xl font-extrabold mb-4 text-center tracking-tight drop-shadow-lg">Our Community Journey</h2>
-          <p className="text-lg md:text-2xl mb-10 text-center max-w-2xl font-light">
-            Discover the stories of innovation and collaboration that have shaped the organization.
-          </p>
-          <button
-            onClick={handleScrollToBottom}
-            className="btn px-8 py-3 text-lg md:text-xl bg-white text-[#df1f47] font-semibold rounded-full shadow hover:bg-gray-200 transition"
-          >
-            Read More
-          </button>
+      {/* Enhanced Hero Section */}
+      <section className="relative px-4 py-8 md:py-16 overflow-hidden">
+        {/* Background Decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-[#df1f47]/10 rounded-full blur-2xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-40 h-40 bg-pink-300/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-purple-300/15 rounded-full blur-xl animate-bounce delay-500"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto">
+          <div className={`text-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-[#df1f47] px-6 py-2 rounded-full text-sm font-semibold mb-8 shadow-lg border border-[#df1f47]/20">
+              <span className="w-2 h-2 bg-[#df1f47] rounded-full animate-pulse"></span>
+              Our Story
+            </div>
+
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6">
+              <span className="bg-gradient-to-r from-[#df1f47] to-pink-600 bg-clip-text text-transparent">
+                Community
+              </span>
+              <br />
+              <span className={theme === "dark" ? "text-white" : "text-gray-900"}>
+                Journey
+              </span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed mb-12">
+              Discover the inspiring stories of innovation, collaboration, and empowerment that have shaped 
+              <span className="text-[#df1f47] font-semibold"> Kababaihan ng Maynila</span> for nearly four decades.
+            </p>
+
+            <button
+              onClick={handleScrollToBottom}
+              className="group bg-[#df1f47] text-white text-lg px-10 py-4 rounded-2xl shadow-2xl hover:shadow-[#df1f47]/25 transform hover:scale-105 transition-all duration-300 font-semibold"
+            >
+              <span className="flex items-center gap-2">
+                Explore Our Story
+                <svg className="w-5 h-5 group-hover:translate-y-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Founder Section */}
+      {/* Enhanced Founder Section */}
       <section
         ref={bottomSectionRef}
-        className="w-full flex justify-center mb-20 -mt-4 px-2 md:px-4"
+        className="px-4 py-8 md:py-16"
       >
-        <div className="relative w-full max-w-6xl bg-white dark:bg-gray-800 shadow-2xl flex flex-col md:flex-row p-4 md:p-12 rounded-3xl transition-colors duration-300">
-          {/* Founder Image - top left, responsive, bigger */}
-          <div className="flex flex-row md:flex-col md:items-start">
-            <div className="w-32 h-32 md:w-64 md:h-64 bg-gray-200 rounded-full border-8 border-white dark:border-gray-900 overflow-hidden shadow-2xl mr-6 md:mr-0 md:mb-8 flex-shrink-0">
-              <img
-                src="https://res.cloudinary.com/dceswjquk/image/upload/v1750175191/beng_slapyt.jpg"
-                alt="Ma. Evelina “Beng” Atienza"
-                className="w-full h-full object-cover rounded-full"
-                style={{ objectPosition: 'center' }}
-              />
-            </div>
-          </div>
-          {/* Message */}
-          <div className="flex-1 flex flex-col justify-center mt-4 md:mt-0 md:ml-10 text-black dark:text-white">
-            <h3 className="text-2xl md:text-3xl font-extrabold mb-4 text-[#df1f47]">
-              The Heart Behind the Movement
-            </h3>
-            <div className="space-y-4 text-sm md:text-base leading-relaxed font-semibold">
-              <p>
-                Ma. Evelina “Beng” Atienza is the heart behind Kababaihan ng Maynila (KNM) — a woman whose vision, compassion, and belief in women’s strength sparked a movement that continues to change lives.
-              </p>
-              <p>
-                She was inspired by the quiet resilience of everyday women — mothers, wives, daughters — often overlooked by society. “I wanted a space where no woman would feel alone,” she shared. Her dream: women to stand on their own, find their voice, and grow into leaders in their homes and communities.
-              </p>
-              <p>
-                In KNM’s early days, challenges were plenty — limited funds, no space, and skepticism about whether housewives and older women could succeed. But with heart, patience, and the support of a few dedicated members, they pushed through.
-              </p>
-              <p className="italic">
-                “We didn’t have much, but we had heart,” she recalled.
-                Today, that heart lives on in every confident member and every handmade product. For Beng, the most rewarding part is seeing women transform from shy learners to empowered creators.
-              </p>
-              <p>
-                “They’re not just members. They’re sisters. And together, they’ve built something beautiful.”
-                Her message to future women leaders:
-                <span className="block mt-1">“Stay humble. Don’t brag. Share what you have — even the smallest act can make a big difference.”</span>
-              </p>
-            </div>
-            <div className="flex items-center mt-6 space-x-3">
-              <div>
-                <p className="text-base font-bold">Ma. Evelina “Beng” Atienza</p>
-                <p className="text-xs opacity-80">Founder</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Our Pioneers Section */}
-      <section className="w-full text-center my-20 px-4">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-[#df1f47] mb-2">Our Pioneers</h2>
-        <h3 className="text-lg md:text-2xl mt-2 text-gray-700 dark:text-gray-200 font-light">
-          Meet the early adopters who helped shape our platform and continue to inspire our community with their innovative work.
-        </h3>
-      </section>
-
-      {/* Pioneers Cards 2x2 */}
-      <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 px-4 mb-20 max-w-6xl mx-auto">
-        {/* Pioneer 1 */}
-        <div className="relative w-full p-10 border border-[#df1f47] rounded-3xl shadow-xl bg-white dark:bg-gray-800 text-black dark:text-white">
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-32 h-32 bg-gray-200 rounded-full border-4 border-white dark:border-gray-900 overflow-hidden shadow-lg">
-            <img
-              src="https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/dolores_ypncxj.jpg"
-              alt="Dolores Calayag Mescallado"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
-          <div className="pt-20 text-center">
-            <p className="text-lg font-bold">Dolores Calayag Mescallado</p>
-            <p className="text-sm opacity-80 mb-4">Member since 1987</p>
-            <div className="space-y-2 text-sm leading-relaxed font-semibold">
-              <p>
-                In 1987, Dolores joined KNM as a young mother. What began as a search for livelihood became a journey of lifelong learning and transformation.
-              </p>
-              <p>
-                She became a trainer, teaching others how to make sardines, paper baskets, bonsai plants, and more.
-              </p>
-              <p>
-                “I learned a lot — not just livelihood, but parenting, understanding children, and even teen sexuality,” she shared.
-              </p>
-              <p>
-                Dolores’ 37-year journey with KNM is a powerful story of empowerment, belonging, and giving back — a woman uplifted by her community who now uplifts others.
-              </p>
-            </div>
-          </div>
-        </div>
-        {/* Pioneer 2 */}
-        <div className="relative w-full p-10 border border-[#df1f47] rounded-3xl shadow-xl bg-white dark:bg-gray-800 text-black dark:text-white">
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-32 h-32 bg-gray-200 rounded-full border-4 border-white dark:border-gray-900 overflow-hidden shadow-lg">
-            <img
-              src="https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/Marivic_jgmq7o.jpg"
-              alt="Marivic Dela Cruz Valle"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
-          <div className="pt-20 text-center">
-            <p className="text-lg font-bold">Marivic Dela Cruz Valle</p>
-            <p className="text-sm opacity-80 mb-4">Member since 2001</p>
-            <div className="space-y-2 text-sm leading-relaxed font-semibold">
-              <p>
-                In 2001, Marivic joined KNM at age 30, following her mother’s footsteps. What started as a simple invitation became a meaningful journey of growth.
-              </p>
-              <p>
-                She learned handmade crafts and enjoyed parol-making, which became a source of passive income.
-              </p>
-              <p>
-                “I used to be shy, but I learned to connect with others and eventually got promoted,” she shared.
-              </p>
-              <p>
-                Her advice: “Find your strengths and focus on them. If you keep growing what you're good at, you’ll thrive.”
-              </p>
-            </div>
-          </div>
-        </div>
-        {/* Pioneer 3 */}
-        <div className="relative w-full p-10 border border-[#df1f47] rounded-3xl shadow-xl bg-white dark:bg-gray-800 text-black dark:text-white">
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-32 h-32 bg-gray-200 rounded-full border-4 border-white dark:border-gray-900 overflow-hidden shadow-lg">
-            <img
-              src="https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/Rendy_p7io8b.jpg"
-              alt="Rendy Regala"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
-          <div className="pt-20 text-center">
-            <p className="text-lg font-bold">Rendy Regala</p>
-            <p className="text-sm opacity-80 mb-4">Member since 1996</p>
-            <div className="space-y-2 text-sm leading-relaxed font-semibold">
-              <p>
-                Rendy joined KNM in the late 1990s. She embraced various livelihood skills, especially making kakanin, crafts, and handmade products.
-              </p>
-              <p>
-                “After joining, I developed self-confidence,” she shared. “We attend KNM daily and share stories. I really enjoy creating with others.”
-              </p>
-              <p>
-                Her message: “Always be humble. Don’t brag. If you have a talent, share it — you might inspire someone else.”
-              </p>
-            </div>
-          </div>
-        </div>
-        {/* Pioneer 4 */}
-        <div className="relative w-full p-10 border border-[#df1f47] rounded-3xl shadow-xl bg-white dark:bg-gray-800 text-black dark:text-white">
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-32 h-32 bg-gray-200 rounded-full border-4 border-white dark:border-gray-900 overflow-hidden shadow-lg">
-            <img
-              src="https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/Jehanne_bsaslg.jpg"
-              alt="Jehanne Marie Castelo"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
-          <div className="pt-20 text-center">
-            <p className="text-lg font-bold">Jehanne Marie Castelo</p>
-            <p className="text-sm opacity-80 mb-4">Member since 2019</p>
-            <div className="space-y-2 text-sm leading-relaxed font-semibold">
-              <p>
-                Jehanne joined KNM in 2019. In just six years, her life has flourished through her work as a tailor and her bonds with fellow members.
-              </p>
-              <p>
-                “I feel happier,” Jehanne shared. “I get to do tailoring, manage money wisely, and I’m never bored. Everyone shares stories — no one feels alone. We grow together.”
-              </p>
-              <p>
-                Her message: “Stay humble. Volunteer. Help in small ways. Share what you have without expecting anything in return.”
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <h2 className="text-lg md:text-2xl font-bold italic text-[#df1f47] text-center mb-8 mt-8">
-        Join our growing community of innovators and become part of our story
-      </h2>
-
-      {/* Featured Events */}
-      {loading ? (
-        <Loading />
-      ) : (
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 mb-16">
-          {featuredEvents.map((event) => (
-            <div
-              className={`rounded-2xl overflow-hidden shadow-lg transform transition-transform duration-300 hover:scale-105 ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white text-black'}`}
-              key={event._id}
-            >
-              <div className="relative">
-                <img
-                  src={event.image || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'}
-                  alt={event.title}
-                  className="w-full aspect-video object-cover"
-                />
-                <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-40 opacity-0 transition-opacity duration-300 hover:opacity-100">
-                  <button
-                    onClick={() => navigate(`/event/${event._id}`)}
-                    className="bg-white text-[#df1f47] border border-[#df1f47] px-4 py-2 text-sm rounded hover:bg-[#df1f47] hover:text-white transition-all duration-300"
-                  >
-                    View
-                  </button>
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="flex justify-between text-xs mb-1">
-                  <span>{event.location || 'Unknown Location'}</span>
-                  <span className="text-right font-bold text-[#df1f47]">{new Date(event.date).toLocaleDateString()}</span>
-                </div>
-                <div className="text-lg font-bold text-[#df1f47] font-poppins text-left">{event.title}</div>
-              </div>
-            </div>
-          ))}
-        </section>
-      )}
-
-      {/* Example Event Articles at the Bottom */}
-      <section className="w-full flex justify-center px-2 md:px-0 mb-20">
-        <article className="w-full max-w-full bg-white dark:bg-gray-800 shadow-2xl md:p-10 flex flex-col">
-          {[
-            {
-              id: '1',
-              img: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175044/Event3_v2wk1y.jpg",
-              title: "End-of-Year Dividend Distribution for Kababaihan ng Maynila Members",
-              desc: (
-                <>
-                  Kababaihan ng Maynila proudly celebrates the successful distribution of end-of-year dividends to its hardworking members. This initiative reflects the organization’s commitment to empowering women through sustainable livelihood and shared economic growth.<br /><br />
-                  Each member received a dividend as a result of their collective efforts throughout the year — from producing and selling handcrafted goods to participating in various community-driven projects. These earnings provide significant financial support to the members and their families, especially during the holiday season.<br /><br />
-                  This milestone highlights the value of unity, dedication, and the importance of supporting local women-led initiatives. Kababaihan ng Maynila extends its gratitude to everyone who contributed to making this achievement possible.
-                </>
-              )
-            },
-            {
-              id: '2',
-              img: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175046/Event1_sz7aiq.jpg",
-              title: "Liwanag ng Kababaihan: Parol-Making Project",
-              desc: (
-                <>
-                  Kababaihan ng Maynila proudly presents a parol-making project that showcases the creativity and craftsmanship of its members. This initiative aims to celebrate Filipino culture while providing a meaningful outlet for artistic expression and livelihood.<br /><br />
-                  Each parol was carefully handcrafted by the members, who collectively invested in sourcing quality materials and dedicated time and effort to produce unique, vibrant designs. The project reflects the women’s resourcefulness, talent, and commitment to empowering one another through shared opportunities.<br /><br />
-                  The public is invited to support and appreciate this inspiring display of handmade Filipino lanterns — symbols of light, unity, and the enduring spirit of community.
-                </>
-              )
-            },
-            {
-              id: '3',
-              img: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175047/Event2_gbnda5.png",
-              title: "39th Anniversary of Kababaihan ng Maynila",
-              desc: (
-                <>
-                  Kababaihan ng Maynila marks its 39th anniversary, celebrating nearly four decades of service, empowerment, and community impact. Since its founding, the organization has grown into a strong network of women committed to uplifting one another through livelihood, leadership, and shared advocacy.<br /><br />
-                  This milestone highlights the dedication of its members and leaders, past and present, who have contributed to the group’s continued success. The anniversary celebration includes cultural presentations, member recognitions, and a showcase of handcrafted products.<br /><br />
-                  The public is invited to join in commemorating this special occasion and to honor the legacy and future of Kababaihan ng Maynila.
-                </>
-              )
-            }
-          ].map((event, idx) => (
-            <div
-              key={event.id}
-              className={`flex flex-col md:flex-row ${idx % 2 === 1 ? 'md:flex-row-reverse' : ''} items-center md:items-stretch gap-6 md:gap-10`}
-            >
-              {/* Image */}
-              <div className="w-full md:w-1/2 flex-shrink-0 flex items-center px-2 md:px-6">
-                <div className="w-full h-60 md:h-80 rounded-2xl overflow-hidden shadow-lg bg-gray-100 mx-auto md:mx-0">
+        <div className="max-w-7xl mx-auto">
+          <div className={`rounded-3xl overflow-hidden shadow-2xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-6 md:p-12`}>
+            <div className="flex flex-col lg:flex-row items-center gap-8 md:gap-12">
+              {/* Founder Image */}
+              <div className="relative flex-shrink-0">
+                <div className="w-48 h-48 md:w-64 md:h-64 bg-gray-200 rounded-full border-8 border-white dark:border-gray-700 overflow-hidden shadow-2xl">
                   <img
-                    src={event.img}
-                    alt={event.title}
+                    src="https://res.cloudinary.com/dceswjquk/image/upload/v1750175191/beng_slapyt.jpg"
+                    alt="Ma. Evelina Beng Atienza"
                     className="w-full h-full object-cover"
                   />
                 </div>
+                {/* Decorative elements */}
+                <div className="absolute -top-4 -right-4 w-8 h-8 bg-[#df1f47] rounded-full opacity-20"></div>
+                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-pink-400 rounded-full opacity-15"></div>
               </div>
+
               {/* Content */}
-              <div className="w-full md:w-1/2 flex flex-col justify-center p-4 md:p-8">
-                <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[#df1f47]">{event.title}</h2>
-                <div className="text-base md:text-lg font-light leading-relaxed">{event.desc}</div>
+              <div className="flex-1 text-center lg:text-left">
+                <h2 className="text-3xl md:text-4xl font-bold text-[#df1f47] mb-6">
+                  The Heart Behind the Movement
+                </h2>
+                
+                <div className="space-y-4 text-base md:text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+                  <p>
+                    <strong className="text-[#df1f47]">Ma. Evelina "Beng" Atienza</strong> is the visionary founder whose compassion and belief in women's strength sparked a movement that continues to transform lives across Manila.
+                  </p>
+                  <p>
+                    Inspired by the quiet resilience of everyday women — mothers, wives, daughters — she created a space where no woman would feel alone. Her dream was simple yet powerful: to help women stand on their own, find their voice, and become leaders in their communities.
+                  </p>
+                  <blockquote className="border-l-4 border-[#df1f47] pl-6 italic text-[#df1f47] font-semibold">
+                    "We didn't have much, but we had heart. Today, that heart lives on in every confident member and every handmade product."
+                  </blockquote>
+                  <p>
+                    Her message to future women leaders: <em>"Stay humble. Share what you have — even the smallest act can make a big difference."</em>
+                  </p>
+                </div>
+
+                <div className="mt-8 p-4 bg-[#df1f47]/5 rounded-2xl">
+                  <p className="font-bold text-lg text-[#df1f47]">Ma. Evelina "Beng" Atienza</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Founder & Inspiration</p>
+                </div>
               </div>
             </div>
-          ))}
-        </article>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Pioneers Section */}
+      <section className="px-4 py-8 md:py-16 bg-gray-50 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-5xl font-bold text-[#df1f47] mb-4">Our Pioneers</h2>
+            <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Meet the remarkable women who helped shape our organization and continue to inspire our community with their dedication and innovation.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+            {[
+              {
+                name: "Dolores Calayag Mescallado",
+                since: "Member since 1987",
+                image: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/dolores_ypncxj.jpg",
+                story: "In 1987, Dolores joined KNM as a young mother, transforming her search for livelihood into a 37-year journey of empowerment and giving back.",
+                quote: "I learned not just livelihood, but parenting, understanding children, and life skills that shaped who I am today."
+              },
+              {
+                name: "Marivic Dela Cruz Valle",
+                since: "Member since 2001",
+                image: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/Marivic_jgmq7o.jpg",
+                story: "Following her mother's footsteps, Marivic discovered her strengths through handmade crafts and parol-making, growing from shy to confident leader.",
+                quote: "Find your strengths and focus on them. If you keep growing what you're good at, you'll thrive."
+              },
+              {
+                name: "Rendy Regala",
+                since: "Member since 1996",
+                image: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/Rendy_p7io8b.jpg",
+                story: "Embracing various livelihood skills, especially kakanin and crafts, Rendy developed self-confidence and found joy in creating with others.",
+                quote: "Always be humble. If you have a talent, share it — you might inspire someone else."
+              },
+              {
+                name: "Jehanne Marie Castelo",
+                since: "Member since 2019",
+                image: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175192/Jehanne_bsaslg.jpg",
+                story: "In just six years, Jehanne's life has flourished through tailoring work and meaningful bonds with fellow members.",
+                quote: "Stay humble. Volunteer. Help in small ways. Share what you have without expecting anything in return."
+              }
+            ].map((pioneer, index) => (
+              <div
+                key={index}
+                className={`group relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 ${theme === 'dark' ? 'bg-gray-700' : 'bg-white'}`}
+              >
+                {/* Image Section */}
+                <div className="relative h-64 overflow-hidden">
+                  <img
+                    src={pioneer.image}
+                    alt={pioneer.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                  
+                  {/* Floating Quote */}
+                  <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-white text-sm italic font-medium leading-tight">
+                      "{pioneer.quote}"
+                    </p>
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 bg-[#df1f47] rounded-full"></span>
+                    <span className="text-sm text-[#df1f47] font-semibold">{pioneer.since}</span>
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-[#df1f47] mb-3">{pioneer.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{pioneer.story}</p>
+                  
+                  {/* Bottom accent */}
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <div className="flex items-center gap-2 text-[#df1f47]">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium">Pioneer Member</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Call to Action */}
+      <section className="px-4 py-8 md:py-16">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="bg-gradient-to-r from-[#df1f47]/10 via-pink-50 to-purple-100 dark:from-gray-800 dark:via-gray-700 dark:to-gray-600 rounded-3xl p-8 md:p-12">
+            <h3 className="text-2xl md:text-3xl font-bold text-[#df1f47] mb-4">
+              Join Our Growing Community
+            </h3>
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+              Become part of our story and help us continue empowering women in Manila
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate('/products')}
+                className="bg-[#df1f47] text-white px-8 py-3 rounded-2xl font-semibold hover:bg-[#c0183d] transform hover:scale-105 transition-all duration-300 shadow-lg"
+              >
+                Explore Our Products
+              </button>
+              <button
+                onClick={() => navigate('/about')}
+                className="bg-white dark:bg-gray-800 text-[#df1f47] border-2 border-[#df1f47] px-8 py-3 rounded-2xl font-semibold hover:bg-[#df1f47] hover:text-white transform hover:scale-105 transition-all duration-300"
+              >
+                Learn More About Us
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Featured Events */}
+      <section className="px-4 py-8 md:py-16 bg-gray-50 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#df1f47] mb-4">Recent Highlights</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Stay updated with our latest community events and achievements
+            </p>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center py-16">
+              <Loading />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredEvents.map((event, index) => (
+                <div
+                  key={event._id}
+                  className={`group rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 ${theme === 'dark' ? 'bg-gray-700' : 'bg-white'}`}
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={event.image || 'https://res.cloudinary.com/dglawxazg/image/upload/v1741029114/Yellow_Minimalistic_Grandma_Avatar_mnjrbs.png'}
+                      alt={event.title}
+                      className="w-full aspect-video object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <button
+                      onClick={() => navigate(`/event/${event._id}`)}
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm text-[#df1f47] px-6 py-3 rounded-full font-semibold opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-[#df1f47] hover:text-white"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm text-[#df1f47] font-semibold">{event.location || 'Manila'}</span>
+                      <span className="text-sm text-gray-500">{new Date(event.date).toLocaleDateString()}</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-[#df1f47] mb-3 line-clamp-2">{event.title}</h3>
+                    <div className="flex items-center gap-2 text-[#df1f47]">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm font-medium">Community Impact</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Enhanced Feature Stories Section */}
+      <section className="px-4 py-8 md:py-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#df1f47] mb-4">Featured Stories</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Celebrating our achievements and community milestones
+            </p>
+          </div>
+
+          <div className="space-y-16">
+            {[
+              {
+                id: '1',
+                img: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175044/Event3_v2wk1y.jpg",
+                title: "End-of-Year Dividend Distribution Success",
+                desc: "Celebrating the successful distribution of end-of-year dividends to our hardworking members, reflecting our commitment to sustainable livelihood and shared economic growth."
+              },
+              {
+                id: '2',
+                img: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175046/Event1_sz7aiq.jpg",
+                title: "Liwanag ng Kababaihan: Parol-Making Project",
+                desc: "Showcasing the creativity and craftsmanship of our members through handcrafted Filipino lanterns that celebrate culture while providing meaningful livelihood opportunities."
+              },
+              {
+                id: '3',
+                img: "https://res.cloudinary.com/dceswjquk/image/upload/v1750175047/Event2_gbnda5.png",
+                title: "39th Anniversary Milestone",
+                desc: "Commemorating nearly four decades of service, empowerment, and community impact with cultural presentations, member recognitions, and product showcases."
+              }
+            ].map((story, index) => (
+              <div
+                key={story.id}
+                className={`flex flex-col lg:flex-row ${index % 2 === 1 ? 'lg:flex-row-reverse' : ''} items-center gap-8 md:gap-12`}
+              >
+                {/* Image */}
+                <div className="w-full lg:w-1/2">
+                  <div className="relative rounded-3xl overflow-hidden shadow-xl group">
+                    <img
+                      src={story.img}
+                      alt={story.title}
+                      className="w-full h-64 md:h-80 object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="w-full lg:w-1/2 text-center lg:text-left">
+                  <h3 className="text-2xl md:text-3xl font-bold text-[#df1f47] mb-6">{story.title}</h3>
+                  <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed mb-6">{story.desc}</p>
+                  <div className="flex items-center gap-2 text-[#df1f47] justify-center lg:justify-start">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-semibold">Community Achievement</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       <FooterPublic />
