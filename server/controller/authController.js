@@ -17,6 +17,259 @@ cloudinary.config({
   api_secret: '5hqre3DUxZG5YlOXD5HoSnj4HgQ'
 });
 
+// Mobile password update
+exports.updatePasswordMobile = async (req, res, next) => {
+  console.log('Mobile password update route hit');
+  const { userId, oldPassword, newPassword, confirmPassword } = req.body;
+
+  if (!userId || !oldPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: 'New passwords do not match' });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+  }
+
+  try {
+    const user = await User.findById(userId).select('+password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify old password
+    const isOldPasswordMatched = await user.comparePassword(oldPassword);
+    if (!isOldPasswordMatched) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    console.log("Password updated successfully for:", user.email);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (error) {
+    console.error("Error during mobile password update:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Mobile forgot password - sends verification code
+exports.forgotPasswordMobile = async (req, res, next) => {
+  console.log('Mobile forgot password route hit');
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Please provide email' });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found with this email' });
+    }
+
+    // Generate 6-digit verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    console.log("Generated password reset code:", verificationCode);
+
+    // Set verification code and expiry (10 minutes)
+    user.passwordResetCode = verificationCode.toString();
+    user.passwordResetCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save({ validateBeforeSave: false });
+
+    // Send verification code via email
+    try {
+      console.log("Creating transporter for password reset code...");
+      const transporter = createTransporter();
+      
+      console.log("Rendering password reset email template...");
+      const emailTemplate = await ejs.renderFile(
+        path.join(__dirname, '../views/passwordreset.ejs'),
+        {
+          user: user,
+          verificationCode: verificationCode
+        }
+      );
+      
+      console.log("Sending password reset code to:", user.email);
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+        to: user.email,
+        subject: 'Password Reset Verification Code',
+        html: emailTemplate
+      });
+
+      console.log("Password reset code sent successfully!");
+      
+      res.status(200).json({
+        success: true,
+        message: 'Password reset code sent to your email',
+        userId: user._id
+      });
+    } catch (emailError) {
+      console.error('Password reset email failed:', emailError);
+      // Clear the codes if email fails
+      user.passwordResetCode = undefined;
+      user.passwordResetCodeExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+      return res.status(500).json({ error: 'Failed to send verification code. Please try again.' });
+    }
+  } catch (error) {
+    console.error("Error during mobile forgot password:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Verify password reset code
+exports.verifyPasswordResetCode = async (req, res, next) => {
+  const { userId, verificationCode } = req.body;
+  console.log("Password reset code verification - UserId:", userId);
+  console.log("Password reset code verification - Code:", verificationCode);
+
+  if (!userId || !verificationCode) {
+    return res.status(400).json({ error: 'Please provide user ID and verification code' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify the code
+    if (user.passwordResetCode !== verificationCode || user.passwordResetCodeExpire < Date.now()) {
+      return res.status(401).json({ message: 'Invalid or expired verification code' });
+    }
+
+    console.log("Password reset code verified successfully for:", user.email);
+
+    res.status(200).json({
+      success: true,
+      message: 'Verification code confirmed. You can now reset your password.',
+      userId: user._id
+    });
+  } catch (error) {
+    console.error("Error during password reset code verification:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Reset password with verified code
+exports.resetPasswordMobile = async (req, res, next) => {
+  console.log('Mobile reset password route hit');
+  const { userId, verificationCode, newPassword, confirmPassword } = req.body;
+
+  if (!userId || !verificationCode || !newPassword || !confirmPassword) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ message: 'Passwords do not match' });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Verify the code one more time
+    if (user.passwordResetCode !== verificationCode || user.passwordResetCodeExpire < Date.now()) {
+      return res.status(401).json({ message: 'Invalid or expired verification code' });
+    }
+
+    // Update password and clear reset codes
+    user.password = newPassword;
+    user.passwordResetCode = undefined;
+    user.passwordResetCodeExpire = undefined;
+    await user.save();
+
+    console.log("Password reset successful for:", user.email);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successful! You can now login with your new password.'
+    });
+  } catch (error) {
+    console.error("Error during mobile password reset:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Resend password reset code
+exports.resendPasswordResetCode = async (req, res, next) => {
+  const { userId } = req.body;
+  console.log("Resend password reset code - UserId:", userId);
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Please provide user ID' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Generate new verification code
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    console.log("Generated new password reset code:", verificationCode);
+    
+    user.passwordResetCode = verificationCode.toString();
+    user.passwordResetCodeExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+    await user.save({ validateBeforeSave: false });
+
+    // Send verification code via email
+    try {
+      console.log("Creating transporter for resend password reset code...");
+      const transporter = createTransporter();
+      
+      console.log("Rendering password reset email template for resend...");
+      const emailTemplate = await ejs.renderFile(
+        path.join(__dirname, '../views/passwordreset.ejs'),
+        {
+          user: user,
+          verificationCode: verificationCode
+        }
+      );
+      
+      console.log("Sending resend password reset code to:", user.email);
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER || 'noreply@yourapp.com',
+        to: user.email,
+        subject: 'Password Reset Verification Code - Resent',
+        html: emailTemplate
+      });
+
+      console.log("Resend password reset code sent successfully!");
+      
+      res.status(200).json({
+        success: true,
+        message: 'New verification code sent to your email'
+      });
+    } catch (emailError) {
+      console.error('Resend password reset email failed:', emailError);
+      return res.status(500).json({ message: 'Failed to resend verification code' });
+    }
+  } catch (error) {
+    console.error("Error during resend password reset code:", error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Add this function after the existing verification functions
 exports.checkUserVerification = async (req, res, next) => {
   const { email } = req.body;
@@ -752,6 +1005,8 @@ exports.logout = async (req, res, next) => {
     });
 };
 
+
+
 exports.forgotPassword = async (req, res, next) => {
     console.log('Forgot password route hit'); 
   const user = await User.findOne({ email: req.body.email });
@@ -924,28 +1179,28 @@ exports.updatePassword = async (req, res, next) => {
     sendToken(user, 200, res);
 };
 
-exports.updatePasswordMobile = async (req, res, next) => {
-  console.log('Update Password route hit');
+// exports.updatePasswordMobile = async (req, res, next) => {
+//   console.log('Update Password route hit');
 
-  // Assuming you pass the user ID in the request body
-  const { userId, oldPassword, newPassword } = req.body;
+//   // Assuming you pass the user ID in the request body
+//   const { userId, oldPassword, newPassword } = req.body;
 
-  const user = await User.findById(userId).select("password");
-  if (!user) {
-      return res.status(404).json({ message: "User not found" });
-  }
+//   const user = await User.findById(userId).select("password");
+//   if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//   }
 
-  // Check previous user password
-  const isMatched = await user.comparePassword(oldPassword);
-  if (!isMatched) {
-      return res.status(400).json({ message: "Old password is incorrect" });
-  }
+//   // Check previous user password
+//   const isMatched = await user.comparePassword(oldPassword);
+//   if (!isMatched) {
+//       return res.status(400).json({ message: "Old password is incorrect" });
+//   }
 
-  user.password = newPassword; // Set new password
-  await user.save();
+//   user.password = newPassword; // Set new password
+//   await user.save();
 
-  sendToken(user, 200, res); // Send token after updating password
-};
+//   sendToken(user, 200, res); // Send token after updating password
+// };
 
 exports.updateProfile = async (req, res, next) => {
   try {

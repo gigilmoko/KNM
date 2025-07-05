@@ -9,11 +9,20 @@ const { registerUser, loginUser, logout, checkUserVerification, forgotPassword,
         googleLogin, allUsersApply, updateApplyMember, deniedApplyMember, 
         applyingForMember, deleteImage, registerUserMember, fetchUserMemberMatch,
         approveApplyMember, denyApplyMember, avatarUpdate,
-        updatePasswordMobile, updateProfileMobile, getUserProfileById,
+         updateProfileMobile, getUserProfileById,
         getUsersByMonth, getUsersByCurrentMonth, getAllUsersCount, getUsersCountForToday, 
         getUsersCountForPast7Days, getTotalMembers, countUsersApply, updateAddressAndDetails, 
         verifyAdminCode, createAddress, resendVerificationCode, verifyEmailCode, 
-        resendEmailVerificationCode, checkEmailVerificationStatus} = require('../controller/authController');
+        resendEmailVerificationCode, checkEmailVerificationStatus,
+        forgotPasswordMobile, verifyPasswordResetCode, resetPasswordMobile, resendPasswordResetCode, updatePasswordMobile } = require('../controller/authController');
+
+
+
+router.post('/password/forgot-mobile', forgotPasswordMobile);
+router.post('/password/verify-reset-code', verifyPasswordResetCode);
+router.post('/password/reset-mobile', resetPasswordMobile);
+router.post('/password/resend-reset-code', resendPasswordResetCode);
+router.put('/password/update/mobile', isAuthenticatedUser, updatePasswordMobile);
 
 router.get('/fetchusermember', isAuthenticatedUser, fetchUserMemberMatch);
 router.post('/check-user-verification', checkUserVerification);
