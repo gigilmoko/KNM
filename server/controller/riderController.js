@@ -143,6 +143,9 @@ exports.riderLogin = async (req, res, next) => {
         });
     }
 
+    //if  error
+
+
     sendToken(rider, 200, res);
 };
 

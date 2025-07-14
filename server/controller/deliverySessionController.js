@@ -446,17 +446,13 @@ exports.completeDeliverySession = async (req, res) => {
   try {
     const { id } = req.params;
 
-
     const session = await DeliverySession.findById(id).populate('rider truck orders');
-
 
     if (!session || session.status !== 'Ongoing') {
       return res.status(404).json({ message: 'Delivery session not found or not in Ongoing status' });
     }
 
-
     session.status = 'Completed';
-
 
     // Set endTime in PH Time
     session.endTime = new Intl.DateTimeFormat('en-US', {
@@ -465,30 +461,30 @@ exports.completeDeliverySession = async (req, res) => {
       timeStyle: 'long'
     }).format(new Date());
 
-
     await session.save();
-
-
 
     // Update all orders to 'Delivered'
     const updatedOrders = await Promise.all(
-      session.orders.map(async (orderId) => {
-        const order = await Order.findByIdAndUpdate(
-          orderId,
+      session.orders.map(async (order) => { // Changed from orderId to order
+        const updatedOrder = await Order.findByIdAndUpdate(
+          order._id, // Use order._id since session.orders contains populated order objects
           { status: 'Delivered', deliveredAt: new Date() },
           { new: true }
         ).populate('user');
        
         // Send notification to the user
-        if (order && order.user.deviceToken) {
+        if (updatedOrder && updatedOrder.user && updatedOrder.user.deviceToken) {
           const notificationPayload = {
             app_id: process.env.ONESIGNAL_APP_ID,
-            include_player_ids: [order.user.deviceToken],
+            include_player_ids: [updatedOrder.user.deviceToken],
             headings: { en: "Order Delivered" },
-            contents: { en: `Your order #${order._id} has been delivered successfully.` },
-            data: { orderId: order._id.toString(), status: 'Delivered' },
+            contents: { en: `Your order ${updatedOrder.KNMOrderId || updatedOrder._id} has been delivered successfully.` },
+            data: { 
+              orderId: updatedOrder._id.toString(), 
+              status: 'Delivered',
+              type: 'order_delivered'
+            },
           };
-
 
           try {
             const response = await axios.post('https://onesignal.com/api/v1/notifications', notificationPayload, {
@@ -497,22 +493,29 @@ exports.completeDeliverySession = async (req, res) => {
                 'Content-Type': 'application/json',
               },
             });
-            console.log(`Delivered notification sent successfully for order: ${order._id}`, response.data);
-          } catch (error) {
-            console.error(`Error sending delivered notification for order: ${order._id}`, error.response?.data || error.message);
+            console.log(`Delivered notification sent successfully for order: ${updatedOrder._id}`, response.data);
+          } catch (notificationError) {
+            console.error(`Error sending delivered notification for order: ${updatedOrder._id}`, notificationError.response?.data || notificationError.message);
           }
         }
 
-
-        return order;
+        return updatedOrder;
       })
     );
 
-
     console.log("Orders updated to Delivered:", updatedOrders.map(order => order._id));
 
-
-    res.status(200).json({ message: 'Delivery session completed successfully', session });
+    res.status(200).json({ 
+      message: 'Delivery session completed successfully', 
+      session,
+      deliveredOrdersCount: updatedOrders.length,
+      deliveredOrders: updatedOrders.map(order => ({
+        _id: order._id,
+        KNMOrderId: order.KNMOrderId,
+        status: order.status,
+        deliveredAt: order.deliveredAt
+      }))
+    });
   } catch (error) {
     console.error('Error completing delivery session:', error);
     res.status(500).json({ message: 'Error completing delivery session', error: error.message });
@@ -695,7 +698,6 @@ exports.getOngoingSessionsByRider = async (req, res) => {
   try {
     const { riderId } = req.params;
 
-    // Fetch sessions categorized by their status
     const ongoingSessions = await DeliverySession.find({
       rider: riderId,
       status: 'Ongoing',
@@ -704,6 +706,9 @@ exports.getOngoingSessionsByRider = async (req, res) => {
       .populate('truck', 'model plateNo')
       .populate({
         path: 'orders',
+        match: { 
+          status: { $nin: ['Delivered', 'Cancelled', 'Delivered Pending'] } // Exclude delivered and cancelled orders
+        },
         populate: [
           {
             path: 'orderProducts.product',
@@ -714,52 +719,98 @@ exports.getOngoingSessionsByRider = async (req, res) => {
             select: 'fname lname email phone contactNo deliveryAddress',
           },
         ],
-        // Include more order fields including shipping charges and total price
-        select: 'KNMOrderId orderProducts address itemsPrice shippingCharges totalPrice paymentInfo status createdAt UpdatedAt',
+        select: 'KNMOrderId orderProducts address itemsPrice shippingCharges totalPrice paymentInfo status createdAt updatedAt',
       });
 
-    // Format the response data for better client consumption
-    const formattedSessions = ongoingSessions.map(session => {
+    // Filter out sessions that have no active orders after filtering
+    const activeSessions = ongoingSessions.filter(session => 
+      session.orders && session.orders.length > 0
+    );
+
+    console.log(`Found ${activeSessions.length} active sessions with pending orders for rider: ${riderId}`);
+
+    // Add null checks when mapping
+    const formattedSessions = activeSessions.map(session => {
+      // Add null checks for session properties
+      if (!session) return null;
+
       return {
         _id: session._id,
         startTime: session.startTime,
         status: session.status,
         rider: session.rider,
         truck: session.truck,
-        orders: session.orders.map(order => ({
-          _id: order._id,
-          KNMOrderId: order.KNMOrderId,
-          customer: {
-            name: `${order.user.fname} ${order.user.lname}`,
-            email: order.user.email,
-            phone: order.user.contactNo || order.user.phone,
-          },
-          address: order.address,
-          products: order.orderProducts.map(item => ({
-            _id: item.product._id,
-            name: item.product.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.product.images && item.product.images.length > 0 ? item.product.images[0].url : null,
-          })),
-          payment: {
-            method: order.paymentInfo,
-            itemsPrice: order.itemsPrice,
-            shippingCharges: order.shippingCharges,
-            totalAmount: order.totalPrice,
-          },
-          status: order.status,
-          createdAt: order.createdAt,
-          updatedAt: order.updatedAt,
-        })),
+        orders: (session.orders || [])
+          .filter(order => order && order.status !== 'Delivered' && order.status !== 'Cancelled') // Double filter for safety
+          .map(order => {
+            // Add null checks for order and its properties
+            if (!order) return null;
+
+            // Console log how many items are in this order
+            const itemCount = order.orderProducts ? order.orderProducts.length : 0;
+            console.log(`Order ${order.KNMOrderId || order._id} has ${itemCount} items`);
+
+            const products = (order.orderProducts || []).map(item => {
+              // Add null checks for product
+              if (!item || !item.product) return null;
+
+              return {
+                _id: item.product._id,
+                name: item.product.name || 'Unknown Product',
+                price: item.price || 0,
+                quantity: item.quantity || 0,
+                image: item.product.images && item.product.images.length > 0 ? item.product.images[0].url : null,
+              };
+            }).filter(Boolean); // Remove null entries
+
+            // Console log the actual product details for this order
+            console.log(`Order ${order.KNMOrderId || order._id} products:`, products.map(p => `${p.name} (qty: ${p.quantity})`));
+
+            return {
+              _id: order._id,
+              KNMOrderId: order.KNMOrderId,
+              customer: {
+                name: order.user ? `${order.user.fname || ''} ${order.user.lname || ''}` : 'N/A',
+                email: order.user?.email || 'N/A',
+                phone: order.user?.contactNo || order.user?.phone || 'N/A',
+              },
+              address: order.address,
+              products: products,
+              itemCount: itemCount, // Add item count to the response
+              payment: {
+                method: order.paymentInfo,
+                itemsPrice: order.itemsPrice || 0,
+                shippingCharges: order.shippingCharges || 0,
+                totalAmount: order.totalPrice || 0,
+              },
+              status: order.status,
+              createdAt: order.createdAt,
+              updatedAt: order.updatedAt,
+            };
+          }).filter(Boolean), // Remove null entries
       };
-    });
+    }).filter(Boolean); // Remove null entries
+
+    // Console log total items across all orders for this rider
+    const totalItemsCount = formattedSessions.reduce((total, session) => {
+      return total + session.orders.reduce((orderTotal, order) => {
+        return orderTotal + (order.itemCount || 0);
+      }, 0);
+    }, 0);
+
+    console.log(`Total items across all orders for rider ${riderId}: ${totalItemsCount}`);
 
     res.status(200).json({
       success: true,
       ongoingSessions: formattedSessions,
       count: formattedSessions.length,
+      totalItems: totalItemsCount, // Add total items to response
+      message: formattedSessions.length === 0 ? 'No active delivery orders found for this rider' : undefined
     });
+
+    // console log the data how many items in order
+    console.log(`Ongoing delivery sessions for rider ${riderId}:`, formattedSessions.length);
+    console.log("Ongoing delivery sessions:", formattedSessions);
   } catch (error) {
     console.error('Error fetching rider sessions:', error);
     res.status(500).json({
@@ -770,19 +821,27 @@ exports.getOngoingSessionsByRider = async (req, res) => {
   }
 };
 
+// In your backend - getSessionsByRiderId controller
 exports.getSessionsByRiderId = async (req, res, next) => {
   try {
     const { riderId } = req.params;
 
-    // Fetch all delivery sessions linked to the riderId (remove status filter)
+    // Fetch all delivery sessions linked to the riderId
     const sessions = await DeliverySession.find({ 
       rider: riderId
-      // status: { $in: ['Completed'] } // REMOVE or comment out this line
     })
       .populate('rider', 'fname lname email phone')
       .populate('truck', 'model plateNo')
       .populate({
         path: 'orders',
+        // Include orders that have been delivered or have proof of delivery
+        match: {
+          $or: [
+            { status: "Delivered" },
+            { status: "Delivered Pending" },
+            { proofOfDelivery: { $exists: true, $ne: null } }
+          ]
+        },
         populate: [
           {
             path: 'orderProducts.product',
@@ -793,19 +852,23 @@ exports.getSessionsByRiderId = async (req, res, next) => {
             select: 'fname lname email phone contactNo deliveryAddress'
           }
         ],
-        // Include comprehensive order information
         select: 'KNMOrderId orderProducts address itemsPrice shippingCharges totalPrice paymentInfo status createdAt updatedAt deliveredAt proofOfDelivery'
       });
 
-    if (!sessions || sessions.length === 0) {
+    // Filter out sessions that have no delivered orders after population
+    const sessionsWithDeliveredOrders = sessions.filter(session => 
+      session.orders && session.orders.length > 0
+    );
+
+    if (sessionsWithDeliveredOrders.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No delivery sessions found for this rider',
+        message: 'No delivery history found for this rider',
       });
     }
 
-    // Format the response data for better client consumption
-    const formattedSessions = sessions.map(session => ({
+    // Format the response data
+    const formattedSessions = sessionsWithDeliveredOrders.map(session => ({
       _id: session._id,
       startTime: session.startTime,
       endTime: session.endTime,
