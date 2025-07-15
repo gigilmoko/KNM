@@ -105,41 +105,21 @@ exports.createMember = async (req, res) => {
   // Get all members
 exports.getAllMembers = async (req, res) => {
     try {
-      // Only get users with role "member" that have deviceToken (playerId)
-      const memberUsers = await User.find({ 
-        role: 'member',
-        deviceToken: { $exists: true, $ne: null } 
-      }).select('fname lname middlei email phone memberId avatar role createdAt deviceToken');
+      // Get all members from Member model only
+      const members = await Member.find({}).select('fname lname memberId');
       
-      // Map users to consistent format
-      const allMembers = memberUsers.map(user => ({
-        _id: user._id,
-        fname: user.fname,
-        lname: user.lname,
-        middlei: user.middlei,
-        email: user.email,
-        phone: user.phone,
-        memberId: user.memberId,
-        avatar: user.avatar,
-        role: user.role,
-        deviceToken: user.deviceToken,
-        source: 'User',
-        type: 'user_member',
-        createdAt: user.createdAt
-      }));
-  
-      if (allMembers.length === 0) {
+      if (members.length === 0) {
         return res.status(404).json({
           success: false,
-          message: 'No members with device tokens found'
+          message: 'No members found'
         });
       }
   
       res.status(200).json({
         success: true,
-        data: allMembers,
-        count: allMembers.length,
-        message: `Found ${allMembers.length} members with device tokens`
+        data: members,
+        count: members.length,
+        message: `Found ${members.length} members`
       });
     } catch (error) {
       res.status(400).json({

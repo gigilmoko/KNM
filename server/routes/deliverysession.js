@@ -25,7 +25,7 @@ router.put('/delivery-session/:id/cancel-order/:orderId', cancelOrder);
 router.delete('/delivery-session/:id', deleteDeliverySession);  
 router.get('/delivery-session/order/:orderId/', getSessionByOrderId);
 router.get('/delivery-session/on-going/:riderId', getOngoingSessionsByRider);
-router.get('/delivery-session/history/:riderId', getSessionsByRiderId);
+router.get('/delivery-session/rider/:riderId', getSessionsByRiderId);
 
 
 module.exports = router;

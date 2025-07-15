@@ -37,16 +37,16 @@ const routes = [
         icon: <UserIcon className={submenuIconClasses}/>,
         name: 'Members List',
       },
-      {
-        path: '/admin/members/new',
-        icon: <UserIcon className={submenuIconClasses}/>,
-        name: 'New Member',
-      },
-      {
-        path: '/admin/members/confirmation',
-        icon: <CalendarDaysIcon className={submenuIconClasses}/>,
-        name: 'Members Approval',
-      },
+      // {
+      //   path: '/admin/members/new',
+      //   icon: <UserIcon className={submenuIconClasses}/>,
+      //   name: 'New Member',
+      // },
+      // {
+      //   path: '/admin/members/confirmation',
+      //   icon: <CalendarDaysIcon className={submenuIconClasses}/>,
+      //   name: 'Members Approval',
+      // },
     ]
   },
   {
